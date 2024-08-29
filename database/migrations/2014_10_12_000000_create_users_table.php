@@ -1,0 +1,52 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('users', function (Blueprint $table) {
+    $table->id();
+    $table->string('name');
+    $table->integer('registration_number')->nullable();
+    $table->boolean('confirmation')->default(0);
+    $table->boolean('application')->default(0);
+    $table->string('status')->default('disapproved'); // Add status column with default value
+    $table->string('payment_status')->nullable();
+    $table->bigInteger('Control_Number')->nullable();
+
+    $table->integer('block_id')->nullable();
+    $table->integer('room_id')->nullable();
+    $table->integer('floor_id')->nullable(); // New field for floor
+    $table->integer('bed_id')->nullable();   // New field for bed
+    $table->string('sponsorship')->nullable(); // New field for sponsorship
+    $table->string('phone')->nullable();       // New field for phone
+    $table->string('gender')->nullable();      // New field for gender
+    $table->string('nationality')->nullable(); // New field for nationality
+    $table->string('course')->nullable();      // New field for course
+    $table->string('email')->unique();
+    $table->timestamp('email_verified_at')->nullable();
+    $table->string('password')->default(Hash::make('12345678'));
+    $table->rememberToken();
+    $table->foreignId('current_team_id')->nullable();
+    $table->string('profile_photo_path', 2048)->nullable();
+    $table->timestamp('expiration_date')->default(DB::raw('DATE_ADD(NOW(), INTERVAL 1 DAY)'))->nullable();
+    $table->timestamps();
+});
+
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('users');
+    }
+};

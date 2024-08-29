@@ -1,0 +1,256 @@
+
+.spinner-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+/* Positioning for the toast */
+.toast {
+    position: fixed;
+    top: 20px; /* Adjust as needed */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1050; /* Ensure it appears above other elements */
+}
+
+.toast-body {
+    padding: 1rem; /* Adjust padding as needed */
+}
+
+
+
+/* Default color for the switch when unchecked */
+.custom-control-input:checked ~ .custom-control-label::before {
+    background-color: lightgreen; /* Change to the color you want when checked */
+    border-color: lightgreen; /* Ensure the border color matches the background color */
+}
+
+/* Default color for the switch when checked */
+.custom-control-input:not(:checked) ~ .custom-control-label::before {
+    background-color: rgb(255, 255, 255); /* Change to the color you want when unchecked */
+    border-color: rgb(255, 255, 255); /* Ensure the border color matches the background color */
+}
+
+/* Optional: Style the toggle slider */
+.custom-control-label::after {
+    background-color:#408dd1 !important/* Background color of the slider */
+}
+
+/* Optional: Style the slider when checked */
+.custom-control-input:checked ~ .custom-control-label::after {
+    background-color: #ffffff!important; /* Background color of the slider when checked */
+}
+
+.search-result-item {
+    padding: 10px;
+    border: 1px solid #ddd;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+
+.search-result-item:hover {
+    background-color: #f0f0f0;
+}
+
+
+
+.radio-tile:hover {
+    background-color: #5ba3eb; /* Light grey background on hover */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow effect */
+    color: white;
+}
+
+
+
+#imagePlaceholder {
+    /* border: 2px dashed #ccc; */
+    color: #aaa;
+    font-size: 16px;
+    position: relative;
+    overflow: hidden;
+    background-color: #fff;
+}
+.croppie-container {
+    /* position: absolute; */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+.croppie-zoom {
+    bottom: 0;
+    position: absolute;
+    width: 100%;
+    background-color: #fff;
+    padding: 10px;
+}
+.croppie-zoom .zoom-slider {
+    width: 100%;
+}
+.controls {
+    margin-top: 10px;
+}
+
+
+
+ative-container {
+    position: relative;
+  }
+
+  .form-group.text-center {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+  } */
+  .bg-image {
+    position: relative;
+    overflow: hidden;
+    padding-top: 20px;
+}
+
+.bg-image::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../img/no.jpg'); /* Replace with your image URL */
+    background-size: cover;
+    background-position: center;
+    opacity: 0.2; /* Adjust opacity as needed */
+    z-index: 1;
+}
+
+.bg-image > * {
+    position: relative;
+    z-index: 2;
+}
+
+  .card-body input[type="radio"] {
+    /* Your custom styles here */
+    /* For example: */
+    width: 15px;
+    height: 15px;
+    margin-top: 5px;
+    margin-right: 10px;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.695);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999999;
+  }
+
+
+  footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #f8f9fa;
+    padding: 20px;
+    text-align: center;
+}
+
+
+
+
+
+  .radio-tile-group {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .radio-tile-group .input-container {
+    position: relative;
+    height: 8rem;
+    width: 8rem;
+    margin: 0.5rem;
+  }
+  .radio-tile-group .input-container .radio-button {
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    cursor: pointer;
+  }
+  .radio-tile-group .input-container .radio-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    border: 1px solid #079ad9;
+    border-radius: 5px;
+    padding: 1rem;
+    transition: transform 300ms ease;
+  }
+  .radio-tile-group .input-container .icon svg {
+    fill: #079ad9;
+    width: 3rem;
+    height: 3rem;
+  }
+  .radio-tile-group .input-container .radio-tile-label {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+
+  }
+  .radio-tile-group .input-container .radio-button:checked + .radio-tile {
+    background-color: #079ad9;
+    border: 2px solid #079ad9;
+    color: white;
+    transform: scale(1.1, 1.1);
+  }
+  .radio-tile-group .input-container .radio-button:checked + .radio-tile .icon svg {
+    fill: white;
+    background-color: #079ad9;
+  }
+  .radio-tile-group .input-container .radio-button:checked + .radio-tile .radio-tile-label {
+    color: white;
+    background-color: #079ad9;
+  }
+
+
+
+
+#preloder {
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	z-index: 999999;
+	background: #ffffff;
+}
+
+.loader {
+
+	width: 40px;
+	height: 40px;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin-top: -13px;
+	margin-left: -13px;
+	border-radius: 60px;
+	animation: loader 0.8s linear infinite;
+	-webkit-animation: loader 0.8s linear infinite;
+}
+
+
+

@@ -13,6 +13,7 @@ use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\ElligableStudentController;
 use Carbon\Carbon;
 use App\Models\ViewCount;
+use App\Models\VisitorCount;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\ControlController;
@@ -29,40 +30,56 @@ use App\Models\Block;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
 Route::get('/', function () {
-    // Get the current month name (e.g., 'january', 'february', etc.)
-    $currentMonth = strtolower(\Carbon\Carbon::now()->format('F'));
+    $currentMonth = strtolower(Carbon::now()->format('F'));
 
-    // Get or create the view count record
-    $view = \App\Models\ViewCount::firstOrCreate(['id' => 1]);
-
-    // Check if the month has changed and reset monthly views if necessary
+    // Update View Counts
+    $view = ViewCount::firstOrCreate(['id' => 1]);
     $lastUpdateMonth = strtolower($view->updated_at->format('F'));
     if ($lastUpdateMonth !== $currentMonth) {
-        // Reset monthly views count
-        $view->monthly_views = 1; // Start with the current view count for the new month
+        $view->monthly_views = 1;
     } else {
-        // Increment the total views and the views for the current month
         $view->increment('total_views');
         $view->increment('monthly_views');
         $view->increment("views_{$currentMonth}");
     }
-
-    // Save changes to the view count record
     $view->save();
 
-    // Log the updated view count data
+    // Log updated view counts
     Log::info('Updated view counts', [
         'total_views' => $view->total_views,
         'monthly_views' => $view->monthly_views,
         "views_{$currentMonth}" => $view["views_{$currentMonth}"],
     ]);
 
-    // Only after saving to the database, return the welcome view
-    return view('welcome');
+    // Handle Visitor Counts
+    $visitor = VisitorCount::firstOrCreate(['id' => 1]);
+    $visitorCookieName = 'visited_this_month';
 
+    if (!Cookie::has($visitorCookieName)) {
+        // Increment the total visitors and the visitors for the current month
+        $visitor->increment('total_visitors');
+        $visitor->increment("visitors_{$currentMonth}");
+        $visitor->increment('new_visitors');
+
+        // Set cookie to prevent multiple counts within the same month
+        Cookie::queue($visitorCookieName, true, 43200); // Cookie valid for 30 days
+    }
+
+    // Save visitor count data
+    $visitor->save();
+
+    // Log updated visitor counts
+    Log::info('Updated visitor counts', [
+        'total_visitors' => $visitor->total_visitors,
+        'new_visitors' => $visitor->new_visitors,
+        "visitors_{$currentMonth}" => $visitor["visitors_{$currentMonth}"],
+    ]);
+
+    return view('welcome');
 });
+
+
 
 
 
@@ -104,6 +121,8 @@ Route::post('/update-profile', [SearchController::class, 'updateProfile']);
 
     Route::post('/ room_select', [AjaxController::class, 'room_select']);
 
+    Route::get('get.expiration.date', [AjaxController::class, 'getExpirationDate'])->name('get.expiration.date');
+
 
 
 });
@@ -143,6 +162,9 @@ Route::middleware(['admin'])->group(function () {
     route::post('admin.updateSetting', [AjaxController::class, 'updateSetting'])->name('admin.updateSetting');
 
 
+
+
+    route::post('update-dates', [AjaxController::class, 'updateDates'])->name('update-dates');
 // web.php
 Route::post('admin.updateExpirationDate', [AjaxController::class, 'updateExpirationDate'])->name('admin.updateExpirationDate');
 

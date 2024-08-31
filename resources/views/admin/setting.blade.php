@@ -47,24 +47,53 @@
 
             <!-- Number of Days Input -->
             <div class="form-group row align-items-center mb-3">
-                <label class="col-sm-8 col-form-label">
+                <label class="col-sm-10 col-form-label">
                     Number of days students have to make a payment before their hostel application expires
                 </label>
 
-                <div class="col-sm-4 text-right">
+                <div class="col-sm-2 text-right">
                     <select id="daysSelect" class="form-control">
                         <option value="1" {{ $expirationDays == 1 ? 'selected' : '' }}>1 Day</option>
                         <option value="2" {{ $expirationDays == 2 ? 'selected' : '' }}>2 Days</option>
                         <option value="3" {{ $expirationDays == 3 ? 'selected' : '' }}>3 Days</option>
                         <option value="4" {{ $expirationDays == 4 ? 'selected' : '' }}>4 Days</option>
                         <option value="5" {{ $expirationDays == 5 ? 'selected' : '' }}>5 Days</option>
+                        <option value="6" {{ $expirationDays == 6 ? 'selected' : '' }}>6 Day</option>
+                        <option value="7" {{ $expirationDays == 7 ? 'selected' : '' }}>7 Days</option>
+                        <option value="8" {{ $expirationDays == 8 ? 'selected' : '' }}>8 Days</option>
+                        <option value="9" {{ $expirationDays == 9 ? 'selected' : '' }}>9 Days</option>
+                        <option value="10" {{ $expirationDays == 10 ? 'selected' : '' }}>10 Days</option>
                     </select>
                 </div>
             </div>
+            <hr>
+
+<!-- Open Date Input -->
+<div class="form-group row align-items-center mb-3">
+    <label for="openDate" class="col-sm-10 col-form-label">
+        Open Date for Application
+    </label>
+    <div class="col-sm-2 text-right">
+        <input type="date" id="openDate" class="form-control" value="{{ $openDate }}">
+    </div>
+</div>
+<hr>
+ <!-- Deadline Date Input -->
+<div class="form-group row align-items-center mb-3">
+    <label for="deadlineDate" class="col-sm-10 col-form-label">
+        Deadline Date for Application Expiration
+    </label>
+    <div class="col-sm-2 text-right">
+        <input type="date" id="deadlineDate" class="form-control" value="{{ $deadlineDate }}">
+    </div>
+</div>
+
 
         </div>
     </div>
 </div>
+
+
 <script>
     $(document).ready(function() {
         $('.custom-control-input').on('change', function() {
@@ -141,4 +170,53 @@ $(document).ready(function() {
     }
 });
 
+</script>
+
+<script>$(document).ready(function() {
+    const $deadlineDateInput = $('#deadlineDate');
+    const $openDateInput = $('#openDate');
+
+    // Function to send AJAX request to update dates
+    function updateDates() {
+        const deadlineDate = new Date($deadlineDateInput.val());
+        const openDate = new Date($openDateInput.val());
+
+        // Make sure the dates are not empty and open date is not greater than deadline date
+        if (deadlineDate && openDate && openDate <= deadlineDate) {
+            $.ajax({
+                url: 'update-dates',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ deadline: $deadlineDateInput.val(), open_date: $openDateInput.val() }),
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(data) {
+                    if (data.success) {
+                        // Show success toast
+                        showToast('success-toast', 'Dates updated successfully');
+                    } else {
+                        // Show error toast
+                        showToast('error-toast', 'Failed to update dates');
+                    }
+                },
+                error: function() {
+                    // Show error toast
+                    showToast('error-toast', 'An error occurred. Please try again.');
+                }
+            });
+        } else if (openDate > deadlineDate) {
+            // Show error toast if open date is greater than deadline date
+            showToast('error-toast', 'Open date cannot be greater than deadline date.');
+        }
+    }
+
+    // Event listener for when the deadline date or open date is changed
+    $deadlineDateInput.add($openDateInput).on('change', updateDates);
+
+    // Function to show toast notifications
+    function showToast(toastId, message) {
+        $('#' + toastId).find('.toast-body').text(message).end().toast('show');
+    }
+});
 </script>

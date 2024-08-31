@@ -12,7 +12,11 @@
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <strong>Important!</strong> Please ensure that your application is confirmed before proceeding.
             </div>
+            <script>
+                $('#gd-hostel,#gd-finish,#gd-result').removeClass('gd-check text-success').addClass(' gd-close text-danger');
+        </script>
         @else
+
             <div class="row g-3">
                 <div class="col-md-6 col-xl-4">
                     <!-- Profile Image Card -->
@@ -88,6 +92,7 @@
                         </div>
 
                         @if ($user->application == 1)
+
                         <div class="container">
 
                             <div class="alert alert-success " role="alert">

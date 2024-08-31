@@ -156,7 +156,7 @@
                                 class="unfold unfold-user unfold-light unfold-top unfold-centered position-absolute pt-2 pb-1 mt-4 unfold-css-animation unfold-hidden fadeOut"
                                 aria-labelledby="profileMenuInvoker" style="animation-duration: 300ms;">
                                 <li class="unfold-item">
-                                    <a class="unfold-link d-flex align-items-center text-nowrap" href="#">
+                                    <a class="unfold-link d-flex align-items-center text-nowrap" href="#" onclick="profile()">
                                         <span class="unfold-item-icon mr-3">
                                             <i class="gd-user"></i>
                                         </span>

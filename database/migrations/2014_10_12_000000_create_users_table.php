@@ -15,6 +15,7 @@ return new class extends Migration
     $table->id();
     $table->string('name');
     $table->integer('registration_number')->nullable();
+    $table->integer('counter')->default(0);
     $table->boolean('confirmation')->default(0);
     $table->boolean('application')->default(0);
     $table->string('status')->default('disapproved'); // Add status column with default value

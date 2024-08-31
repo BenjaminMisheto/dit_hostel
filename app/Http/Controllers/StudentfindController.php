@@ -268,6 +268,7 @@ public function remove($bedId)
             'room_id' => null,
             'floor_id' => null,
             'bed_id' => null,
+            'counter' => 0,
         ]);
 
     } catch (\Exception $e) {

@@ -35,6 +35,7 @@ class User extends Authenticatable
         'profile_photo_path',
         'confirmation',
         'application',
+        'counter',
     ];
 
     protected $hidden = [

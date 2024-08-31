@@ -295,23 +295,38 @@ class AjaxController extends Controller
 
 
 
-
 public function updatePublishStatus(Request $request)
-    {
-        // Try to find the Publish record by ID
-        $publish = Publish::find(1); // Adjust this ID as needed
+{
+    // Try to find the Publish record by ID
+    $publish = Publish::find(1); // Adjust this ID as needed
 
-        if (!$publish) {
-            // If not found, create a new record
-            $publish = new Publish();
-        }
-
-        // Update the status
-        $publish->status = $request->input('status');
-        $publish->save();
-
-        return response()->json(['success' => true, 'message' => 'Publish status updated successfully.']);
+    if (!$publish) {
+        // If not found, create a new record
+        $publish = new Publish();
     }
+
+    // Update the status
+    $publish->status = $request->input('status');
+    $publish->save();
+
+    // Fetch the expiration days from the publishes table
+    $publish = Publish::first(); // Adjust if needed to fetch the specific record
+    if ($publish) {
+        // Convert the stored expiration_date to an integer representing the number of days
+        $daysToAdd = (int) $publish->expiration_date;
+
+        // Calculate the new expiration date by adding the days to the current time
+        $newExpirationDate = Carbon::now()->addDays($daysToAdd);
+
+        // Update the expiration_date for all users
+        User::query()->update(['expiration_date' => $newExpirationDate]);
+    } else {
+        return response()->json(['message' => 'Publish record not found.'], 404);
+    }
+
+    return response()->json(['success' => true, 'message' => 'Publish status and user expiration dates updated successfully.']);
+}
+
 
 
     public function getProfile()
@@ -379,8 +394,16 @@ public function updatePublishStatus(Request $request)
         });
     });
 
-    // Pass the filtered blocks and user data to the view
-    return view('user.hostel', compact('blocks', 'user'));
+        // Fetch the publish settings from the database
+        $publishSettings = Publish::first();
+
+// Retrieve publish settings with default values
+$openDate = $publishSettings ? $publishSettings->open_date : null;
+$deadlineDate = $publishSettings ? $publishSettings->deadline : null;
+
+// Pass the filtered blocks, user data, and publish settings to the view
+return view('user.hostel', compact('blocks', 'user', 'openDate', 'deadlineDate'));
+
 }
 
 
@@ -547,6 +570,8 @@ public function getUserInfoResult()
     // Pass the user, publishes, and expirationDate to the 'user.result' view
     return view('user.result', compact('user', 'publishes', 'expirationDate','formattedExpirationDate'));
 }
+
+
 public function updateExpirationapp(Request $request)
 {
     // Validate the request
@@ -589,6 +614,12 @@ public function updateExpirationapp(Request $request)
         $bed->save();
     }
 
+    // Retrieve the current value of the counter
+    $currentCounter = $user->counter;
+
+// Increment the counter value
+$newCounter = $currentCounter + 1;
+
     // Update user fields
     $user->update([
         'expiration_date' => null,
@@ -600,6 +631,7 @@ public function updateExpirationapp(Request $request)
         'bed_id' => null,
         'application' => 0,
         'status' => 'disapproved',
+        'counter' => $newCounter
     ]);
 
     $userCourse = $user->course;
@@ -700,7 +732,6 @@ public function confirmApplication(Request $request)
 
 
 
-
 public function setting()
 {
     // Fetch settings from the database
@@ -709,9 +740,14 @@ public function setting()
     // Retrieve the stored expiration_days, defaulting to 1 if not set
     $expirationDays = $settings && $settings->expiration_date ? $settings->expiration_date : 1;
 
-    // Pass settings data and expirationDays to the view
-    return view('admin.setting', compact('settings', 'expirationDays'));
+    // Retrieve the deadline and open date, defaulting to null if not set
+    $deadlineDate = $settings ? $settings->deadline : null;
+    $openDate = $settings ? $settings->open_date : null;
+
+    // Pass settings data, expirationDays, deadlineDate, and openDate to the view
+    return view('admin.setting', compact('settings', 'expirationDays', 'deadlineDate', 'openDate'));
 }
+
 
 
 
@@ -780,6 +816,36 @@ public function updateExpirationDate(Request $request)
 
 
 
+public function updateDates(Request $request)
+{
+    // Validate the request
+    $request->validate([
+        'deadline' => 'required|date',
+        'open_date' => 'required|date',
+    ]);
+
+    // Fetch settings from the database
+    $settings = Publish::first();
+
+    if ($settings) {
+        // Update the settings
+        $settings->deadline = $request->deadline;
+        $settings->open_date = $request->open_date;
+        $settings->save();
+
+        // Return success response
+        return response()->json(['success' => true, 'message' => 'Dates updated successfully']);
+    } else {
+        // Return error response if settings not found
+        return response()->json(['success' => false, 'message' => 'Settings not found'], 404);
+    }
+}
+
+
+
+
+
+
 public function updatePaymentStatus(Request $request)
 {
     $user = User::find($request->user_id);
@@ -814,4 +880,19 @@ public function updateControlNumber(Request $request)
         return response()->json(['message' => 'User not found'], 404);
     }
 
+
+
+    public function getExpirationDate()
+    {
+        // Fetch the authenticated user
+        $user = auth()->user();
+
+        // Convert the expiration_date to ISO 8601 format
+        $expirationDate = Carbon::parse($user->expiration_date)->toIso8601String();
+
+        // Return the expiration date as JSON
+        return response()->json([
+            'expirationDate' => $expirationDate
+        ]);
+    }
 }

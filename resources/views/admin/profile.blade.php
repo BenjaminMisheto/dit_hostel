@@ -5,119 +5,166 @@
         </div>
 
         <div class="row">
-            <div class="col-md-6 col-xl-4 mb-3 mb-md-4">
-                <!-- Card -->
-                <div class="card flex-row align-items-center p-3 p-md-4">
-                    <div>
-                        <h5 class="lh-1 mb-0">Views</h5>
-                        <small>{{ $total_views }} (+{{ $monthly_views }})</small>
-                    </div>
-                    <div class="js-area-chart chart--points-invisible chart--labels-hidden py-1 ml-auto" data-series='[
+            @php
+            // Calculate the maximum value in the data set
+            $max_value = max($monthly_views_data);
+            // Add some buffer to the max value for better visualization (e.g., 10% more)
+            $high_value = $max_value + ($max_value * 0.1);
+        @endphp
+
+        <div class="col-md-6 col-xl-4 mb-3 mb-md-4">
+            <!-- Card -->
+            <div class="card flex-row align-items-center p-3 p-md-4">
+                <div>
+                    <h5 class="lh-1 mb-0">Views</h5>
+                    <small>{{ $total_views }} (+{{ $monthly_views }})</small>
+                </div>
+                <div class="js-area-chart chart--points-invisible chart--labels-hidden py-1 ml-auto"
+                    data-series='[
                         [
-                            {"value":"{{ $monthly_views_data[0]?? 0  }}"},
-                            {"value":"{{ $monthly_views_data[1]?? 0  }}"},
-                            {"value":"{{ $monthly_views_data[2]?? 0  }}"},
-                            {"value":"{{ $monthly_views_data[3]?? 0  }}"},
-                            {"value":"{{ $monthly_views_data[4]?? 0  }}"},
-                            {"value":"{{ $monthly_views_data[5]?? 0  }}"},
-                            {"value":"{{ $monthly_views_data[6]?? 0  }}"},
-                            {"value":"{{ $monthly_views_data[7]?? 0  }}"},
+                            {"value":"{{ $monthly_views_data[0] ?? 0 }}"},
+                            {"value":"{{ $monthly_views_data[1] ?? 0 }}"},
+                            {"value":"{{ $monthly_views_data[2] ?? 0 }}"},
+                            {"value":"{{ $monthly_views_data[3] ?? 0 }}"},
+                            {"value":"{{ $monthly_views_data[4] ?? 0 }}"},
+                            {"value":"{{ $monthly_views_data[5] ?? 0 }}"},
+                            {"value":"{{ $monthly_views_data[6] ?? 0 }}"},
+                            {"value":"{{ $monthly_views_data[7] ?? 0 }}"},
                             {"value":"{{ $monthly_views_data[8] ?? 0 }}"},
                             {"value":"{{ $monthly_views_data[9] ?? 0 }}"},
-                            {"value":"{{ $monthly_views_data[10]?? 0  }}"},
-                            {"value":"{{ $monthly_views_data[11]?? 0  }}"}
+                            {"value":"{{ $monthly_views_data[10] ?? 0 }}"},
+                            {"value":"{{ $monthly_views_data[11] ?? 0 }}"}
                         ]
-                    ]' data-width="100" data-height="40" data-high="40" data-is-line-smooth='["simple"]'
-                    data-line-width='["1px"]' data-line-colors='["#0cdcB9"]' data-fill-opacity=".3"
-                    data-is-fill-colors-gradient="true" data-fill-colors='[
+                    ]'
+                    data-width="100"
+                    data-height="40"
+                    data-high="{{ $high_value }}"
+                    data-is-line-smooth='["simple"]'
+                    data-line-width='["1px"]'
+                    data-line-colors='["#0cdcB9"]'
+                    data-fill-opacity=".3"
+                    data-is-fill-colors-gradient="true"
+                    data-fill-colors='[
                         ["rgba(28,240,221,.6)","rgba(255,255,255,.6)"]
-                    ]' data-is-show-tooltips="true" data-is-tooltips-append-to-body="true"
+                    ]'
+                    data-is-show-tooltips="true"
+                    data-is-tooltips-append-to-body="true"
                     data-tooltip-custom-class="chart-tooltip chart-tooltip--none-triangle d-flex align-items-center small text-white p-2 mt-5 ml-5"
                     data-tooltip-badge-markup='<span class="indicator indicator-sm bg-secondary rounded-circle mr-1"></span>'
-                    data-is-show-points="true" data-point-custom-class='chart__point--hidden'
-                    data-point-dimensions='{"width":8,"height":8}'></div>
-                </div>
-                <!-- End Card -->
+                    data-is-show-points="true"
+                    data-point-custom-class='chart__point--hidden'
+                    data-point-dimensions='{"width":8,"height":8}'
+                ></div>
             </div>
+            <!-- End Card -->
+        </div>
 
-            <!-- Inside your Blade template -->
-            <div class="col-md-6 col-xl-4 mb-3 mb-md-4">
-                <!-- Card -->
-                <div class="card flex-row align-items-center p-3 p-md-4">
-                    <div>
-                        <h5 class="lh-1 mb-0">Visitors</h5>
-                        <small>{{ $total_visitors }} (+{{ $new_visitors }})</small>
-                    </div>
-                    <div class="js-area-chart chart--points-invisible chart--labels-hidden py-2 ml-auto" data-series='[
+
+        @php
+        // Calculate the maximum value in the visitors data set
+        $max_visitors_value = max($monthly_visitors_data);
+        // Add some buffer to the max value for better visualization (e.g., 10% more)
+        $high_visitors_value = $max_visitors_value + ($max_visitors_value * 0.1);
+    @endphp
+
+    <!-- Inside your Blade template -->
+    <div class="col-md-6 col-xl-4 mb-3 mb-md-4">
+        <!-- Card -->
+        <div class="card flex-row align-items-center p-3 p-md-4">
+            <div>
+                <h5 class="lh-1 mb-0">Visitors</h5>
+                <small>{{ $total_visitors }} (+{{ $new_visitors }})</small>
+            </div>
+            <div class="js-area-chart chart--points-invisible chart--labels-hidden py-2 ml-auto"
+                data-series='[
+                    [
+                        {"value":"{{ $monthly_visitors_data['january'] ?? 0 }}"},
+                        {"value":"{{ $monthly_visitors_data['february'] ?? 0 }}"},
+                        {"value":"{{ $monthly_visitors_data['march'] ?? 0 }}"},
+                        {"value":"{{ $monthly_visitors_data['april'] ?? 0 }}"},
+                        {"value":"{{ $monthly_visitors_data['may'] ?? 0 }}"},
+                        {"value":"{{ $monthly_visitors_data['june'] ?? 0 }}"},
+                        {"value":"{{ $monthly_visitors_data['july'] ?? 0 }}"},
+                        {"value":"{{ $monthly_visitors_data['august'] ?? 0 }}"},
+                        {"value":"{{ $monthly_visitors_data['september'] ?? 0 }}"},
+                        {"value":"{{ $monthly_visitors_data['october'] ?? 0 }}"},
+                        {"value":"{{ $monthly_visitors_data['november'] ?? 0 }}"},
+                        {"value":"{{ $monthly_visitors_data['december'] ?? 0 }}"}
+                    ]
+                ]'
+                data-width="100"
+                data-height="40"
+                data-high="{{ $high_visitors_value }}"
+                data-is-line-smooth='[false]'
+                data-line-width='["1px"]'
+                data-line-colors='["#8069f2"]'
+                data-fill-opacity=".3"
+                data-is-fill-colors-gradient="true"
+                data-fill-colors='[
+                    ["rgba(128,105,242,.7)","rgba(255,255,255,.6)"]
+                ]'
+                data-is-show-tooltips="true"
+                data-is-tooltips-append-to-body="true"
+                data-tooltip-custom-class="chart-tooltip chart-tooltip--none-triangle d-flex align-items-center small text-white p-2 mt-5 ml-5"
+                data-tooltip-badge-markup='<span class="indicator indicator-sm bg-primary rounded-circle mr-1"></span>'
+                data-is-show-points="true"
+                data-point-custom-class='chart__point--hidden'
+                data-point-dimensions='{"width":8,"height":8}'
+            ></div>
+        </div>
+        <!-- End Card -->
+    </div>
+
+
+    @php
+    // Calculate the maximum value in the student applications data set
+    $max_student_applications_value = max($monthly_student_applications);
+    // Add some buffer to the max value for better visualization (e.g., 10% more)
+    $high_student_applications_value = $max_student_applications_value + ($max_student_applications_value * 0.1);
+@endphp
+
+<div class="col-md-6 col-xl-4 mb-3 mb-md-4">
+    <!-- Card -->
+    <div class="card flex-row align-items-center p-3 p-md-4">
+        <div>
+            <h5 class="lh-1 mb-0">Students</h5>
+            <small>{{ $total_students }} (+{{ $new_students_count }})</small>
+        </div>
+        <div class="js-area-chart chart--points-invisible chart--labels-hidden py-2 ml-auto"
+             data-series='[
                [
-    {"value":"{{ $monthly_visitors_data['january'] ?? 0 }}"},
-         {"value":"{{ $monthly_visitors_data['february'] ?? 0 }}"},
-         {"value":"{{ $monthly_visitors_data['march'] ?? 0 }}"},
-         {"value":"{{ $monthly_visitors_data['april'] ?? 0 }}"},
-         {"value":"{{ $monthly_visitors_data['may'] ?? 0 }}"},
-         {"value":"{{ $monthly_visitors_data['june'] ?? 0 }}"},
-         {"value":"{{ $monthly_visitors_data['july'] ?? 0 }}"},
-         {"value":"{{ $monthly_visitors_data['august'] ?? 0 }}"},
-         {"value":"{{ $monthly_visitors_data['september'] ?? 0 }}"},
-         {"value":"{{ $monthly_visitors_data['october'] ?? 0 }}"},
-         {"value":"{{ $monthly_visitors_data['november'] ?? 0 }}"},
-         {"value":"{{ $monthly_visitors_data['december'] ?? 0 }}"}
+                 {"value":"{{ $monthly_student_applications[0] ?? 0 }}"},
+                 {"value":"{{ $monthly_student_applications[1] ?? 0 }}"},
+                 {"value":"{{ $monthly_student_applications[2] ?? 0 }}"},
+                 {"value":"{{ $monthly_student_applications[3] ?? 0 }}"},
+                 {"value":"{{ $monthly_student_applications[4] ?? 0 }}"},
+                 {"value":"{{ $monthly_student_applications[5] ?? 0 }}"},
+                 {"value":"{{ $monthly_student_applications[6] ?? 0 }}"},
+                 {"value":"{{ $monthly_student_applications[7] ?? 0 }}"},
+                 {"value":"{{ $monthly_student_applications[8] ?? 0 }}"},
+                 {"value":"{{ $monthly_student_applications[9] ?? 0 }}"},
+                 {"value":"{{ $monthly_student_applications[10] ?? 0 }}"},
+                 {"value":"{{ $monthly_student_applications[11] ?? 0 }}"}
                ]
-             ]' data-width="100" data-height="40" data-high="100" data-is-line-smooth='[false]'
-                        data-line-width='["1px"]' data-line-colors='["#8069f2"]' data-fill-opacity=".3"
-                        data-is-fill-colors-gradient="true" data-fill-colors='[
-               ["rgba(128,105,242,.7)","rgba(255,255,255,.6)"]
-             ]' data-is-show-tooltips="true" data-is-tooltips-append-to-body="true"
-                        data-tooltip-custom-class="chart-tooltip chart-tooltip--none-triangle d-flex align-items-center small text-white p-2 mt-5 ml-5"
-                        data-tooltip-badge-markup='<span class="indicator indicator-sm bg-primary rounded-circle mr-1"></span>'
-                        data-is-show-points="true" data-point-custom-class='chart__point--hidden'
-                        data-point-dimensions='{"width":8,"height":8}'></div>
-                </div>
-                <!-- End Card -->
-            </div>
+             ]'
+             data-is-hide-area="true"
+             data-width="123"
+             data-height="42"
+             data-high="{{ $high_student_applications_value }}"
+             data-is-line-smooth='[false]'
+             data-line-width='["2px"]'
+             data-line-colors='["#8069f2"]'
+             data-is-show-tooltips="true"
+             data-is-tooltips-append-to-body="true"
+             data-tooltip-custom-class="chart-tooltip chart-tooltip--none-triangle d-flex align-items-center small text-white p-2 mt-5 ml-5"
+             data-tooltip-badge-markup='<span class="indicator indicator-sm bg-primary rounded-circle mr-1"></span>'
+             data-is-show-points="true"
+             data-point-custom-class='chart__point--hidden'
+             data-point-dimensions='{"width":8,"height":8}'></div>
+    </div>
+    <!-- End Card -->
+</div>
 
-
-            <div class="col-md-6 col-xl-4 mb-3 mb-md-4">
-                <!-- Card -->
-                <div class="card flex-row align-items-center p-3 p-md-4">
-                    <div>
-                        <h5 class="lh-1 mb-0">Students</h5>
-                        <small>{{ $total_students }} (+{{ $new_students_count }})</small>
-                    </div>
-                    <div class="js-area-chart chart--points-invisible chart--labels-hidden py-2 ml-auto"
-                         data-series='[
-                           [
-                             {"value":"{{ $monthly_student_applications[0] ?? 0 }}"},
-                             {"value":"{{ $monthly_student_applications[1] ?? 0 }}"},
-                             {"value":"{{ $monthly_student_applications[2] ?? 0 }}"},
-                             {"value":"{{ $monthly_student_applications[3] ?? 0 }}"},
-                             {"value":"{{ $monthly_student_applications[4] ?? 0 }}"},
-                             {"value":"{{ $monthly_student_applications[5] ?? 0 }}"},
-                             {"value":"{{ $monthly_student_applications[6] ?? 0 }}"},
-                             {"value":"{{ $monthly_student_applications[7] ?? 0 }}"},
-                             {"value":"{{ $monthly_student_applications[8] ?? 0 }}"},
-                             {"value":"{{ $monthly_student_applications[9] ?? 0 }}"},
-                             {"value":"{{ $monthly_student_applications[10] ?? 0 }}"},
-                             {"value":"{{ $monthly_student_applications[11] ?? 0 }}"}
-                           ]
-                         ]'
-                         data-is-hide-area="true"
-                         data-width="123"
-                         data-height="42"
-                         data-high="42"
-                         data-is-line-smooth='[false]'
-                         data-line-width='["2px"]'
-                         data-line-colors='["#8069f2"]'
-                         data-is-show-tooltips="true"
-                         data-is-tooltips-append-to-body="true"
-                         data-tooltip-custom-class="chart-tooltip chart-tooltip--none-triangle d-flex align-items-center small text-white p-2 mt-5 ml-5"
-                         data-tooltip-badge-markup='<span class="indicator indicator-sm bg-primary rounded-circle mr-1"></span>'
-                         data-is-show-points="true"
-                         data-point-custom-class='chart__point--hidden'
-                         data-point-dimensions='{"width":8,"height":8}'></div>
-                </div>
-                <!-- End Card -->
-            </div>
 
             <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
                 <!-- Widget -->

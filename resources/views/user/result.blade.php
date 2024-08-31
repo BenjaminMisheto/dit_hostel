@@ -13,9 +13,15 @@
 <div class="alert alert-danger alert-dismissible fade show" role="alert">
     <strong>Warning!</strong> Please confirm your application first
 </div>
+<script>
+    $('#gd-finish,#gd-result').removeClass('gd-check text-success').addClass(' gd-close text-danger');
+</script>
 
     @else
     @if ($expirationDate->isPast() and empty($user->payment_status))
+    <script>
+        $('#gd-hostel,#gd-finish').removeClass('gd-close text-danger ').addClass(' gd-check text-success');
+</script>
     <div class="row">
         <div class="col-md-12">
             <!-- Card -->
@@ -36,9 +42,15 @@
             <!-- End Card -->
         </div>
     </div>
+    <script>
+        $('#gd-hostel,#gd-finish,#gd-result').removeClass('gd-check text-success').addClass(' gd-close text-danger');
+</script>
     @else
 
     @if ($publishes->first()->status == 0)
+    <script>
+        $('#gd-hostel,#gd-finish').removeClass('gd-close text-danger ').addClass(' gd-check text-success');
+</script>
 
     <div class="row">
 
@@ -64,8 +76,13 @@
             <!-- End Card -->
         </div>
     </div>
+
     @else
     @if ($user->status == 'disapproved')
+    @if ($user->counter == 0)
+    <script>
+        $('#gd-hostel,#gd-finish,#gd-result').removeClass('gd-close text-danger ').addClass(' gd-check text-success');
+</script>
     <div class="row">
 
         <div class="col-md-12">
@@ -81,7 +98,12 @@
                         <span><strong>Dear {{$user->name}},</strong></span><br>
                         <span><small>We regret to inform you that your application has not been approved due to limited capacity and recent institutional changes.</small></span><br>
                         <hr>
-                        <span><small>As the results have already been published, if you already reapply, please contact the administration to request approval. Note: If you do not wish to reapply, no further action is needed.</small></span><br>
+                        <span>
+                            <small>
+                                Please be advised that the results have already been published. If you do not wish to reapply, no further action is required on your part.
+                            </small>
+                        </span>
+                        <br>
 
                         <button id="reapplyButton" class="btn btn-danger mt-3">Reapply</button>
                     </div>
@@ -96,6 +118,38 @@
             <!-- End Card -->
         </div>
     </div>
+    @else
+    <script>
+        $('#gd-hostel,#gd-finish,#gd-result').removeClass('gd-close text-danger ').addClass(' gd-check text-success');
+</script>
+    <div class="row">
+
+        <div class="col-md-12">
+            <!-- Card -->
+            <div class="card h-100">
+                <div class="card-header d-flex">
+                    <h5 class="h6 font-weight-semi-bold text-uppercase mb-0">
+                        Information
+                    </h5>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="alert alert-danger">
+                        <span><strong>Dear {{$user->name}},</strong></span><br>
+                        <hr>
+                        <span><small>As the results have already been published, if you already reapply, please contact the administration to request approval. </small></span><br>
+
+                        <button id="reapplyButton" class="btn btn-danger mt-3">Reapply</button>
+                    </div>
+                </div>
+
+            </div>
+            <!-- End Card -->
+        </div>
+    </div>
+    @endif
+
+
+
     @else
 
     <div class="row">
@@ -174,44 +228,89 @@
 
                         </div>
                     </div>
+
+<script>
+    var countdownInterval; // Declare the interval variable in the outer scope
+
+    // Function to update the countdown
+    function updateCountdown(expirationDateString) {
+        var targetDate = new Date(expirationDateString).getTime();
+
+        function countdown() {
+            var now = new Date().getTime();
+            var timeDifference = targetDate - now;
+
+            if (timeDifference <= 0) {
+                $('#countdown').text('Expired');
+                $('#paymentContainer').html('<div class="col-12"><button id="reapplyButton" class="btn btn-outline-danger mt-3">Reapply</button></div>');
+                clearInterval(countdownInterval);
+                return;
+            }
+
+            var days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+            var hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+            $('#countdown').text(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+        }
+
+        // Clear any existing countdown interval
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+        }
+
+        // Start the countdown
+        countdownInterval = setInterval(countdown, 1000);
+
+        // Initial call to display the countdown immediately
+        countdown();
+    }
+
+    // Function to fetch expiration date via AJAX and update countdown
+    function fetchExpirationDate() {
+        $.ajax({
+            url: '{{ route('get.expiration.date') }}',
+            method: 'GET',
+            success: function(response) {
+                var expirationDateString = response.expirationDate;
+                updateCountdown(expirationDateString);
+            },
+            error: function(xhr, status, error) {
+                console.error('Failed to fetch expiration date:', error);
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        // Fetch expiration date on page load
+        fetchExpirationDate();
+
+        // Setup MutationObserver to watch for changes in the target container
+        var targetNode = document.getElementById('paymentContainer'); // Adjust this selector as needed
+        var observerOptions = {
+            childList: true,
+            subtree: true
+        };
+
+        var observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                // Call the fetch function whenever changes are detected
+                fetchExpirationDate();
+            });
+        });
+
+        observer.observe(targetNode, observerOptions);
+
+        // Optionally, you may want to fetch the expiration date periodically
+        // to handle cases where the server date is updated but the page hasn't refreshed
+        setInterval(fetchExpirationDate, 60000); // Fetch every minute
+    });
+</script>
+
                     <script>
                         $(document).ready(function() {
 
-
-                            // Get the expiration date from the Blade view
-                            var expirationDateString = @json($expirationDate); // Pass the ISO 8601 date string from Blade
-
-                            // Convert expirationDateString to a Date object and get the time in milliseconds
-                            var targetDate = new Date(expirationDateString).getTime();
-
-                            function updateCountdown() {
-                                var now = new Date().getTime(); // Get current time in milliseconds
-                                var timeDifference = targetDate - now;
-
-                                // Check if the countdown has expired
-                                if (timeDifference <= 0) {
-                                    $('#countdown').text('Expired');
-                                    $('#paymentContainer').html('<div class="col-12"><button id="reapplyButton" class="btn btn-outline-danger mt-3">Reapply</button></div>');
-
-                                    clearInterval(countdownInterval); // Stop the countdown
-                                    return;
-                                }
-
-                                // Calculate days, hours, minutes, and seconds remaining
-                                var days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-                                var hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                                var minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
-                                var seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
-
-                                // Format the countdown display
-                                $('#countdown').text(`${days}d ${hours}h ${minutes}m ${seconds}s`);
-                            }
-
-                            // Update countdown every second
-                            var countdownInterval = setInterval(updateCountdown, 1000);
-
-                            // Initial call to display the countdown immediately
-                            updateCountdown();
 
                             // Use event delegation to handle click events for the reapply button
                             $('#paymentContainer').on('click', '#reapplyButton', function() {

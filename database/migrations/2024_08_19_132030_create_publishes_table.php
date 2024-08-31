@@ -15,6 +15,8 @@ class CreatePublishesTable extends Migration
     $table->boolean('reserved_bed')->default(false);      // Corrected from 'recerved _bed'
     $table->boolean('maintenance_bed')->default(false);
     $table->integer('expiration_date')->default(1);
+    $table->date('open_date')->nullable();
+    $table->date('deadline')->nullable();
             $table->timestamps();
         });
     }

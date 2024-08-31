@@ -183,6 +183,7 @@ th.desc::after {
                                 <th scope="col"  style="cursor: pointer">Img</th>
                                 <th scope="col" data-sort="name" style="cursor: pointer">Name</th>
                                 <th scope="col" data-sort="number" style="cursor: pointer">Reg No</th>
+                                <th scope="col" data-sort="floor" style="cursor: pointer">Floor</th>
                                 <th scope="col" data-sort="room" style="cursor: pointer">Room</th>
                                 <th scope="col" data-sort="bed" style="cursor: pointer">Bed</th>
                                 <th scope="col" data-sort="pay" style="cursor: pointer">Payment</th>
@@ -199,6 +200,7 @@ th.desc::after {
                                     <td><img class="avatar rounded-circle" src="{{ $user->profile_photo_path }}" alt="Image Description"></td>
                                     <td>{{ $user->name }}</td>
                                     <td>{{ $user->registration_number }}</td>
+                                    <td>{{ optional($user->bed->floor)->floor_number ?? 'N/A' }}</td>
                                     <td>{{ optional($user->bed->room)->room_number ?? 'N/A' }}</td>
 
                                     <td>{{ $user->bed->bed_number ?? 'N/A' }}</td>
@@ -239,7 +241,6 @@ th.desc::after {
 
 </div>
 
-
 <script>
     // Your custom JavaScript code
     function toggleStatus(button) {
@@ -275,7 +276,7 @@ th.desc::after {
                 button.classList.remove('btn-light'); // Remove the temporary class
             } else {
                 // Show error toast
-                showToast('error-toast', 'Failed to update status');
+                showToast('error-toast', data.message); // Show the server error message
                 // Reset button text
                 button.textContent = currentStatus === 'approved' ? 'Yes' : 'No';
             }
@@ -297,6 +298,7 @@ th.desc::after {
         toastElement.toast('show');
     }
 </script>
+
 
 <script>
     function floorAction(action, id) {

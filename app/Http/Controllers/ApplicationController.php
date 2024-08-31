@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Publish;
+use Carbon\Carbon;
 
 class ApplicationController extends Controller
 {
@@ -14,7 +15,11 @@ class ApplicationController extends Controller
      public function index()
 {
     // Fetch all users with their bed, room, floor, and block
-    $users = User::with('bed.room.floor.block')->where('application',1)->get();
+    $users = User::with('bed.room.floor.block')
+             ->where('application', 1)
+             ->orderBy('id', 'desc') // Order by user ID in descending order
+             ->get();
+
 
     // Group users by block
     $blocks = $users->filter(function($user) {
@@ -90,7 +95,9 @@ class ApplicationController extends Controller
     {
         //
     }
-    public function updateStatus(Request $request, $id) {
+
+    public function updateStatus(Request $request, $id)
+{
     // Validate the request
     $request->validate([
         'status' => 'required|string|in:approved,disapproved',
@@ -100,46 +107,125 @@ class ApplicationController extends Controller
     $user = User::find($id);
 
     if ($user) {
+        // Get the current time and the expiration date
+        $now = Carbon::now();
+        $expirationDate = Carbon::parse($user->expiration_date);
+
+        // Check if both payment_status and control_number are not empty
+        if (!empty($user->payment_status) && !empty($user->Control_Number)) {
+            // Return error response if both payment_status and control_number are set
+            return response()->json([
+                'success' => false,
+                'message' => 'Student has already paid. You cannot change the status now.'
+            ], 400);
+        }
+
+        // Check if control_number is not empty but payment_status is empty
+        if (!empty($user->Control_Number)) {
+            if ($now->lt($expirationDate)) {
+                // If control_number is set but payment_status is not set and the expiration date has not passed
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Student has generated a control number. You cannot change the status until the application expires.'
+                ], 400);
+            }
+            // If expiration date has passed, allow status change
+        }
+
         // Update the user's status
         $user->status = $request->status;
         $user->save();
 
         // Return success response
-        return response()->json(['success' => true, 'message' => 'Status updated successfully']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Status updated successfully'
+        ]);
     } else {
         // Return error response if user not found
-        return response()->json(['success' => false, 'message' => 'User not found'], 404);
+        return response()->json([
+            'success' => false,
+            'message' => 'User not found'
+        ], 404);
     }
 }
 public function applyYes(Request $request)
-    {
-        $userIds = $request->input('user_ids');
+{
+    $userIds = $request->input('user_ids');
 
-        // Validate that user_ids is an array and contains only integers
-        $request->validate([
-            'user_ids' => 'required|array',
-            'user_ids.*' => 'integer|exists:users,id',
-        ]);
+    // Validate that user_ids is an array and contains only integers
+    $request->validate([
+        'user_ids' => 'required|array',
+        'user_ids.*' => 'integer|exists:users,id',
+    ]);
 
-        // Update the status of selected users to 'approved'
-        User::whereIn('id', $userIds)->update(['status' => 'approved']);
+    // Get the current time
+    $now = Carbon::now();
 
-        return response()->json(['success' => true, 'message' => 'Applied Yes to selected users.']);
+    // Fetch users with their payment_status and Control_Number
+    $users = User::whereIn('id', $userIds)->get();
+
+    foreach ($users as $user) {
+        // Check if both payment_status and Control_Number are not empty
+        if (!empty($user->payment_status) && !empty($user->Control_Number)) {
+            // Skip updating this user
+            continue;
+        }
+
+        // Check if Control_Number is not empty but payment_status is empty
+        if (!empty($user->Control_Number)) {
+            $expirationDate = Carbon::parse($user->expiration_date);
+            if ($now->lt($expirationDate)) {
+                // Skip updating this user
+                continue;
+            }
+        }
+
+        // Update the user's status to 'approved'
+        $user->status = 'approved';
+        $user->save();
     }
 
-    public function applyNo(Request $request)
-    {
-        $userIds = $request->input('user_ids');
+    return response()->json(['success' => true, 'message' => 'Applied Yes to selected users.']);
+}
 
-        // Validate that user_ids is an array and contains only integers
-        $request->validate([
-            'user_ids' => 'required|array',
-            'user_ids.*' => 'integer|exists:users,id',
-        ]);
+public function applyNo(Request $request)
+{
+    $userIds = $request->input('user_ids');
 
-        // Update the status of selected users to 'disapproved'
-        User::whereIn('id', $userIds)->update(['status' => 'disapproved']);
+    // Validate that user_ids is an array and contains only integers
+    $request->validate([
+        'user_ids' => 'required|array',
+        'user_ids.*' => 'integer|exists:users,id',
+    ]);
 
-        return response()->json(['success' => true, 'message' => 'Applied No to selected users.']);
+    // Get the current time
+    $now = Carbon::now();
+
+    // Fetch users with their payment_status and Control_Number
+    $users = User::whereIn('id', $userIds)->get();
+
+    foreach ($users as $user) {
+        // Check if both payment_status and Control_Number are not empty
+        if (!empty($user->payment_status) && !empty($user->Control_Number)) {
+            // Skip updating this user
+            continue;
+        }
+
+        // Check if Control_Number is not empty but payment_status is empty
+        if (!empty($user->Control_Number)) {
+            $expirationDate = Carbon::parse($user->expiration_date);
+            if ($now->lt($expirationDate)) {
+                // Skip updating this user
+                continue;
+            }
+        }
+
+        // Update the user's status to 'disapproved'
+        $user->status = 'disapproved';
+        $user->save();
     }
+
+    return response()->json(['success' => true, 'message' => 'Applied No to selected users.']);
+}
 }

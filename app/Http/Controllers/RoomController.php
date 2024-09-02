@@ -7,6 +7,7 @@ use App\Models\Bed;
 
 class RoomController extends Controller
 {
+
     /**
      * Display the specified block's rooms.
      *

@@ -588,7 +588,7 @@
 
                         // Show toast based on server response
                         if (response.success) {
-                            $('#gd-hostel, #gd-finish, #gd-hostel').removeClass('gd-check text-success').addClass('gd-close text-danger');
+                            $('#gd-hostel, #gd-finish, #gd-result').removeClass('gd-check text-success').addClass('gd-close text-danger');
 
                             console.log(response.message);
                             showToast('#successToast', response.message); // Show success toast with message from server

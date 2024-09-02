@@ -220,6 +220,10 @@ Route::post('admin.updateExpirationDate', [AjaxController::class, 'updateExpirat
     Route::delete('/bed/{id}', [BedController::class, 'destroy'])->name('bed.destroy');
 
     Route::post('/update-publish-status', [AjaxController::class, 'updatePublishStatus'])->name('publish.update');
+
+    route::get('admin.application.search', [ApplicationController::class, 'search'])->name('admin.application.search');
+
+    route::get('search.students.elligable', [SearchController::class, 'search_elligable'])->name('search.students.elligable');
 });
 
 Route::post('/admin.logout', function () {

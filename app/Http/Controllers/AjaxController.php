@@ -408,6 +408,7 @@ return view('user.hostel', compact('blocks', 'user', 'openDate', 'deadlineDate')
 
 
 
+
 public function loadRoom($blockId)
 {
     // Fetch the block with floors, rooms, and beds
@@ -423,8 +424,11 @@ public function loadRoom($blockId)
     $reservedBedEnabled = $publish ? $publish->reserved_bed : false;
     $maintenanceBedEnabled = $publish ? $publish->maintenance_bed : false;
 
+    // Initialize reasons (using an associative array to ensure uniqueness)
+    $reasons = [];
+
     // Filter floors based on user's gender and course
-    $filteredFloors = $block->floors->filter(function($floor) use ($user) {
+    $filteredFloors = $block->floors->filter(function($floor) use ($user, &$reasons) {
         $userGenderLower = strtolower($user->gender);
         $genderArray = is_array($floor->gender) ? $floor->gender : json_decode($floor->gender, true);
         $genderArrayLower = array_map('strtolower', $genderArray);
@@ -433,60 +437,107 @@ public function loadRoom($blockId)
         $eligibilityArray = is_array($floor->eligibility) ? $floor->eligibility : json_decode($floor->eligibility, true);
         $eligibilityArrayLower = array_map('strtolower', $eligibilityArray);
 
-        // Check if the user's gender and course match with the floor's eligibility
-        return in_array($userGenderLower, $genderArrayLower) && in_array($userCourse, $eligibilityArrayLower);
+        $genderMatch = in_array($userGenderLower, $genderArrayLower);
+        $courseMatch = in_array($userCourse, $eligibilityArrayLower);
+
+        // Add reasons independently based on criteria
+        if (!$genderMatch) {
+            $reasons['gender'] = 'Your gender does not match the eligibility criteria for this block.';
+        }
+        if (!$courseMatch) {
+            $reasons['course'] = 'Your course does not match the eligibility criteria for this block.';
+        }
+
+        return $genderMatch && $courseMatch;
     });
 
+    // If algorithm is enabled, check additional criteria
+    if ($algorithmSetting) {
+        // Fetch criteria from slider_data where block_id == current block id
+        $criteriaRecords = SliderData::where('block_id', $blockId)
+            ->whereIn('floor_id', $block->floors->pluck('id'))
+            ->where('status', 1)
+            ->get();
+
+        // Extract criteria courses from the fetched records
+        $criteriaCourses = $criteriaRecords->pluck('criteria')->flatten()->map('strtolower')->unique()->toArray();
+
+        // Check if user's course matches any of the criteria
+        $userCourseLower = strtolower($user->course);
+        $courseMatchInCriteria = in_array($userCourseLower, $criteriaCourses);
+
+        // If course does not match criteria, add a reason and return an empty result
+        if (!$courseMatchInCriteria) {
+            $reasons['algorithm'] = 'The algorithm settings are restricting the available floors based on criteria.';
+            $filteredFloors = collect(); // Empty collection
+        }
+    }
+
     // Filter rooms and beds within the filtered floors
-    $filteredFloors = $filteredFloors->filter(function($floor) use ($reservedBedEnabled, $maintenanceBedEnabled) {
+    $filteredFloors = $filteredFloors->filter(function($floor) use ($reservedBedEnabled, $maintenanceBedEnabled, &$reasons) {
         $floor->rooms = $floor->rooms->filter(function($room) use ($reservedBedEnabled, $maintenanceBedEnabled) {
-            // Filter beds based on the status and settings
             $room->beds = $room->beds->filter(function($bed) use ($reservedBedEnabled, $maintenanceBedEnabled) {
-                // Include 'activate' beds always
                 if ($bed->status === 'activate') {
                     return true;
                 }
-
-                // Include 'reserve' beds if reserved_bed setting is enabled
                 if ($reservedBedEnabled && $bed->status === 'reserve') {
                     return true;
                 }
-
-                // Include 'under_maintenance' beds if maintenance_bed setting is enabled
                 if ($maintenanceBedEnabled && $bed->status === 'under_maintenance') {
                     return true;
                 }
-
-                // Exclude all other statuses
                 return false;
             });
 
-            // Return the room only if it has any beds that meet the criteria
+            if ($room->beds->isEmpty()) {
+                \Log::error('Room ' . $room->id . ' has no available beds.');
+            }
+
             return $room->beds->isNotEmpty();
         });
 
-        // Return the floor only if it has any rooms with beds that meet the criteria
+        if ($floor->rooms->isEmpty()) {
+            $reasons['rooms'] = 'There are no available rooms in this floor that meet the criteria.';
+        }
+
         return $floor->rooms->isNotEmpty();
     });
 
-    // Further filter floors based on criteria matching, only if the algorithm setting is enabled
-    if ($algorithmSetting) {
-        $filteredFloors = $filteredFloors->filter(function($floor) use ($user, $block) {
-            $criteriaCount = SliderData::where('status', 1)
-                ->where('criteria', $user->course)
-                ->where('floor_id', $floor->id)
-                ->where('block_id', $block->id)
-                ->count();
-
-            Log::info("Algorithm Enabled - Course: {$user->course}, Floor ID: {$floor->id}, Block ID: {$block->id}, Criteria Count: {$criteriaCount}");
-
-            return $criteriaCount > 0;
-        });
+    if ($filteredFloors->isEmpty()) {
+        if ($algorithmSetting) {
+            $reasons['algorithm'] = 'The algorithm settings are restricting the available floors based on criteria.';
+        }
+        // if (!$reservedBedEnabled) {
+        //     $reasons['reserved_beds'] = 'Reserved beds are currently not available for selection.';
+        // }
+        // if (!$maintenanceBedEnabled) {
+        //     $reasons['maintenance_beds'] = 'Beds under maintenance are currently not available for selection.';
+        // }
     }
 
-    // Pass the block, filtered floors, and user data to the view
-    return view('user.room', compact('block', 'filteredFloors', 'user'));
+    \Log::error('Algorithm Setting: ' . ($algorithmSetting ? 'enabled' : 'disabled'));
+
+    // Convert reasons array to a list of values
+    $reasons = array_values($reasons);
+
+    // Pass the block, filtered floors, user data, and reasons to the view
+    return view('user.room', compact('block', 'filteredFloors', 'user', 'reasons'));
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

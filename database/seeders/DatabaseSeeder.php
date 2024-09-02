@@ -18,6 +18,9 @@ class DatabaseSeeder extends Seeder
 
         $this->call(ElligableStudentSeeder::class);
         $this->call(BlockSeeder::class);
+        $this->call(UserSeeder::class);
+
+
 
         // Add more seeder classes here
     }

@@ -14,27 +14,15 @@ class ElligableStudentSeeder extends Seeder
         $faker = Faker::create();
         $courses = ['D1', 'D2', 'D3', 'B1', 'B2', 'B3', 'B4'];
 
-        // Create the specific student
-        ElligableStudent::create([
-            'student_name' => 'Benjamin Misheto',
-            'registration_number' => 1,
-            'payment_status' => $faker->randomElement(['paid', 'pending']),
-            'sponsorship' => $faker->randomElement(['government', 'private']),
-            'phone' => $faker->phoneNumber,
-            'gender' => $faker->randomElement(['Male', 'Female']),
-            'nationality' => $faker->country,
-            'course' => $faker->randomElement($courses), // Set course randomly from the list
-            'email' => $faker->email,
-            'image' => 'img/10.jpg'
-        ]);
-
-
+        // Create a publish record
         Publish::create([
             'status' => 0,
         ]);
 
-        // Create other random students
-        foreach (range(1, 15) as $index) {
+        // Create 100 random students
+        for ($index = 1; $index <= 100; $index++) {
+            $imageIndex = ($index % 24) === 0 ? 24 : ($index % 24);
+
             ElligableStudent::create([
                 'student_name' => $faker->name,
                 'registration_number' => $faker->unique()->randomNumber(),
@@ -44,8 +32,8 @@ class ElligableStudentSeeder extends Seeder
                 'gender' => $faker->randomElement(['Male', 'Female']),
                 'nationality' => $faker->country,
                 'course' => $faker->randomElement($courses), // Set course randomly from the list
-                'email' => $faker->email,
-                'image' => 'img/' . $index . '.jpg',
+                'email' => $faker->unique()->email, // Ensure the email is unique
+                'image' => 'img/' . $imageIndex . '.jpg', // Reset image index after 15
             ]);
         }
     }

@@ -1,4 +1,5 @@
 <?php
+
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
@@ -11,14 +12,33 @@ class BlockSeeder extends Seeder
 {
     public function run()
     {
+        // Path to images
+        $imagePath = 'img/';
+        $imageStart = 25;
+        $imageEnd = 46;
+
+        // Generate an array of image numbers and shuffle it
+        $imageNumbers = range($imageStart, $imageEnd);
+        shuffle($imageNumbers);
+
         // Create blocks
         for ($b = 1; $b <= 7; $b++) { // Adjust the number of blocks as needed
+            // Check if there are enough images
+            if (empty($imageNumbers)) {
+                throw new \Exception('Not enough unique images available for blocks.');
+            }
+
+            // Get the next image number
+            $imageNumber = array_pop($imageNumbers);
+            $imageFile = $imagePath . $imageNumber . '.jpg';
+
             $block = Block::create([
                 'name' => 'Block ' . $b,
                 'manager' => 'Manager ' . $b,
                 'location' => 'Location ' . $b,
                 'number_of_floors' => rand(7, 10), // Random number of floors
                 'price' => rand(500, 1500),
+                'image_data' => $imageFile, // Add image data
             ]);
 
             // Create floors for each block

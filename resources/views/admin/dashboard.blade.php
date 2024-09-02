@@ -254,6 +254,46 @@
                 </div>
                 <!-- End Widget -->
             </div>
+            <div class="col-md-12 col-xl-12 mb-3 mb-xl-4">
+                <div class="d-flex justify-content-between mb-4">
+                    <div class="container-fluid">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Hostel Occupancy</span>
+                            <span id="occupancy-percentage">{{ round($occupancyPercentage, 2) }}%</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div id="occupancy-progress-bar" class="progress-bar" role="progressbar"
+                                style="width: {{ $occupancyPercentage }}%;" aria-valuenow="{{ $occupancyPercentage }}" aria-valuemin="0" aria-valuemax="100">
+                                <span class="sr-only">{{ round($occupancyPercentage, 2) }}% Full</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    $(document).ready(function() {
+                        // Get the percentage from the element
+                        var percentage = parseInt($('#occupancy-percentage').text(), 10);
+
+                        // Get the progress bar element
+                        var $progressBar = $('#occupancy-progress-bar');
+
+                        // Determine the class to apply based on the percentage
+                        var progressClass;
+                        if (percentage === 100) {
+                            progressClass = 'bg-danger';
+                        } else if (percentage >= 75) {
+                            progressClass = 'bg-warning';
+                        } else {
+                            progressClass = 'bg-success';
+                        }
+
+                        // Apply the determined class to the progress bar
+                        $progressBar.removeClass('bg-success bg-warning bg-danger').addClass(progressClass);
+                    });
+                </script>
+                    </div>
+
 
             <div class="col-md-12 col-xl-4 mb-3 mb-md-4">
                 <!-- Card -->

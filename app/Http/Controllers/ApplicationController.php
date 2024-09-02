@@ -9,41 +9,173 @@ use Carbon\Carbon;
 
 class ApplicationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-     public function index()
+    /**jjjjjjjjjjjjjjjjjjj
+     * Display a listing of the resource.*/
+     public function index(Request $request)
 {
-    // Fetch all users with their bed, room, floor, and block
+    // Get the start and end parameters from the request, defaulting to 1 and 100 respectively
+    $start = $request->input('start', 1);
+    $end = $request->input('end', 100);
+
+    // Calculate the number of records to skip
+    $skip = max(0, $start - 1);
+
+    // Define the number of items per page
+    $perPage = max(1, $end - $start + 1);
+
+    // Fetch users with related bed, room, floor, and block details
     $users = User::with('bed.room.floor.block')
-             ->where('application', 1)
-             ->orderBy('id', 'desc') // Order by user ID in descending order
-             ->get();
+                ->where('application', 1)
+                ->orderBy('id', 'desc')
+                ->skip($skip)
+                ->take($perPage)
+                ->get();
 
+    // Get the total number of records matching the query
+    $totalRecords = User::where('application', 1)->count();
 
-    // Group users by block
+    // Calculate the current page based on the start value
+    $currentPage = (int) ceil($start / $perPage);
+
+    // Create a paginator instance for the users
+    $paginatedStudents = new \Illuminate\Pagination\LengthAwarePaginator(
+        $users,
+        $totalRecords,
+        $perPage,
+        $currentPage,
+        ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
+    );
+
+    // Fetch total user count for each block
+    $blockUserCounts = User::with('bed.room.floor.block')
+        ->where('application', 1)
+        ->get()
+        ->groupBy('bed.room.floor.block.id')
+        ->map(function($group) {
+            return $group->count(); // Count of users in each block
+        });
+
+    // Group users by block, filter out users with incomplete relationships, and count users per block
     $blocks = $users->filter(function($user) {
-        // Ensure bed, room, floor, and block exist
         return $user->bed && $user->bed->room && $user->bed->room->floor && $user->bed->room->floor->block;
     })->groupBy(function($user) {
         return $user->bed->room->floor->block->id; // Group by block ID
-    })->map(function($group) {
+    })->map(function($group) use ($blockUserCounts) {
+        $blockId = $group->first()->bed->room->floor->block->id;
         return [
             'name' => $group->first()->bed->room->floor->block->name, // Block name
+            'user_count' => $blockUserCounts[$blockId] ?? 0, // Total count of users in this block
             'users' => $group
         ];
-    })->sortBy(function($block) {
-        return $block['name']; // Sort by block name, or use block ID if preferred
-    });
+    })->sortBy('name'); // Sort blocks by name
 
-    // Fetch the current publish status
+    // Fetch the latest publish status
     $publishStatus = Publish::latest()->value('status') ?? false;
 
     return view('admin.application', [
         'blocks' => $blocks,
-        'publishStatus' => $publishStatus
+        'publishStatus' => $publishStatus,
+        'paginatedStudents' => $paginatedStudents,
     ]);
 }
+
+
+public function search(Request $request)
+{
+    $query = $request->input('query', '');
+
+    // Fetch users matching the search query with related details
+    $users = User::with('bed.room.floor.block')
+                ->where('application', 1)
+                ->where(function($q) use ($query) {
+                    $q->where('name', 'like', "%{$query}%")
+                      ->orWhere('registration_number', 'like', "%{$query}%");
+                })
+                ->orderBy('id', 'desc')
+                ->get();
+
+    if ($users->isEmpty()) {
+        // Return a "No applications found" message with an action button
+        $html = '<p class="text-danger">No applications found.</p>';
+        $html .= '<button class="btn btn-sm btn-toggle btn-lightgray" onclick="handleNoResultsAction()">
+                    No Results Action
+                  </button>'; // Adjust the button text and action as needed
+        return response()->make($html, 200, ['Content-Type' => 'text/html']);
+    }
+
+    // Group users by block
+    $groupedUsers = $users->groupBy(function($user) {
+        return $user->bed->room->floor->block->id; // Group by block ID
+    });
+
+    // Generate HTML for the search results
+    $html = '';
+    foreach ($groupedUsers as $blockId => $group) {
+        $blockName = $group->first()->bed->room->floor->block->name;
+        $html .= '<h5>' . $blockName . '</h5>';
+        $html .= '<div class="table-responsive">';
+        $html .= '<table class="table table-striped table-fixed">';
+        $html .= '<thead>
+                    <tr>
+                        <th scope="col">#</th> <!-- Index column -->
+                        <th scope="col">Img</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Reg No</th>
+                        <th scope="col">Floor</th>
+                        <th scope="col">Room</th>
+                        <th scope="col">Bed</th>
+                        <th scope="col">Payment</th>
+                        <th scope="col">Actions</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                  </thead>';
+        $html .= '<tbody>';
+        $index = 1; // Initialize index for each block
+        foreach ($group as $user) {
+            $avatar = $user->profile_photo_path;
+            $name = $user->name;
+            $regNo = $user->registration_number;
+            $course = $user->course;
+            $floor = optional($user->bed->floor)->floor_number ?? 'N/A';
+            $room = optional($user->bed->room)->room_number ?? 'N/A';
+            $bed = $user->bed->bed_number ?? 'N/A';
+            $paymentStatus = $user->payment_status ? 'Paid' : 'Not Paid';
+            $paymentClass = $user->payment_status ? 'text-success' : 'text-danger';
+            $bedId = $user->bed->id;
+            $userId = $user->id;
+            $status = $user->status;
+
+            $html .= '<tr>
+                        <td>' . $index++ . '</td> <!-- Index column -->
+                        <td><img class="avatar rounded-circle" src="' . $avatar . '" alt="Image Description"></td>
+                        <td>' . $name . '</td>
+                        <td>' . $regNo . '</td>
+                        <td>' . $course . '</td>
+                        <td>' . $floor . '</td>
+                        <td>' . $room . '</td>
+                        <td>' . $bed . '</td>
+                        <td class="' . $paymentClass . '">
+                            ' . $paymentStatus . '
+                        </td>
+                        <td>
+                            <button class="btn btn-sm shadow-sm" onclick="floorAction(\'bed\', ' . $bedId . ')">
+                                <i class="gd-arrow-top-right"></i>
+                            </button>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-toggle ' . ($status === 'approved' ? 'btn-lightgreen' : 'btn-lightred') . '" data-user-id="' . $userId . '" data-status="' . $status . '" onclick="toggleStatus(this)">
+                                ' . ($status === 'approved' ? 'Yes' : 'No') . '
+                            </button>
+                        </td>
+                      </tr>';
+        }
+        $html .= '</tbody></table></div>';
+    }
+
+    return response()->make($html, 200, ['Content-Type' => 'text/html']);
+}
+
+
 
 
 

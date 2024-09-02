@@ -56,7 +56,7 @@
 
                             <div class="row mb-3">
                                 <div class="col-4">
-                                    <h6 class="lh-1 mb-1">Registration Number</h6>
+                                    <h6 class="lh-1 mb-1">Number</h6>
                                 </div>
                                 <div class="col-8">
                                     <h6 class="lh-1 mb-1">{{ $user->registration_number }}</h6>
@@ -93,21 +93,21 @@
 
                         @if ($user->application == 1)
 
-                        <div class="container">
 
-                            <div class="alert alert-success " role="alert">
+
+                            <div class="alert alert-success  mb-3" role="alert">
                                 <strong>Congratulations, {{$user->name}}!</strong> Your application has been successfully submitted. Please check the results page regularly to stay updated on the status of your application.
                             </div>
 
-                        </div>
+
                         @else
-                        <div class="container">
-                            <form id="confirmApplicationForm">
-                                <div class="form-group text-center">
+
+                            <form id="confirmApplicationForm" class="mb-3">
+                                <div class=" text-center">
                                     <button type="submit" class="btn btn-outline-info" id="confirmButton">Confirm your Application</button>
                                 </div>
                             </form>
-                        </div>
+
                         @endif
                     </div>
                 </div>

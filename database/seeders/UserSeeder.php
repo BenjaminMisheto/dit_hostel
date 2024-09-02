@@ -1,0 +1,59 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\User;
+use App\Models\Bed;
+use Faker\Factory as Faker;
+
+class UserSeeder extends Seeder
+{
+    public function run()
+    {
+        $faker = Faker::create();
+
+        // Fetch all beds and their related data (room, floor, block)
+        $beds = Bed::with(['room.floor.block'])
+           ->inRandomOrder()
+           ->limit(200)
+           ->get();
+
+
+        // Populate the user table with users who have already applied for beds
+        foreach ($beds as $bed) {
+            $room = $bed->room;
+            $floor = $room->floor;
+            $block = $floor->block;
+
+            $user = User::create([
+                'name' => $faker->name,
+                'registration_number' => $faker->unique()->randomNumber(),
+                'confirmation' => 1,
+                'application' => 1,
+                'status' => 'approved',
+                'payment_status' => $faker->randomElement(['paid', null]), // Randomly 'paid' or null
+                'Control_Number' => $faker->unique()->randomNumber(9),
+                'block_id' => $block->id,
+                'room_id' => $room->id,
+                'floor_id' => $floor->id,
+                'bed_id' => $bed->id,
+                'sponsorship' => $faker->randomElement(['government', 'private']),
+                'phone' => $faker->phoneNumber,
+                'gender' => $faker->randomElement(['Male', 'Female']),
+                'nationality' => $faker->country,
+                'course' => $faker->randomElement(['D1', 'D2', 'D3', 'B1', 'B2', 'B3', 'B4']),
+                'email' => $faker->unique()->safeEmail, // Ensure the email is unique
+                'password' => bcrypt('password'), // Or use a hash that you prefer
+                'profile_photo_path' => 'img/' . (($bed->id % 15) + 1) . '.jpg', // Cycle image index from 1 to 15
+                'expiration_date' => $faker->dateTimeBetween('now', '+1 year'),
+                'created_at' => now(),
+                'updated_at' => now(),
+                'counter' => $faker->numberBetween(0, 10),
+            ]);
+
+            // Update the bed with the user_id of the created user
+            $bed->update(['user_id' => $user->id]);
+        }
+    }
+}

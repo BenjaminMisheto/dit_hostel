@@ -145,13 +145,23 @@ th.desc::after {
 
 <!-- Container for Search Input and Buttons -->
 <div class="d-flex justify-content-between mb-3">
-    <!-- Search Input with Icon -->
-    <div class="flex-grow-1 position-relative">
-        <input type="text" id="searchInput" class="form-control pl-5" placeholder="Search">
-        <span class="input-group-text position-absolute">
-            <i class="gd-search"></i> <!-- Your custom icon class -->
-        </span>
+
+<!-- Search Input with Icon and Spinner -->
+
+<div class="form-group position-relative">
+
+    <div class="input-group">
+        <input type="text" id="searchInput" class="form-control " placeholder="Search">
+        <div class="input-group-append">
+            <div id="spinner" class="spinner-border spinner-border-sm text-primary ms-2" role="status" style="display: none;">
+
+            </div>
+        </div>
     </div>
+
+
+</div>
+
     <!-- Buttons and Switch on the Right -->
     <div class="d-flex align-items-center">
         <button id="apply-yes" class="btn btn-toggle btn-lightgreen ml-2">Yes</button>
@@ -160,73 +170,84 @@ th.desc::after {
     </div>
 </div>
 
+<div id="searchResults" class="mt-2 " >
+    <!-- Results will be populated here -->
+</div>
+
+
+
 <ul class="nav nav-tabs d-flex justify-content-between" id="myTab" role="tablist">
     @foreach($blocks as $blockId => $block)
         <li class="nav-item flex-fill" role="presentation">
             <a class="nav-link text-dark {{ $loop->first ? 'active' : '' }}" id="tab-{{ $blockId }}-tab" data-toggle="tab" href="#tab-{{ $blockId }}" role="tab" aria-controls="tab-{{ $blockId }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}">
-                {{ $block['name'] }}
+                {{ $block['name'] }}<br> ({{ $block['user_count'] }})
             </a>
         </li>
     @endforeach
 </ul>
 
-
-    <!-- Tab Content -->
-    <div class="tab-content" id="myTabContent">
-        @foreach($blocks as $blockId => $block)
-            <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="tab-{{ $blockId }}" role="tabpanel" aria-labelledby="tab-{{ $blockId }}-tab">
-                <div class="table-responsive">
-                    <table class="table table-striped table-fixed">
-                        <thead>
-                            <tr>
-                                <th scope="col"><input type="checkbox" id="select-all-{{ $blockId }}" class="select-all"></th>
-                                <th scope="col"  style="cursor: pointer">Img</th>
-                                <th scope="col" data-sort="name" style="cursor: pointer">Name</th>
-                                <th scope="col" data-sort="number" style="cursor: pointer">Reg No</th>
-                                <th scope="col" data-sort="floor" style="cursor: pointer">Floor</th>
-                                <th scope="col" data-sort="room" style="cursor: pointer">Room</th>
-                                <th scope="col" data-sort="bed" style="cursor: pointer">Bed</th>
-                                <th scope="col" data-sort="pay" style="cursor: pointer">Payment</th>
-                                <th scope="col"  style="cursor: pointer">View</th>
-                                <th scope="col"  style="cursor: pointer">Actions</th>
+<!-- Tab Content -->
+<div class="tab-content" id="myTabContent">
+    @foreach($blocks as $blockId => $block)
+        <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="tab-{{ $blockId }}" role="tabpanel" aria-labelledby="tab-{{ $blockId }}-tab">
+            <div class="table-responsive">
+                <table class="table table-striped table-fixed">
+                    <thead>
+                        <tr>
+                            <th scope="col"><input type="checkbox" id="select-all-{{ $blockId }}" class="select-all"></th>
+                            <th scope="col" style="cursor: pointer">#</th> <!-- Added Index Column -->
+                            <th scope="col" style="cursor: pointer">Img</th>
+                            <th scope="col" data-sort="name" style="cursor: pointer">Name</th>
+                            <th scope="col" data-sort="number" style="cursor: pointer">Reg No</th>
+                            <th scope="col" data-sort="course" style="cursor: pointer">course</th>
+                            <th scope="col" data-sort="floor" style="cursor: pointer">Floor</th>
+                            <th scope="col" data-sort="room" style="cursor: pointer">Room</th>
+                            <th scope="col" data-sort="bed" style="cursor: pointer">Bed</th>
+                            <th scope="col" data-sort="pay" style="cursor: pointer">Payment</th>
+                            <th scope="col" style="cursor: pointer">View</th>
+                            <th scope="col" style="cursor: pointer">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="user-table-body">
+                        @foreach($block['users'] as $index => $user)
+                            <tr class="user-row">
+                                <td><input type="checkbox" class="user-checkbox" data-user-id="{{ $user->id }}"></td>
+                                <td>{{ $loop->parent->index + $index + 1 }}</td> <!-- Display Index Number -->
+                                <td><img class="avatar rounded-circle" src="{{ $user->profile_photo_path }}" alt="Image Description"></td>
+                                <td>{{ $user->name }}</td>
+                                <td>{{ $user->registration_number }}</td>
+                                <td>{{ $user->course}}</td>
+                                <td>{{ optional($user->bed->floor)->floor_number ?? 'N/A' }}</td>
+                                <td>{{ optional($user->bed->room)->room_number ?? 'N/A' }}</td>
+                                <td>{{ $user->bed->bed_number ?? 'N/A' }}</td>
+                                <td class="{{ $user->payment_status ? 'text-success' : 'text-danger' }}">
+                                    {{ $user->payment_status ? 'Paid' : 'Not Paid' }}
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm shadow-sm" onclick="floorAction('bed', {{ $user->bed->id }})">
+                                        <i class="gd-arrow-top-right"></i>
+                                    </button>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-toggle {{ $user->status === 'approved' ? 'btn-lightgreen' : 'btn-lightred' }}" data-user-id="{{ $user->id }}" data-status="{{ $user->status }}" onclick="toggleStatus(this)">
+                                        {{ $user->status === 'approved' ? 'Yes' : 'No' }}
+                                    </button>
+                                </td>
                             </tr>
-                        </thead>
-
-
-                        <tbody class="user-table-body">
-                            @foreach($block['users'] as $user)
-                                <tr class="user-row">
-                                    <td><input type="checkbox" class="user-checkbox" data-user-id="{{ $user->id }}"></td>
-                                    <td><img class="avatar rounded-circle" src="{{ $user->profile_photo_path }}" alt="Image Description"></td>
-                                    <td>{{ $user->name }}</td>
-                                    <td>{{ $user->registration_number }}</td>
-                                    <td>{{ optional($user->bed->floor)->floor_number ?? 'N/A' }}</td>
-                                    <td>{{ optional($user->bed->room)->room_number ?? 'N/A' }}</td>
-
-                                    <td>{{ $user->bed->bed_number ?? 'N/A' }}</td>
-                                    <td class="{{ $user->payment_status ? 'text-success' : 'text-danger' }}">
-                                        {{ $user->payment_status ? 'Paid' : 'Not Paid' }}
-                                    </td>
-
-
-                                    <td>
-                                        <button class="btn btn-sm shadow-sm" onclick="floorAction('bed', {{ $user->bed->id }})">
-                                            <i class="gd-arrow-top-right"></i>
-                                        </button>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-toggle {{ $user->status === 'approved' ? 'btn-lightgreen' : 'btn-lightred' }}" data-user-id="{{ $user->id }}" data-status="{{ $user->status }}" onclick="toggleStatus(this)">
-                                            {{ $user->status === 'approved' ? 'Yes' : 'No' }}
-                                        </button>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
-        @endforeach
-    </div>
+        </div>
+    @endforeach
+</div>
+
+<!-- Pagination Controls -->
+<div class="d-flex justify-content-center mt-4">
+    {{ $paginatedStudents->onEachSide(1)->links('pagination::bootstrap-4') }}
+</div>
+
+
 
 
         <!-- No Results Found Message -->
@@ -240,6 +261,50 @@ th.desc::after {
 @endif
 
 </div>
+<script>
+    $(document).ready(function() {
+        let debounceTimer;
+
+        // Event handler for search input
+        $('#searchInput').on('input', function() {
+            let query = $(this).val().trim();
+
+            // Clear the previous debounce timer
+            clearTimeout(debounceTimer);
+
+            // Only make an AJAX request if the query is not empty and has at least 3 characters
+            if (query.length >= 3) {
+                // Show the spinner
+                $('#spinner').show();
+
+                debounceTimer = setTimeout(function() {
+                    $.ajax({
+                        url: "{{ route('admin.application.search') }}", // Your search route
+                        method: 'GET',
+                        data: {
+                            query: query
+                        },
+                        success: function(response) {
+                            $('#searchResults').html(response); // Update the results container
+                        },
+                        error: function(xhr) {
+                            const msg = `Sorry, but there was an error: ${xhr.status} ${xhr.statusText}`;
+                            $('#searchResults').html(`<p class="text-danger">${msg}</p>`);
+                        },
+                        complete: function() {
+                            // Hide the spinner when the request is complete
+                            $('#spinner').hide();
+                        }
+                    });
+                }, 300); // Debounce time in milliseconds (adjust as needed)
+            } else {
+                $('#searchResults').empty(); // Clear results if the query is empty
+                $('#spinner').hide(); // Hide the spinner if the query is empty
+            }
+        });
+    });
+    </script>
+
 
 <script>
     // Your custom JavaScript code
@@ -348,75 +413,6 @@ th.desc::after {
             }
         });
     }
-</script>
-
-
-<script>
-    $(document).ready(function() {
-        $('#searchInput').on('keyup', function() {
-            var searchValue = $(this).val().trim().toLowerCase();
-            var resultsFound = false;
-
-            if (searchValue === '') {
-                // Restore the previous state when search input is cleared
-                $('.tab-pane').each(function() {
-                    var $tabPane = $(this);
-                    var $rows = $tabPane.find('.user-table-body .user-row');
-
-                    // Show all rows in each tab
-                    $rows.show();
-                });
-
-                // Activate the first tab
-                $('.tab-pane').removeClass('show active');
-                $('.nav-link').removeClass('active');
-                $('#tab-1').addClass('show active');
-                $('#tab-1-tab').addClass('active');
-
-                // Hide the "No results found" message
-                $('#noResultsMessage').hide();
-            } else {
-                // Hide the "No results found" message initially
-                $('#noResultsMessage').hide();
-
-                // Loop through each tab pane
-                $('.tab-pane').each(function() {
-                    var $tabPane = $(this);
-                    var $rows = $tabPane.find('.user-table-body .user-row');
-                    var tabHasResults = false;
-
-                    $rows.each(function() {
-                        var $row = $(this);
-                        var name = $row.find('td').eq(1).text().trim().toLowerCase(); // Adjusted index for name column
-                        var registrationNumber = $row.find('td').eq(2).text().trim().toLowerCase(); // Adjusted index for registration number column
-
-                        if (name.indexOf(searchValue) > -1 || registrationNumber.indexOf(searchValue) > -1) {
-                            $row.show();
-                            tabHasResults = true;
-                            resultsFound = true;
-                        } else {
-                            $row.hide();
-                        }
-                    });
-
-                    if (tabHasResults) {
-                        $tabPane.addClass('show active');
-                        $tabPane.siblings('.tab-pane').removeClass('show active');
-                        $tabPane.parents('.tab-content').siblings('.nav-tabs').find('.nav-link').removeClass('active');
-                        $('#' + $tabPane.attr('id') + '-tab').addClass('active');
-                    }
-                });
-
-                if (!resultsFound) {
-                    $('.tab-pane').removeClass('show active');
-                    $('.nav-link').removeClass('active');
-                    $('#tab-1').addClass('show active');
-                    $('#tab-1-tab').addClass('active');
-                    $('#noResultsMessage').show(); // Show the "No results found" message
-                }
-            }
-        });
-    });
 </script>
 
 

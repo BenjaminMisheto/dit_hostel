@@ -57,6 +57,10 @@ $deadlineDate = \Carbon\Carbon::parse($deadlineDate);
             conclude on {{$deadlineDate->format('F j, Y')}}.
         </div>
 
+
+
+
+
         @if ($user->application == 1)
         <div class="row justify-content-start">
             <div class="col-lg-4 col-md-4 col-sm-6 col-12 mb-3 mb-md-4">
@@ -91,6 +95,13 @@ $deadlineDate = \Carbon\Carbon::parse($deadlineDate);
             </div>
         </div>
         @else
+
+        @if (isset($user->block_id))
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>Notice:</strong> You have already <strong>selected {{ $user->block->name }}, Room {{ $user->room->room_number }}, Bed {{ $user->bed->bed_number }}</strong>. Please proceed to confirm your application on the final page, or choose another bed if you wish to make a change.
+
+        </div>
+    @endif
         @if ($user->confirmation != 1)
         <script>
                 $('#gd-hostel,#gd-finish,#gd-result').removeClass('gd-check text-success').addClass(' gd-close text-danger');
@@ -140,6 +151,7 @@ $deadlineDate = \Carbon\Carbon::parse($deadlineDate);
             @endphp
 
             @if ($shouldDisplayBlock)
+
             <div class="col-lg-4 col-md-4 col-sm-6 col-12 mb-3 mb-md-4">
                 <!-- Card -->
                 <a href="#" onclick="selectBlock({{ $block->id }})" id="block-{{ $block->id }}" class="block-link">

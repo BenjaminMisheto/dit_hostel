@@ -475,8 +475,8 @@ function hostel() {
     });
 }
 
-
-function aplication() {
+function aplication(start = 1, end = 100) {
+    // Deactivate all navigation items
     const selectors = [
         "#nav_profile",
         "#nav_hostel",
@@ -489,8 +489,11 @@ function aplication() {
     selectors.forEach(function(selector) {
         $(selector).removeClass("active");
     });
+
+    // Activate the application navigation item
     $("#nav_aplication").addClass("active");
 
+    // Show a loading spinner while the content is being loaded
     const spinnerHtml = '<div class="spinner-container">' +
         '<div class="black show d-flex align-items-center justify-content-center">' +
         '<div class="spinner-border lik" style="width: 3rem; height: 3rem;" role="status">' +
@@ -499,14 +502,43 @@ function aplication() {
         '</div>' +
         '</div>';
 
-    $("#dash").html(spinnerHtml).load("{{ route('admin.application') }}", (response, status, xhr) => {
-        if (status === "error") {
+    $("#dash").html(spinnerHtml);
+
+    // Load the application data with pagination
+    $.ajax({
+        url: "{{ route('admin.application') }}",
+        method: 'GET',
+        data: {
+            start: start,
+            end: end
+        },
+        success: function(response) {
+            $("#dash").html(response);
+            setupApplicationPagination(); // Use the application-specific pagination setup
+        },
+        error: function(xhr) {
             const msg = `Sorry, but there was an error: ${xhr.status} ${xhr.statusText}`;
             $("#error").html(msg);
         }
     });
 }
 
+// Setup pagination event listeners specifically for the application function
+function setupApplicationPagination() {
+    $('.pagination a').on('click', function(event) {
+        event.preventDefault(); // Prevent default link behavior
+
+        var url = $(this).attr('href'); // Get the URL from the clicked link
+        var queryParams = new URLSearchParams(url.split('?')[1]); // Parse query parameters
+
+        var page = queryParams.get('page'); // Get the page number
+        var start = (page - 1) * 100 + 1; // Calculate start (100 records per page)
+        var end = start + 99; // Calculate end (100 records per page)
+
+        // Call the `aplication` function with new start and end values
+        aplication(start, end);
+    });
+}
 
 
 function room(blockId) {
@@ -594,71 +626,67 @@ function floorAction(action, floorId) {
 
 
 
-
-
 function elligable(start = 1, end = 10) {
 
-    const selectors = [
-        "#nav_profile",
-        "#nav_hostel",
-        "#nav_room",
-        "#nav_result",
-        "#nav_aplication",
-        "#nav_control",
-        "#nav_setting",
-    ];
+const selectors = [
+    "#nav_profile",
+    "#nav_hostel",
+    "#nav_room",
+    "#nav_result",
+    "#nav_aplication",
+    "#nav_control",
+    "#nav_setting",
+];
 
-    selectors.forEach(function(selector) {
-        $(selector).removeClass("active");
-    });
-    $("#nav_elligable").addClass("active");
+selectors.forEach(function(selector) {
+    $(selector).removeClass("active");
+});
+$("#nav_elligable").addClass("active");
 
-    $("#dash").html(
-        '<div class="spinner-container">' +
-        '<div class="black show d-flex align-items-center justify-content-center">' +
-        '<div class="spinner-border lik" style="width: 3rem; height: 3rem;" role="status">' +
-        '<span class="sr-only">Loading...</span>' +
-        '</div>' +
-        '</div>' +
-        '</div>'
-    );
+$("#dash").html(
+    '<div class="spinner-container">' +
+    '<div class="black show d-flex align-items-center justify-content-center">' +
+    '<div class="spinner-border lik" style="width: 3rem; height: 3rem;" role="status">' +
+    '<span class="sr-only">Loading...</span>' +
+    '</div>' +
+    '</div>' +
+    '</div>'
+);
 
-    $.ajax({
-        url: "{{ route('admin.elligable') }}",
-        method: 'GET',
-        data: {
-            start: start,
-            end: end
-        },
-        success: function(response) {
-            $("#dash").html(response);
-            setupPagination();
-        },
-        error: function(xhr) {
-            const msg = `Sorry, but there was an error: ${xhr.status} ${xhr.statusText}`;
-            $("#error").html(msg);
-        }
-    });
+$.ajax({
+    url: "{{ route('admin.elligable') }}",
+    method: 'GET',
+    data: {
+        start: start,
+        end: end
+    },
+    success: function(response) {
+        $("#dash").html(response);
+        setupElligablePagination(); // Use the elligable-specific pagination setup
+    },
+    error: function(xhr) {
+        const msg = `Sorry, but there was an error: ${xhr.status} ${xhr.statusText}`;
+        $("#error").html(msg);
+    }
+});
 }
 
-// Setup pagination event listeners
-function setupPagination() {
-    $('.pagination a').on('click', function(event) {
-        event.preventDefault(); // Prevent default link behavior
+// Setup pagination event listeners specifically for the elligable function
+function setupElligablePagination() {
+$('.pagination a').on('click', function(event) {
+    event.preventDefault(); // Prevent default link behavior
 
-        var url = $(this).attr('href'); // Get the URL from the clicked link
-        var queryParams = new URLSearchParams(url.split('?')[1]); // Parse query parameters
+    var url = $(this).attr('href'); // Get the URL from the clicked link
+    var queryParams = new URLSearchParams(url.split('?')[1]); // Parse query parameters
 
-        var page = queryParams.get('page'); // Get the page number
-        var start = (page - 1) * 10 + 1; // Calculate start (10 records per page)
-        var end = start + 9; // Calculate end (10 records per page)
+    var page = queryParams.get('page'); // Get the page number
+    var start = (page - 1) * 10 + 1; // Calculate start (10 records per page)
+    var end = start + 9; // Calculate end (10 records per page)
 
-        // Call the `elligable` function with new start and end values
-        elligable(start, end);
-    });
+    // Call the `elligable` function with new start and end values
+    elligable(start, end);
+});
 }
-
-
 
 
 

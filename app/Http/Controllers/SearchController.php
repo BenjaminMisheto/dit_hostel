@@ -21,13 +21,20 @@ class SearchController extends Controller
     // Determine if the query is a number or name
     $isNumeric = is_numeric($query);
 
+    // Get the logged-in user's username
+    $username = auth()->user()->name;
+
     try {
         if ($isNumeric) {
-            // Search by registration number
-            $results = ElligableStudent::where('registration_number', 'like', '%' . $query . '%')->get();
+            // Search by registration number, filtered by the logged-in user's username
+            $results = ElligableStudent::where('registration_number', 'like', '%' . $query . '%')
+                ->where('student_name', $username)
+                ->get();
         } else {
-            // Search by name
-            $results = ElligableStudent::where('student_name', 'like', '%' . $query . '%')->get();
+            // Search by name, filtered by the logged-in user's username
+            $results = ElligableStudent::where('student_name', 'like', '%' . $query . '%')
+                ->where('student_name', $username)
+                ->get();
         }
 
         // Check if any matching records were found
@@ -42,6 +49,54 @@ class SearchController extends Controller
         return response()->json(['message' => 'Error querying database'], 500);
     }
 }
+
+public function search_elligable(Request $request)
+{
+    $query = $request->input('query', '');
+
+    $students = ElligableStudent::where('student_name', 'like', "%{$query}%")
+                        ->orWhere('registration_number', 'like', "%{$query}%")
+                        ->get();
+
+    // Generate HTML for the search results
+    if ($students->isEmpty()) {
+        $html = '<p>No eligible students found.</p>';
+    } else {
+        $html = '<div class="table-responsive">';
+        $html .= '<table class="table table-striped">';
+        $html .= '<thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Number</th>
+                        <th>Sponsorship</th>
+                        <th>Phone</th>
+                        <th>Gender</th>
+                        <th>Course</th>
+                    </tr>
+                  </thead>';
+        $html .= '<tbody>';
+        foreach ($students as $index => $student) {
+            $html .= '<tr>';
+            $html .= '<td>' . ($index + 1) . '</td>';
+            $html .= '<td>';
+            $html .= $student->image ? '<img src="' . $student->image . '" alt="Student Image" style="width: 40px; height: auto;" class="rounded rounded-circle">' : 'N/A';
+            $html .= '</td>';
+            $html .= '<td>' . $student->student_name . '</td>';
+            $html .= '<td>' . $student->registration_number . '</td>';
+            $html .= '<td>' . ($student->sponsorship ?? 'N/A') . '</td>';
+            $html .= '<td>' . ($student->phone ?? 'N/A') . '</td>';
+            $html .= '<td>' . ($student->gender ?? 'N/A') . '</td>';
+            $html .= '<td>' . ($student->course ?? 'N/A') . '</td>';
+            $html .= '</tr>';
+        }
+        $html .= '</tbody></table></div>';
+    }
+
+    return response()->make($html, 200, ['Content-Type' => 'text/html']);
+}
+
 
 
 public function updateProfile(Request $request)
@@ -79,5 +134,10 @@ public function updateProfile(Request $request)
     Log::warning('User not found for registration number:', ['registration_number' => $request->registration_number]);
     return response()->json(['success' => false, 'message' => 'User not found.']);
 }
+
+
+
+
+
 
 }

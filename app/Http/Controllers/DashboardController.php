@@ -74,8 +74,10 @@ class DashboardController extends Controller
         $male_percentage = $totalStudents > 0 ? round(($maleStudents / $totalStudents) * 100, 2) : 0;
         $female_percentage = $totalStudents > 0 ? round(($femaleStudents  / $totalStudents) * 100, 2) : 0;
 
+        $occupancyPercentage = $totalBeds > 0 ? ($totalOccupiedBeds / $totalBeds) * 100 : 0;
+
         // Fetch the 10 most recent applications
-        $recentApplications = User::latest()->take(5)->get();
+        $recentApplications = User::latest()->where('application',1)->take(5)->get();
 
         // Pass the view count, visitor, user, and recent applications data to the view
         return view('admin.dashboard', [
@@ -112,6 +114,7 @@ class DashboardController extends Controller
             'male_percentage' => $male_percentage,
             'female_percentage' => $female_percentage,
             'recent_applications' => $recentApplications, // Pass recent applications data
+            'occupancyPercentage'=>$occupancyPercentage,
         ]);
     }
 
@@ -151,12 +154,16 @@ class DashboardController extends Controller
         $maleStudents = User::where('gender', 'male')->count();
         $femaleStudents = User::where('gender', 'female')->count();
 
+
+        $occupancyPercentage = $totalBeds > 0 ? ($totalOccupiedBeds / $totalBeds) * 100 : 0;
+
         // Calculate percentages
         $male_percentage = $totalStudents > 0 ? round(($maleStudents / $totalStudents) * 100, 2) : 0;
         $female_percentage = $totalStudents > 0 ? round(($femaleStudents  / $totalStudents) * 100, 2) : 0;
 
         // Fetch the 10 most recent applications
-        $recentApplications = User::latest()->take(5)->get();
+        $recentApplications = User::latest()->where('application',1)->take(5)->get();
+
 
         // Pass the view count, visitor, user, and recent applications data to the view
         return view('admin.profile', [
@@ -193,8 +200,10 @@ class DashboardController extends Controller
             'male_percentage' => $male_percentage,
             'female_percentage' => $female_percentage,
             'recent_applications' => $recentApplications, // Pass recent applications data
+            'occupancyPercentage'=>$occupancyPercentage,
         ]);
     }
+
 
     private function trackVisitors()
     {

@@ -574,6 +574,7 @@ $(document).ready(function() {
 
             </div>
         </div>
+
         <div class="d-flex justify-content-between mb-4">
             <div class="container-fluid">
                 <div class="d-flex justify-content-between align-items-center mb-2">

@@ -127,7 +127,7 @@
     <!-- Card -->
     <div class="card flex-row align-items-center p-3 p-md-4">
         <div>
-            <h5 class="lh-1 mb-0">Students</h5>
+            <h5 class="lh-1 mb-0">Application</h5>
             <small>{{ $total_students }} (+{{ $new_students_count }})</small>
         </div>
         <div class="js-area-chart chart--points-invisible chart--labels-hidden py-2 ml-auto"
@@ -253,7 +253,7 @@
                 <!-- End Widget -->
             </div>
             <div class="col-md-12 col-xl-12 mb-3 mb-xl-4">
-                <div class="d-flex justify-content-between mb-4">
+                <div class="d-flex justify-content-between mb-1">
                     <div class="container-fluid">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="text-muted">Hostel Occupancy</span>

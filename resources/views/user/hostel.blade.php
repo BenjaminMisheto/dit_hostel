@@ -74,6 +74,8 @@ $deadlineDate = \Carbon\Carbon::parse($deadlineDate);
                             <div class="col-6">
                                 <small>TZS {{ number_format($user->block->price, 2, '.', ',') }}</small>
                             </div>
+
+
                         </div>
                     </div>
 
@@ -87,7 +89,8 @@ $deadlineDate = \Carbon\Carbon::parse($deadlineDate);
                                 <small class="card-title">Floor number {{ $user->floor->floor_number }}</small>
                             </div>
                             <div class="col-6">
-                                <small class="card-title">Bed number {{ $user->bed->bed_number }}</small>
+                                <small class="card-title">Bed number {{ $user->bed->bed_number ?? 'Not assigned' }}</small>
+
                             </div>
                         </div>
                     </div>
@@ -164,6 +167,12 @@ $deadlineDate = \Carbon\Carbon::parse($deadlineDate);
                                 <div class="col-6">
                                     <small class="">TZS
                                         {{ number_format($block->price, 2, '.', ',') }}</small>
+                                </div>
+                                <div class="col-6">
+                                    <small class="card-title">Elligable Gender</small>
+                                </div>
+                                <div class="col-6">
+                                    <small class="card-title">{{ implode(', ', $blockGenders[$block->id] ?? []) }}</small>
                                 </div>
                             </div>
                         </div>

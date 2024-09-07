@@ -19,6 +19,16 @@
 
     @else
     @if ($expirationDate->isPast() and empty($user->payment_status))
+
+
+
+
+
+
+
+
+
+
     <script>
         $('#gd-hostel,#gd-finish').removeClass('gd-close text-danger ').addClass(' gd-check text-success');
 </script>
@@ -45,6 +55,22 @@
     <script>
         $('#gd-hostel,#gd-finish,#gd-result').removeClass('gd-check text-success').addClass(' gd-close text-danger');
 </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     @else
 
     @if ($publishes->first()->status == 0)

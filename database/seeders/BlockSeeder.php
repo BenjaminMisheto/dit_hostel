@@ -39,6 +39,7 @@ class BlockSeeder extends Seeder
                 'number_of_floors' => rand(7, 10), // Random number of floors
                 'price' => rand(500, 1500),
                 'image_data' => $imageFile, // Add image data
+                'status'=>1,
             ]);
 
             // Create floors for each block

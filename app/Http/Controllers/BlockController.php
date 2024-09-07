@@ -8,13 +8,35 @@ use Illuminate\Http\Request;
 class BlockController extends Controller
 {
     public function index()
-    {
-        // Fetch blocks with their related floors, ordered by 'created_at' in descending order
-        $blocks = Block::with('floors')->orderBy('created_at', 'desc')->get();
+{
+    // Fetch blocks with their related floors, ordered by 'created_at' in descending order
+    $blocks = Block::with('floors')->orderBy('created_at', 'desc')->get();
 
-        // Pass the blocks data to the view
-        return view('admin.hostel', compact('blocks'));
+    // Initialize an array to hold gender data for each block
+    $blockGenders = [];
+
+    // Loop through each block to aggregate gender data
+    foreach ($blocks as $block) {
+        $blockGenders[$block->id] = []; // Initialize array for current block
+
+        // Loop through each floor in the block
+        foreach ($block->floors as $floor) {
+            $genders = json_decode($floor->gender, true);
+
+            // Merge and remove duplicates for the current block
+            $blockGenders[$block->id] = array_unique(array_merge($blockGenders[$block->id], $genders));
+        }
     }
+
+    // Pass the blocks and blockGenders data to the view
+    return view('admin.hostel', compact('blocks', 'blockGenders'));
+}
+
+
+
+
+
+
 
     public function destroy(Block $block)
 {

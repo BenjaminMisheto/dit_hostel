@@ -1,3 +1,7 @@
+@php
+use Carbon\Carbon;
+$expirationDate = Carbon::parse($user->expiration_date);
+@endphp
 <div class="content">
     <div class="py-4 px-3 px-md-4">
         <div class="mb-3 mb-md-4 d-flex justify-content-between align-items-center">
@@ -5,7 +9,7 @@
         </div>
 
         @php
-            $isEmpty = empty($user->block_id) || empty($user->room_id) || empty($user->floor_id) || empty($user->bed_id);
+            $isEmpty = empty($user->block_id) || empty($user->room_id) || empty($user->floor_id) ;
         @endphp
 
         @if ($isEmpty)
@@ -90,6 +94,16 @@
                                 </div>
                             </div>
                         </div>
+                        @if ($expirationDate->isPast() and empty($user->payment_status) and !empty($user->bed))
+
+
+                        <div class="alert alert-danger mb-3" role="alert">
+                            <strong>We regret to inform you, {{$user->name}}.</strong> Your application has expired. If you wish to reapply, please click "Reapply" on the results page.
+                        </div>
+
+                        @else
+
+
 
                         @if ($user->application == 1)
 
@@ -108,6 +122,7 @@
                                 </div>
                             </form>
 
+                        @endif
                         @endif
                     </div>
                 </div>

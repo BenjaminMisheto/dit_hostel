@@ -22,6 +22,9 @@
     <link rel="stylesheet" href="{{ asset('graindashboard/css/graindashboard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/mycss.css') }}">
 
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/css/nice-select.min.css" integrity="sha512-CruCP+TD3yXzlvvijET8wV5WxxEh5H8P4cmz0RFbKK6FlZ2sYl3AEsKlLPHbniXKSrDdFewhbmBK5skbdsASbQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <!-- jQuery -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
             integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
@@ -196,7 +199,7 @@
 
         <main class="main">
             <!-- Sidebar Nav -->
-            <aside id="sidebar" class="js-custom-scroll side-nav">
+            <aside id="sidebar" class="js-custom-scroll side-nav ">
                 <ul id="sideNav" class="side-nav-menu side-nav-menu-top-level mb-0">
                     <!-- Title -->
                     <li class="sidebar-heading h6">Profile</li>
@@ -255,7 +258,19 @@
                             <span class="side-nav-fadeout-on-closed media-body  text-dark">Control</span>
                         </a>
                     </li>
-                    <!-- End Dashboard -->
+
+
+
+                    <li class="side-nav-menu-item" id="nav_report">
+                        <a class="side-nav-menu-link media align-items-center" href="#" onclick="report()">
+                            <span class="side-nav-menu-icon d-flex mr-3">
+                                <i class="gd-printer small"></i>
+                            </span>
+                            <span class="side-nav-fadeout-on-closed media-body text-dark">Report</span>
+                        </a>
+                    </li>
+
+
 
 
 
@@ -369,6 +384,8 @@
           <script src="{{ asset('demo/gd.chartist-area.js') }}"></script>
           <script src="{{ asset('demo/gd.chartist-bar.js') }}"></script>
           <script src="{{ asset('demo/gd.chartist-donut.js') }}"></script>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/js/jquery.nice-select.js" integrity="sha512-GkPcugMfi6qlxrYTRUH4EwK4aFTB35tnKLhUXGLBc3x4jcch2bcS7NHb9IxyM0HYykF6rJpGaIJh8yifTe1Ctw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 
         <script>
             $.GDCore.components.GDChartistArea.init('.js-area-chart');
@@ -378,6 +395,46 @@
 
         <script>
 
+
+function report(){
+                const selectors = [
+                    "#nav_hostel",
+        "#nav_aplication",
+        "#nav_elligable",
+        "#nav_result",
+        "#nav_control",
+        "#nav_profile",
+        "#nav_setting",
+
+    ];
+
+    selectors.forEach(function(selector) {
+        $(selector).removeClass("active");
+    });
+    $("#nav_report").addClass("active");
+                $("#dash").html(
+                    '<div class="spinner-container">' +
+                    '<div class="black show d-flex align-items-center justify-content-center">' +
+                    '<div class="spinner-border lik" style="width: 3rem; height: 3rem;" role="status">' +
+                    '<span class="sr-only">Loading...</span>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>'
+                );
+
+                $("#dash").load("{{ route('admin.report') }}", (response, status, xhr) => {
+                    if (status === "error") {
+                        const msg = `Sorry, but there was an error: ${xhr.status} ${xhr.statusText}`;
+                        $("#error").html(msg);
+                    }
+                });
+            }
+
+
+
+
+
+
             function dashbord(){
                 const selectors = [
         "#nav_hostel",
@@ -386,6 +443,7 @@
         "#nav_result",
         "#nav_control",
         "#nav_setting",
+        "#nav_report",
     ];
 
     selectors.forEach(function(selector) {
@@ -419,6 +477,7 @@
         "#nav_result",
         "#nav_control",
         "#nav_profile",
+        "#nav_report",
     ];
 
     selectors.forEach(function(selector) {
@@ -452,6 +511,7 @@ function hostel() {
         "#nav_result",
         "#nav_control",
         "#nav_setting",
+        "#nav_report",
     ];
 
     selectors.forEach(function(selector) {
@@ -484,6 +544,7 @@ function aplication(start = 1, end = 100) {
         "#nav_result",
         "#nav_control",
         "#nav_setting",
+        "#nav_report",
     ];
 
     selectors.forEach(function(selector) {
@@ -549,6 +610,7 @@ function room(blockId) {
         "#nav_result",
         "#nav_control",
         "#nav_setting",
+        "#nav_report",
     ];
 
     selectors.forEach(function(selector) {
@@ -583,6 +645,7 @@ function floorAction(action, floorId) {
         "#nav_result",
         "#nav_control",
         "#nav_setting",
+        "#nav_report",
     ];
 
     selectors.forEach(function(selector) {
@@ -636,6 +699,7 @@ const selectors = [
     "#nav_aplication",
     "#nav_control",
     "#nav_setting",
+    "#nav_report",
 ];
 
 selectors.forEach(function(selector) {
@@ -699,6 +763,7 @@ function control() {
         "#nav_aplication",
         "#nav_elligable",
         "#nav_setting",
+        "#nav_report",
     ];
 
     selectors.forEach(function(selector) {
@@ -736,6 +801,7 @@ function control() {
         "#nav_room",
         "#nav_finish",
         "#nav_setting",
+        "#nav_report",
     ];
 
     selectors.forEach(function(selector) {

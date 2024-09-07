@@ -205,7 +205,7 @@ th.desc::after {
                             <th scope="col" data-sort="bed" style="cursor: pointer">Bed</th>
                             <th scope="col" data-sort="pay" style="cursor: pointer">Payment</th>
                             <th scope="col" style="cursor: pointer">View</th>
-                            <th scope="col" style="cursor: pointer">Actions</th>
+                            <th scope="col" style="cursor: pointer">Actions </th>
                         </tr>
                     </thead>
                     <tbody class="user-table-body">
@@ -220,14 +220,51 @@ th.desc::after {
                                 <td>{{ optional($user->bed->floor)->floor_number ?? 'N/A' }}</td>
                                 <td>{{ optional($user->bed->room)->room_number ?? 'N/A' }}</td>
                                 <td>{{ $user->bed->bed_number ?? 'N/A' }}</td>
-                                <td class="{{ $user->payment_status ? 'text-success' : 'text-danger' }}">
-                                    {{ $user->payment_status ? 'Paid' : 'Not Paid' }}
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm shadow-sm" onclick="floorAction('bed', {{ $user->bed->id }})">
-                                        <i class="gd-arrow-top-right"></i>
-                                    </button>
-                                </td>
+                                @php
+                                $isExpired = empty($user->payment_status) && Carbon\Carbon::now()->greaterThan($user->expiration_date);
+                                $paymentClass = $user->payment_status ? 'text-success' : ($isExpired ? 'text-danger' : 'text-warning');
+                                $paymentText = $user->payment_status ? 'Paid' : ($isExpired ? 'Expired' : 'Not Paid');
+                            @endphp
+
+                            <td class="{{ $paymentClass }}">
+                                {{ $paymentText }}
+                            </td>
+
+
+                           @php
+                            $showButton =  Carbon\Carbon::now()->lessThan($user->expiration_date) || !empty($user->payment_status);
+                        @endphp
+
+
+
+                            @if($showButton)
+                            <td>
+                                <button class="btn btn-sm shadow-sm"
+                                    onclick="floorAction('bed', {{ $user->bed->id }}, {{ $showButton ? 1 : 0 }})">
+                                    <i class="gd-arrow-top-right"></i>
+                                </button>
+                            </td>
+
+                            @else
+                            <td>
+                                <button class="btn btn-sm shadow-sm"
+                                    onclick="floorAction('bed', {{ $user->bed->id }}, {{ $showButton ? 1 : 0 }})">
+                                    <i class="gd-arrow-top-right"></i>
+                                </button>
+                            </td>
+
+
+                            @endif
+
+
+
+
+
+
+
+
+
+
                                 <td>
                                     <button class="btn btn-sm btn-toggle {{ $user->status === 'approved' ? 'btn-lightgreen' : 'btn-lightred' }}" data-user-id="{{ $user->id }}" data-status="{{ $user->status }}" onclick="toggleStatus(this)">
                                         {{ $user->status === 'approved' ? 'Yes' : 'No' }}
@@ -364,9 +401,8 @@ th.desc::after {
     }
 </script>
 
-
 <script>
-    function floorAction(action, id) {
+    function floorAction(action, id, status) {
         const selectors = [
             "#nav_profile",
             "#nav_finish",
@@ -390,16 +426,16 @@ th.desc::after {
         let url;
         switch (action) {
             case 'add':
-                url = `{{ url('floor/add') }}/${id}`;
+                url = `{{ url('floor/add') }}/${id}?status=${status}`;
                 break;
             case 'update':
-                url = `{{ url('floor/update') }}/${id}`;
+                url = `{{ url('floor/update') }}/${id}?status=${status}`;
                 break;
             case 'delete':
-                url = `{{ url('floor/delete') }}/${id}`;
+                url = `{{ url('floor/delete') }}/${id}?status=${status}`;
                 break;
             case 'bed':
-                url = `{{ url('room/bed') }}/${id}`;
+                url = `{{ route('room.bed', '') }}/${id}?status=${status}`;
                 break;
             default:
                 console.error('Invalid action');

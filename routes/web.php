@@ -17,6 +17,7 @@ use App\Models\VisitorCount;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\ControlController;
+use App\Http\Controllers\ReportController;
 
 use App\Models\Block;
 
@@ -205,7 +206,41 @@ Route::post('admin.updateExpirationDate', [AjaxController::class, 'updateExpirat
 
     Route::put('/blocks/update-status/{id}', [BlockController::class, 'updateStatus']);
 
+
+
+
+    Route::get('admin.report', [AjaxController::class, 'report'])->name('admin.report');
+    route::get('/get-floors/{hostelId}', [AjaxController::class, 'getFloors']);
+    route::get('/get-rooms/{floorId}', [AjaxController::class, 'getRooms']);
+
+    route::get('/get-rooms-for-block/{blockId}', [AjaxController::class, 'getRoomsForBlock']);
+
+
     Route::get('room/bed/{roomId}', [RoomController::class, 'showBed'])->name('room.bed');
+
+    route::get('/generate-report', [AjaxController::class, 'generateReport'])->name('generateReport');
+
+
+
+
+
+
+
+
+
+    Route::get('/get-gender-options/{roomId}', [AjaxController::class, 'getGenderOptions']);
+Route::get('/get-payment-options/{roomId}', [AjaxController::class, 'getPaymentOptions']);
+Route::get('/get-course-options/{roomId}', [AjaxController::class, 'getCourseOptions']);
+
+
+
+
+
+
+    Route::get('/generate-excel-report', [ReportController::class, 'exportExcel'])->name('generate.excel.report');
+    Route::get('/generate-report', [ReportController::class, 'exportPDF']);
+    Route::get('/generate-report-print', [ReportController::class, 'exportPDFPrint']);
+
 
     Route::get('/students/search', [StudentfindController::class, 'search']);
 

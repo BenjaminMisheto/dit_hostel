@@ -20,6 +20,11 @@
         z-index: -1; /* Ensure the pseudo-element is behind the content */
     }
 </style> --}}
+@php
+use Carbon\Carbon;
+use App\Models\User;
+
+@endphp
 <div id="dash">
     @foreach($block->floors as $index => $floor)
     <!-- Modal -->
@@ -391,7 +396,7 @@ $(document).ready(function() {
             <div class="row bg-imagee">
                 <!-- Existing columns -->
                 <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
-                    <div class="card flex-row align-items-center p-3 p-md-4 shadow-sm">
+                    <div class="card flex-row align-items-center p-3 p-md-4 ">
                         <div class="d-flex justify-content-between w-100">
                             <div>
                                 <h6 class="mb-0">Block Name</h6>
@@ -404,7 +409,7 @@ $(document).ready(function() {
                 </div>
 
                 <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
-                    <div class="card flex-row align-items-center p-3 p-md-4 shadow-sm">
+                    <div class="card flex-row align-items-center p-3 p-md-4 ">
                         <div class="d-flex justify-content-between w-100">
                             <div>
                                 <h6 class="mb-0">Eligible Gender</h6>
@@ -417,7 +422,7 @@ $(document).ready(function() {
                 </div>
 
                 <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
-                    <div class="card flex-row align-items-center p-3 p-md-4 shadow-sm">
+                    <div class="card flex-row align-items-center p-3 p-md-4 ">
                         <div class="d-flex justify-content-between w-100">
                             <div>
                                 <h6 class="mb-0">Eligible Students</h6>
@@ -431,7 +436,7 @@ $(document).ready(function() {
 
                 <!-- New column for Price -->
                 <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
-                    <div class="card flex-row align-items-center p-3 p-md-4 shadow-sm">
+                    <div class="card flex-row align-items-center p-3 p-md-4 ">
                         <div class="d-flex justify-content-between w-100">
                             <div>
                                 <h6 class="mb-0">Price/Annual</h6>
@@ -445,7 +450,7 @@ $(document).ready(function() {
                 </div>
 
                 <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
-                    <div class="card flex-row align-items-center p-3 p-md-4 shadow-sm">
+                    <div class="card flex-row align-items-center p-3 p-md-4 ">
                         <div class="d-flex justify-content-between w-100">
                             <div>
                                 <h6 class="mb-0">Block Manager</h6>
@@ -458,7 +463,7 @@ $(document).ready(function() {
                 </div>
 
                 <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
-                    <div class="card flex-row align-items-center p-3 p-md-4 shadow-sm">
+                    <div class="card flex-row align-items-center p-3 p-md-4 ">
                         <div class="d-flex justify-content-between w-100">
                             <div>
                                 <h6 class="mb-0">Location</h6>
@@ -579,12 +584,12 @@ $(document).ready(function() {
             <div class="container-fluid">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="text-muted">Hostel Occupancy</span>
-                    <span id="occupancy-percentage">{{ number_format($occupancyPercentage, 0) }}%</span>
+                    <span id="occupancy-percentage">{{ round($occupancyPercentage, 2) }}%</span>
                 </div>
                 <div class="progress" style="height: 6px;">
                     <div id="occupancy-progress-bar" class="progress-bar" role="progressbar"
                         style="width: {{ $occupancyPercentage }}%;" aria-valuenow="{{ $occupancyPercentage }}" aria-valuemin="0" aria-valuemax="100">
-                        <span class="sr-only">{{ number_format($occupancyPercentage, 0) }}% Full</span>
+                        <span class="sr-only">{{ round($occupancyPercentage, 2) }}% Full</span>
                     </div>
                 </div>
             </div>
@@ -626,7 +631,7 @@ $(document).ready(function() {
                         </li>
                     @else
                         @foreach($block->floors as $index => $floor)
-                        <li class="nav-item border-bottom border-xl-bottom-0 shadow-sm">
+                        <li class="nav-item border-bottom border-xl-bottom-0 ">
                             <a class="nav-link d-flex align-items-center py-2 px-3 p-xl-4 {{ $index === 0 ? 'active' : '' }}"
                                 href="#floor{{ $floor->id }}" role="tab"
                                 aria-selected="{{ $index === 0 ? 'true' : 'false' }}" data-toggle="tab">
@@ -713,21 +718,46 @@ $(document).ready(function() {
                         <div class="radio-tile-group">
                             @foreach($floor->rooms as $room)
                             <div class="card mb-2">
-                                <div class="card-header">
-                                    Room {{ $room->room_number }} - {{ $room->beds->count() }} beds
+                                <div class="card-header text-center">
+                                    Room {{ $room->room_number }} - {{ $room->beds->count() }} beds <br><br>
+                                    <span class="badge badge-sm rounded-circle @if(strtolower($room->gender) === 'female') badge-success @elseif(strtolower($room->gender) === 'male') badge-secondary @else badge-secondary @endif">
+                                        @if(strtolower($room->gender) === 'female')
+                                            F
+                                        @elseif(strtolower($room->gender) === 'male')
+                                            M
+                                        @else
+                                            {{ $room->gender }} <!-- Fallback if the gender is neither 'female' nor 'male' -->
+                                        @endif
+                                    </span>
                                 </div>
+
                                 <div class="card-body">
                                     @foreach($room->beds as $bed)
                                     @php
+                                    $usertime = User::find($bed->user_id);
+                                    if ($usertime) {
+                                        $expirationDate = $usertime->expiration_date;
+                                    }
+
                                         // Initialize status class and text
                                         $statusClass = '';
                                         $statusText = '';
 
                                         // Determine the status class and text based on the bed's status and user_id
                                         if ($bed->user_id) {
-                                            $statusClass = 'alert-success'; // Class for beds with an assigned user
-                                            $statusText = 'Taken'; // Status text if a user is assigned
-                                        } else {
+                                            if ($expirationDate && Carbon::now()->greaterThan($expirationDate) &&  empty($usertime->payment_status) ) {
+                                                $statusClass = 'alert-danger';
+                                                $statusText = 'Expire';
+                                            } else {
+                                                $statusClass = 'alert-success';
+                                                $statusText = 'Taken';
+                                            }
+
+                                        }
+
+
+
+                                        else {
                                             switch ($bed->status) {
                                                 case 'activate':
                                                     $statusText = 'Open';
@@ -749,15 +779,15 @@ $(document).ready(function() {
                                         }
                                     @endphp
 
-                                    <div class="input-container">
-                                        <div class="radio-tile {{ $statusClass }}" onclick="floorAction('bed', {{ $bed->id }})" style="cursor: pointer;">
-                                            <label class="radio-tile-label mt-2">
+                                    <div class="input-container" style="cursor: pointer;">
+                                        <div class="radio-tile {{ $statusClass }}" onclick="floorAction('bed', {{ $bed->id }})"style="cursor: pointer;" >
+                                            <label class="radio-tile-label mt-2" style="cursor: pointer;">
                                                 {{ $room->room_number }} - Bed {{ $bed->bed_number }}
                                             </label>
-                                            <label class="radio-tile-label {{ $statusClass }}">
+                                            <label class="radio-tile-label  {{ $statusClass }}" style="cursor: pointer;">
                                                 {{ $statusText }}
                                             </label>
-                                            <i class="gd-pencil text-muted"></i>
+
                                         </div>
                                     </div>
                                     @endforeach

@@ -88,6 +88,15 @@
                     <div class="col-6">
                         <small class="">TZS {{ number_format($block->price, 2, '.', ',') }}</small>
                     </div>
+                    <div class="col-6">
+                        <small class="card-title">Elligable Gender</small>
+                    </div>
+                    <div class="col-6">
+                        <small class="card-title">{{ implode(', ', $blockGenders[$block->id] ?? []) }}</small>
+                    </div>
+
+
+
                 </div>
             </div>
         @endif
@@ -124,6 +133,7 @@
                     </div>
 
                     <div class="col-4 d-flex justify-content-end">
+
                         <!-- You can add more content here if needed -->
                     </div>
                 </div>

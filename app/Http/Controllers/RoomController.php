@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Block;
 use App\Models\Bed;
+use Carbon\Carbon;
 
 class RoomController extends Controller
 {
@@ -80,15 +81,38 @@ class RoomController extends Controller
 
 
 
+public function showBed($bedId)
+{
+    // Retrieve the status from the query string
+    $status = request()->query('status', 0);
+
+    // Eager load the related data: room, floor, and block
+    $bed = Bed::with('room.floor.block')->findOrFail($bedId);
+
+    // Return the view with the bed data and status
+    return view('admin.bed', compact('bed', 'status'));
+}
 
 
 
-    public function showBed($bedId)
-    {
-        // Eager load the related data: room, floor, and block
-        $bed = Bed::with('room.floor.block')->findOrFail($bedId);
 
-        // Return the view with the bed data
-        return view('admin.bed', compact('bed'));
-    }
+
+
+
+// public function showBed($bedId)
+// {
+//     // Eager load the related data: room, floor, block, and user
+//     $bed = Bed::with(['room.floor.block', 'user'])->findOrFail($bedId);
+
+//     $userExpirationStatus = null;
+
+//     // Check if the bed has an associated user and if the user's expiration time has passed
+//     if ($bed->user) {
+//         $user = $bed->user;
+//         $userExpirationStatus = Carbon::now()->greaterThan($user->expiration_date) ? 'Expired' : 'Active';
+//     }
+
+//     // Return the view with the bed data and user expiration status
+//     return view('admin.bed', compact('bed', 'userExpirationStatus'));
+// }
 }

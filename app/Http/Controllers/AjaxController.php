@@ -15,6 +15,7 @@ use App\Models\Publish;
 use App\Models\SliderData;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf; // Ensure you have Barryvdh\DomPDF installed
 
 
 class AjaxController extends Controller
@@ -364,6 +365,7 @@ public function updatePublishStatus(Request $request)
     }
 
 
+
     public function gethostel()
 {
     // Fetch the current authenticated user
@@ -378,9 +380,12 @@ public function updatePublishStatus(Request $request)
     // Convert user gender to lowercase for case-insensitive comparison
     $userGenderLower = strtolower($user->gender);
 
+    // Initialize array to collect gender data for each block
+    $blockGenders = [];
+
     // Filter blocks to include only those where at least one floor's gender matches the user's gender
-    $blocks = $blocks->filter(function ($block) use ($userGenderLower) {
-        return $block->floors->contains(function ($floor) use ($userGenderLower) {
+    $blocks = $blocks->filter(function ($block) use ($userGenderLower, &$blockGenders) {
+        $matchesUserGender = $block->floors->contains(function ($floor) use ($userGenderLower) {
             // Decode the gender JSON field
             $genderArray = json_decode($floor->gender, true);
 
@@ -392,18 +397,30 @@ public function updatePublishStatus(Request $request)
 
             return false;
         });
+
+        // Aggregate gender data for the block
+        if ($matchesUserGender) {
+            $blockGenders[$block->id] = [];
+            foreach ($block->floors as $floor) {
+                $genders = json_decode($floor->gender, true);
+                if (is_array($genders)) {
+                    $blockGenders[$block->id] = array_unique(array_merge($blockGenders[$block->id], array_map('strtolower', $genders)));
+                }
+            }
+        }
+
+        return $matchesUserGender;
     });
 
-        // Fetch the publish settings from the database
-        $publishSettings = Publish::first();
+    // Fetch the publish settings from the database
+    $publishSettings = Publish::first();
 
-// Retrieve publish settings with default values
-$openDate = $publishSettings ? $publishSettings->open_date : null;
-$deadlineDate = $publishSettings ? $publishSettings->deadline : null;
+    // Retrieve publish settings with default values
+    $openDate = $publishSettings ? $publishSettings->open_date : null;
+    $deadlineDate = $publishSettings ? $publishSettings->deadline : null;
 
-// Pass the filtered blocks, user data, and publish settings to the view
-return view('user.hostel', compact('blocks', 'user', 'openDate', 'deadlineDate'));
-
+    // Pass the filtered blocks, user data, publish settings, and block genders to the view
+    return view('user.hostel', compact('blocks', 'user', 'openDate', 'deadlineDate', 'blockGenders'));
 }
 
 
@@ -624,6 +641,8 @@ private function filterRoomsAndBeds($floors, $settings, &$reasons)
     });
 }
 
+
+
 private function isBedAvailable($bed, $settings)
 {
     // Check if the bed is available based on its status and the publish settings
@@ -646,12 +665,12 @@ private function logIfEmpty($floors, $settings, &$reasons)
         if ($settings['algorithm']) {
             $reasons['algorithm'] = 'The algorithm settings are restricting the available floors based on criteria.';
         }
-        if (!$settings['reservedBedEnabled']) {
-            $reasons['reserved_beds'] = 'Reserved beds are currently not available for selection.';
-        }
-        if (!$settings['maintenanceBedEnabled']) {
-            $reasons['maintenance_beds'] = 'Beds under maintenance are currently not available for selection.';
-        }
+        // if (!$settings['reservedBedEnabled']) {
+        //     $reasons['reserved_beds'] = 'Reserved beds are currently not available for selection.';
+        // }
+        // if (!$settings['maintenanceBedEnabled']) {
+        //     $reasons['maintenance_beds'] = 'Beds under maintenance are currently not available for selection.';
+        // }
     }
 
   //  \Log::error('Algorithm Setting: ' . ($settings['algorithm'] ? 'enabled' : 'disabled'));
@@ -675,9 +694,6 @@ private function matchCriteria($userAttribute, $criteria)
     // Check if userAttribute is in the criteriaArray
     return in_array($userAttributeLower, $criteriaArrayLower, true);
 }
-
-
-
 
 
 
@@ -719,8 +735,11 @@ public function updateBedSelection(Request $request)
             return response()->json(['error' => 'Invalid selection.'], 400);
         }
 
-        // Validate bed status
-        if ($bed->status === 'under_maintenance' || $bed->status === 'reserve' || $bed->user_id) {
+        // Get the user currently assigned to the bed
+        $bedUser = $bed->user;
+
+        // Check if the bed is occupied and if the assigned user's expiration date has not expired
+        if ($bed->status === 'under_maintenance' || $bed->status === 'reserve' || ($bedUser && Carbon::now()->lessThan($bedUser->expiration_date))) {
             return response()->json(['error' => 'Selected bed is not available.'], 400);
         }
 
@@ -745,6 +764,18 @@ public function updateBedSelection(Request $request)
         return response()->json(['error' => 'An error occurred while updating your selection. Please try again.'], 500);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 public function getUserInfo()
@@ -860,6 +891,8 @@ $newCounter = $currentCounter + 1;
 
 
 
+
+
 public function confirmApplication(Request $request)
 {
     // Validate that the application value is provided and is an integer
@@ -879,8 +912,30 @@ public function confirmApplication(Request $request)
     if ($user->bed_id) {
         // Find the bed
         $bed = Bed::find($user->bed_id);
+
         if ($bed) {
-            // Update the bed's user_id
+            // Check if the bed already has a user associated with it
+            if ($bed->user_id) {
+                // Load the current user associated with the bed
+                $existingUser = User::find($bed->user_id);
+
+                if ($existingUser) {
+    // Update the existing user's bed-related columns and reset application status
+    $existingUser->update([
+        'application' => 0,
+        'status' => 'disapproved',
+        'block_id' => null,
+        'room_id' => null,
+        'floor_id' => null,
+        'bed_id' => null,
+        'counter' => 0,
+        'expiration_date' => Carbon::now()->addDays(365) // Adds 365 days to the current date
+    ]);
+}
+
+            }
+
+            // Now, update the bed's user_id with the current user's ID
             $bed->update(['user_id' => $user->id]);
 
             // Retrieve the associated room, floor, and block
@@ -933,6 +988,9 @@ public function confirmApplication(Request $request)
 
     return response()->json(['message' => 'Application confirmed successfully.']);
 }
+
+
+
 
 
 
@@ -1099,4 +1157,106 @@ public function updateControlNumber(Request $request)
             'expirationDate' => $expirationDate
         ]);
     }
+
+    public function report()
+{
+    // Fetch all blocks with their related floors and rooms
+    $blocks = Block::with('floors.rooms')->get();
+
+    // Return the view and pass the blocks data
+    return view('admin.report', compact('blocks'));
+}
+
+    // Fetch floors based on hostelId
+    public function getFloors($hostelId)
+    {
+        $floors = Floor::where('block_id', $hostelId)->get();
+        return response()->json(['floors' => $floors]);
+    }
+
+
+
+    // Fetch rooms based on floorId
+    public function getRooms($floorId)
+    {
+        $rooms = Room::where('floor_id', $floorId)->get();
+        return response()->json(['rooms' => $rooms]);
+    }
+
+
+
+    public function getRoomsForBlock($blockId)
+{
+    // Fetch all floors for the selected block
+    $floors = Floor::where('block_id', $blockId)->pluck('id');
+
+    // Fetch all rooms for these floors
+    $rooms = Room::whereIn('floor_id', $floors)->get();
+
+    // Return rooms as JSON
+    return response()->json(['rooms' => $rooms]);
+
+
+
+
+
+
+
+
+
+
+}
+
+
+ // Fetch gender options based on room ID
+ public function getGenderOptions($roomId)
+    {
+        // Example logic to get gender options based on room ID
+        // You might need to adapt this based on your actual data model
+        $room = Room::find($roomId);
+        $genders = []; // Fetch gender options logic
+
+        // Example static gender options, replace with dynamic data as needed
+        $genders = ['male', 'female'];
+
+        return response()->json([
+            'genders' => $genders
+        ]);
+    }
+
+    // Fetch payment options based on room ID
+    public function getPaymentOptions($roomId)
+    {
+        // Example logic to get payment options based on room ID
+        $room = Room::find($roomId);
+        $payments = []; // Fetch payment options logic
+
+        // Example static payment options, replace with dynamic data as needed
+        $payments = ['paid', 'not_paid'];
+
+        return response()->json([
+            'payments' => $payments
+        ]);
+    }
+
+    // Fetch course options based on room ID
+    public function getCourseOptions($roomId)
+    {
+        // Example logic to get course options based on room ID
+        $room = Room::find($roomId);
+        $courses = []; // Fetch course options logic
+
+        // Example static course options, replace with dynamic data as needed
+        $courses = ['D1', 'D2', 'D3', 'B1', 'B2', 'B3', 'B4'];
+
+        return response()->json([
+            'courses' => $courses
+        ]);
+    }
+
+
+
+
+
+
 }

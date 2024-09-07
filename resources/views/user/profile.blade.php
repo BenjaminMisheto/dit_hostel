@@ -66,73 +66,72 @@
         <div id="profileContent" class="profile-card mt-4 mx-auto p-4 rounded">
             <div class="row align-items-center">
 
-                <div class="col-md-4 col-sm-12 text-center mb-4 mb-md-0">
-                    <img id="profileImage" class="profile-image img-fluid border rounded" src="img/placeholder.jpg"
-                        alt="Profile Image">
+                <div class="col-md-6">
+                            <!-- Profile Image -->
+                <div class="col-12 text-center mb-4">
+                    <img id="profileImage" class="profile-image img-fluid rounded-circle  border-light mx-auto"
+                         src="img/placeholder.jpg" alt="Profile Image" style="max-width: 220px; height: auto;">
                 </div>
-                <div class="col-md-8 col-sm-12">
+                <div class=" col-md-12 mb-3">
+                    <label class="fw-bold">Name:</label>
+                    <input type="text" id="profileName" class="form-control" disabled placeholder="John Doe">
+                </div>
 
-                    <div class="row mb-3">
-                        <label class="col-sm-4 col-form-label fw-bold">Name: </label>
-                        <div class="col-sm-8">
-                            <input type="text" id="profileName" class="form-control" disabled placeholder="John Doe">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label class="col-sm-4 col-form-label fw-bold">Registration Number:</label>
-                        <div class="col-sm-8">
-                            <input type="text" id="profileRegNum" class="form-control" disabled placeholder="123456">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label class="col-sm-4 col-form-label fw-bold">Sponsorship:</label>
-                        <div class="col-sm-8">
-                            <input type="text" id="profileSponsorship" class="form-control" disabled
-                                placeholder="Scholarship">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label class="col-sm-4 col-form-label fw-bold">Phone:</label>
-                        <div class="col-sm-8">
-                            <input type="text" id="profilePhone" class="form-control" disabled
-                                placeholder="123-456-7890">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label class="col-sm-4 col-form-label fw-bold">Gender:</label>
-                        <div class="col-sm-8">
-                            <input type="text" id="profileGender" class="form-control" disabled placeholder="Male">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label class="col-sm-4 col-form-label fw-bold">Nationality:</label>
-                        <div class="col-sm-8">
-                            <input type="text" id="profileNationality" class="form-control" disabled
-                                placeholder="American">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label class="col-sm-4 col-form-label fw-bold">Course:</label>
-                        <div class="col-sm-8">
-                            <input type="text" id="profileCourse" class="form-control" disabled
-                                placeholder="Computer Science">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label class="col-sm-4 col-form-label fw-bold">Note:</label>
-                        <div class="col-sm-8">
-                            <div id="verifyBox" class="alert alert-warning  d-none">
-                                <strong>Warning!</strong> Please review the information below and confirm if it is
-                                correct before proceeding.
-                            </div>
-                            {{-- <input type="text" id="profilePaymentStatus" class="form-control" disabled placeholder="$1000"> --}}
-                        </div>
-                    </div>
-                    <div class="text-center mt-4">
-                        <button id="confirmButton" class="btn btn-outline-success px-4 py-2">Confirm Your
-                            Information</button>
-                    </div>
+                <div class="col-md-12 mb-3">
+                    <label class="fw-bold">Registration Number:</label>
+                    <input type="text" id="profileRegNum" class="form-control" disabled placeholder="123456">
                 </div>
+                <div class="col-md-12 mb-3">
+                    <label class="fw-bold">Sponsorship:</label>
+                    <input type="text" id="profileSponsorship" class="form-control" disabled placeholder="Scholarship">
+                </div>
+
+
+                </div>
+
+
+
+                <!-- User Information -->
+                <div class="col-md-6">
+
+
+
+
+
+                    <div class="col-md-12 mb-3">
+                        <label class="fw-bold">Phone:</label>
+                        <input type="text" id="profilePhone" class="form-control" disabled placeholder="123-456-7890">
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label class="fw-bold">Gender:</label>
+                        <input type="text" id="profileGender" class="form-control" disabled placeholder="Male">
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label class="fw-bold">Nationality:</label>
+                        <input type="text" id="profileNationality" class="form-control" disabled placeholder="American">
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label class="fw-bold">Course:</label>
+                        <input type="text" id="profileCourse" class="form-control" disabled placeholder="Computer Science">
+                    </div>
+
+                    <!-- Note Section -->
+                    <div class="col-md-12 mb-3">
+                        <div id="verifyBox" class="alert alert-warning ">
+                            <strong>Warning!</strong> Please review the information below and confirm if it is correct before proceeding.
+                        </div>
+                    </div>
+
+                    <!-- Confirm Button -->
+                    <div class="text-center mt-4">
+                        <button id="confirmButton" class="btn btn-outline-success px-4 py-2">Confirm Your Information</button>
+                    </div>
+
+                </div>
+
             </div>
         </div>
 
@@ -425,87 +424,82 @@
     </div>
 
     <div id="profileContent" class="profile-card mt-4 mx-auto p-4 rounded">
-        <div class="row align-items-center">
 
-            <div class="col-md-4 col-sm-12 text-center mb-4 mb-md-0">
-                <img id="profileImage" class="profile-image img-fluid border rounded"
-                    src="{{ $user->profile_photo_path ?? 'img/placeholder.jpg' }}" alt="Profile Image">
+<div class="row align-items-center">
+
+    <div class="col-md-6">
+        <!-- Profile Image -->
+        <div class="col-12 text-center mb-4">
+            <img id="profileImage" class="profile-image img-fluid rounded-circle border border-light"
+                src="{{ $user->profile_photo_path ?? 'img/placeholder.jpg' }}" alt="Profile Image"
+                style="max-width: 220px; height: auto;">
+        </div>
+
+        <!-- User Information -->
+        <div class="col-md-12 mb-3">
+            <label class="fw-bold">Name:</label>
+            <input type="text" id="profileName" class="form-control" disabled value="{{ $user->name }}">
+        </div>
+
+        <div class="col-md-12 mb-3">
+            <label class="fw-bold">Registration Number:</label>
+            <input type="text" id="profileRegNum" class="form-control" disabled
+                value="{{ $user->registration_number }}">
+        </div>
+        <div class="col-md-12 mb-3">
+            <label class="fw-bold">Sponsorship:</label>
+            <input type="text" id="profileSponsorship" class="form-control" disabled value="{{ $user->sponsorship }}">
+        </div>
+    </div>
+
+    <div class="col-md-6">
+
+        <div class="col-md-12 mb-3">
+            <label class="fw-bold">Phone:</label>
+            <input type="text" id="profilePhone" class="form-control" disabled value="{{ $user->phone }}">
+        </div>
+
+        <div class="col-md-12 mb-3">
+            <label class="fw-bold">Gender:</label>
+            <input type="text" id="profileGender" class="form-control" disabled value="{{ $user->gender }}">
+        </div>
+
+        <div class="col-md-12 mb-3">
+            <label class="fw-bold">Nationality:</label>
+            <input type="text" id="profileNationality" class="form-control" disabled value="{{ $user->nationality }}">
+        </div>
+
+        <div class="col-md-12 mb-3">
+            <label class="fw-bold">Course:</label>
+            <input type="text" id="profileCourse" class="form-control" disabled value="{{ $user->course }}">
+        </div>
+
+        <!-- Note Section -->
+        <div class="col-12 mb-3">
+            <div id="verifyBox" class="alert alert-success  align-items-center">
+
+                <strong>Success!</strong> Your information has been successfully confirmed.
             </div>
-            <div class="col-md-8 col-sm-12">
+        </div>
 
-                <div class="row mb-3">
-                    <label class="col-sm-4 col-form-label fw-bold">Name: </label>
-                    <div class="col-sm-8">
-                        <input type="text" id="profileName" class="form-control" disabled placeholder="John Doe"
-                            value="{{ $user->name }}">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <label class="col-sm-4 col-form-label fw-bold">Registration Number:</label>
-                    <div class="col-sm-8">
-                        <input type="text" id="profileRegNum" class="form-control" disabled placeholder="123456"
-                            value="{{ $user->registration_number }}">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <label class="col-sm-4 col-form-label fw-bold">Sponsorship:</label>
-                    <div class="col-sm-8">
-                        <input type="text" id="profileSponsorship" class="form-control" disabled
-                            placeholder="Scholarship" value="{{ $user->sponsorship }}">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <label class="col-sm-4 col-form-label fw-bold">Phone:</label>
-                    <div class="col-sm-8">
-                        <input type="text" id="profilePhone" class="form-control" disabled placeholder="123-456-7890"
-                            value="{{ $user->phone }}">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <label class="col-sm-4 col-form-label fw-bold">Gender:</label>
-                    <div class="col-sm-8">
-                        <input type="text" id="profileGender" class="form-control" disabled placeholder="Male"
-                            value="{{ $user->gender }}">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <label class="col-sm-4 col-form-label fw-bold">Nationality:</label>
-                    <div class="col-sm-8">
-                        <input type="text" id="profileNationality" class="form-control" disabled placeholder="American"
-                            value="{{ $user->nationality }}">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <label class="col-sm-4 col-form-label fw-bold">Course:</label>
-                    <div class="col-sm-8">
-                        <input type="text" id="profileCourse" class="form-control" disabled
-                            placeholder="Computer Science" value="{{ $user->course }}">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <label class="col-sm-4 col-form-label fw-bold">Note:</label>
-                    <div class="col-sm-8">
-                        <div id="verifyBox" class="alert alert-success">
-                            <strong>Success!</strong> Your information has been successfully confirmed.
-                        </div>
-
-                    </div>
-                </div>
-                @if ($user->application == 1)
-
-                @else
-                <div class="text-center mt-4">
-                    <button id="nextstep" class="btn btn-outline-success " onclick="hostel()">Next Stage</button>
-                </div>
-
-                @endif
-
-            </div>
+        <!-- Next Step Button -->
+        <div class="col-12 text-center mt-4">
+            @if ($user->application == 1)
+            <!-- Button or content for application status 1 -->
+            @else
+            <button id="nextstep" class="btn btn-outline-success" onclick="hostel()">Next Stage</button>
+            @endif
         </div>
     </div>
 
 </div>
 
-@endif
+    </div>
 
 </div>
+
+
+@endif
+
+
+

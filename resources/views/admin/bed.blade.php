@@ -19,6 +19,7 @@
 </div>
 
 
+
 <script>
     $(document).ready(function() {
         // Function to handle bed deletion
@@ -113,6 +114,8 @@
 
 <div class="content">
     <div class="py-4 px-3 px-md-4">
+
+
         <form id="bedForm" action="" method="POST">
             <div class="d-flex justify-content-between mb-4">
 
@@ -132,69 +135,113 @@
                    <!-- Status Indicator -->
                    <div class="row">
                     <div class="col-md-12">
-                        @if($bed->user)
-                        <div class="alert alert-success" role="alert" id="statusindicator">
-                            This room is occupied by {{ $bed->user->name}}.
-                        </div>
-                        @else
-                        <div class="alert alert-danger" id="statusindicator" role="alert">
-                            This room is open.
-                        </div>
-                        @endif
+
+                        {{-- @if($status == 1)      5966
+
+
+                    @else
+                    <div class="alert alert-danger" role="alert">
+                        This application has expired. The student will need to reapply if they wish to continue.
+                    </div>
+
+                    @endif --}}
+
+                    @if($bed->user)
+                    <div class="alert alert-success" role="alert" id="statusindicator">
+                        This room is occupied by {{ $bed->user->name}}.
+                    </div>
+                    @else
+                    <div class="alert alert-danger" id="statusindicator" role="alert">
+                        This room is open.
+                    </div>
+                    @endif
+
+
+
+
+
                     </div>
                 </div>
             <!-- Bed Details -->
             <div class="">
                 <div class="row">
-                    <!-- Bed Number -->
                     <div class="col-md-6 mb-3">
-                        <label for="bedNumber">Bed Number</label>
-                        <input type="text" class="form-control" id="bedNumber" name="bed_number" value="{{ $bed->bed_number }}">
+      <!-- Bed Number -->
+      <div class="col-md-12 mb-3">
+        <label for="bedNumber">Bed Number</label>
+        <input type="text" class="form-control" id="bedNumber" name="bed_number" value="{{ $bed->bed_number }}">
+    </div>
+
+    <!-- Room Number -->
+    <div class="col-md-12 mb-3">
+        <label for="roomNumber">Room Number</label>
+        <input type="text" class="form-control" id="roomNumber" value="{{ $bed->room->room_number }}"
+            disabled>
+    </div>
+
+         <!-- Room Gender -->
+         <div class="col-md-12 mb-3">
+            <label for="roomGender">Room Gender</label>
+            <input type="text" class="form-control" id="roomGender" value="{{ $bed->room->gender }}"
+                disabled>
+        </div>
+
+    <!-- Floor Name -->
+    <div class="col-md-12 mb-3">
+        <label for="floorName">Floor Name</label>
+        <input type="text" class="form-control" id="floorName"
+            value="{{ $bed->room->floor->floor_number }}" disabled>
+    </div>
+
+    <!-- Block Name -->
+    <div class="col-md-12 mb-3">
+        <label for="blockName">Block Name</label>
+        <input type="text" class="form-control" id="blockName"
+            value="{{ $bed->room->floor->block->name }}" disabled>
+    </div>
+    <div class="col-md-12 mb-3">
+        <label for="UserControlnumber">Control number</label>
+        <input type="text" class="form-control" id="UserControlnumber"
+               value="{{ $bed->user->Control_Number ?? 'Not Generated' }}" disabled>
+    </div>
+    <div class="col-md-12 mb-3">
+        <label for="Userpayment">Payment Status</label>
+        <input type="text"
+               class="form-control
+                      {{ $bed->user && \Carbon\Carbon::now()->greaterThan($bed->user->expiration_date) ? 'text-danger' :
+                      ($bed->user && $bed->user->payment_status === null ? 'text-warning' : 'text-success') }}"
+               id="Userpayment"
+               value="{{ $bed->user && \Carbon\Carbon::now()->greaterThan($bed->user->expiration_date) ? 'Expired' :
+                      ($bed->user->payment_status ?? 'Not paid') }}"
+               disabled>
+    </div>
+
+
+    <div class="col-md-12 mb-3">
+    <div class="form-group mt-2">
+        <label>Bed Status</label>
+        <div class="btn-group-toggle d-flex justify-content-between" data-toggle="buttons">
+            <label class="btn btn-outline-danger  mx-1 {{ $bed->status == 'under_maintenance' ? 'active' : '' }}" style="cursor: pointer;">
+                <input type="radio" name="bedStatus" value="under_maintenance" autocomplete="off"
+                    {{ $bed->status == 'under_maintenance' ? 'checked' : '' }} style="display: none;">Maintenance
+            </label>
+            <label class="btn btn-outline-warning mx-1 {{ $bed->status == 'reserve' ? 'active' : '' }}" style="cursor: pointer;">
+                <input type="radio" name="bedStatus" value="reserve" autocomplete="off"
+                    {{ $bed->status == 'reserve' ? 'checked' : '' }} style="display: none;"> Reserve
+            </label>
+            <label class="btn btn-outline-success  mx-1 {{ $bed->status == 'activate' ? 'active' : '' }}" style="cursor: pointer;">
+                <input type="radio" name="bedStatus" value="activate" autocomplete="off"
+                    {{ $bed->status == 'activate' ? 'checked' : '' }} style="display: none;"> Activate
+            </label>
+        </div>
+        <small id="bedStatusError" class="form-text text-danger"></small>
+    </div>
+</div>
+
+
                     </div>
 
-                    <!-- Room Number -->
                     <div class="col-md-6 mb-3">
-                        <label for="roomNumber">Room Number</label>
-                        <input type="text" class="form-control" id="roomNumber" value="{{ $bed->room->room_number }}"
-                            disabled>
-                    </div>
-
-                    <!-- Floor Name -->
-                    <div class="col-md-6 mb-3">
-                        <label for="floorName">Floor Name</label>
-                        <input type="text" class="form-control" id="floorName"
-                            value="{{ $bed->room->floor->floor_number }}" disabled>
-                    </div>
-
-                    <!-- Block Name -->
-                    <div class="col-md-6 mb-3">
-                        <label for="blockName">Block Name</label>
-                        <input type="text" class="form-control" id="blockName"
-                            value="{{ $bed->room->floor->block->name }}" disabled>
-                    </div>
-                </div>
-
-
-                <div class="form-group">
-                    <label>Bed Status</label>
-                    <div class="btn-group-toggle d-flex justify-content-between" data-toggle="buttons">
-                        <label class="btn btn-outline-danger  mx-1 {{ $bed->status == 'under_maintenance' ? 'active' : '' }}" style="cursor: pointer;">
-                            <input type="radio" name="bedStatus" value="under_maintenance" autocomplete="off"
-                                {{ $bed->status == 'under_maintenance' ? 'checked' : '' }} style="display: none;">Maintenance
-                        </label>
-                        <label class="btn btn-outline-warning mx-1 {{ $bed->status == 'reserve' ? 'active' : '' }}" style="cursor: pointer;">
-                            <input type="radio" name="bedStatus" value="reserve" autocomplete="off"
-                                {{ $bed->status == 'reserve' ? 'checked' : '' }} style="display: none;"> Reserve
-                        </label>
-                        <label class="btn btn-outline-success  mx-1 {{ $bed->status == 'activate' ? 'active' : '' }}" style="cursor: pointer;">
-                            <input type="radio" name="bedStatus" value="activate" autocomplete="off"
-                                {{ $bed->status == 'activate' ? 'checked' : '' }} style="display: none;"> Activate
-                        </label>
-                    </div>
-                    <small id="bedStatusError" class="form-text text-danger"></small>
-                </div>
-
-
 <!-- Search Input and Add Button -->
 <div class="form-group position-relative">
     <label for="searchStudent">Search for Eligible Students</label>
@@ -212,6 +259,104 @@
     </div>
 </div>
 
+
+                <!-- Additional Non-Editable Details -->
+                <div class="row mt-4">
+                    <!-- Student Image -->
+                    <div class="col-xl-12 mb-3">
+                        <label for="studentImage">Student Image</label>
+                        <div class="text-center">
+                            <img id="image" src="{{ $bed->user->profile_photo_path ?? 'img/placeholder.jpg' }}" alt="Student Image"
+                                class="img-fluid  rounded-circle" id="studentImage" style="max-width: 30%; height: auto;">
+                                <input type="text" name="image" id="imageInput" hidden>
+                        </div>
+                    </div>
+
+                    <!-- Student Details -->
+                    <div class="col-xl-12">
+                        <div class="row" id="reset">
+                            <!-- Name -->
+                            <div class="col-md-6 mb-3">
+                                <label for="name">Name</label>
+                                <input type="text" class="form-control" id="name" value="{{ $bed->user->name ?? '' }}" disabled>
+                            </div>
+
+                            <!-- Registration Number -->
+                            <div class="col-md-6 mb-3">
+                                <label for="registrationNumber">Registration Number</label>
+                                <input type="text" class="form-control" id="registrationNumber" value="{{ $bed->user->registration_number ?? '' }}" disabled>
+                            </div>
+
+                            <!-- Sponsorship -->
+                            <div class="col-md-6 mb-3">
+                                <label for="sponsorship">Sponsorship</label>
+                                <input type="text" class="form-control" id="sponsorship" value="{{ $bed->user->sponsorship ?? '' }}" disabled>
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="col-md-6 mb-3">
+                                <label for="phone">Phone</label>
+                                <input type="text" class="form-control" id="phone" value="{{ $bed->user->phone ?? '' }}" disabled>
+                            </div>
+
+                            <!-- Gender -->
+                            <div class="col-md-6 mb-3">
+                                <label for="gender">Gender</label>
+                                <input type="text" class="form-control" id="gender" value="{{ $bed->user->gender ?? '' }}" disabled>
+                            </div>
+
+                            <!-- Nationality -->
+                            <div class="col-md-6 mb-3">
+                                <label for="nationality">Nationality</label>
+                                <input type="text" class="form-control" id="nationality" value="{{ $bed->user->nationality ?? '' }}" disabled>
+                            </div>
+
+                            <!-- Course -->
+                            <div class="col-md-6 mb-3">
+                                <label for="course">Course</label>
+                                <input type="text" class="form-control" id="course" value="{{ $bed->user->course ?? '' }}" disabled>
+                            </div>
+
+<!-- Email -->
+<div class="col-md-6 mb-3">
+    <label for="email">Email</label>
+    <input type="text" class="form-control" id="email" value="{{ $bed->user->email ?? '' }}" disabled>
+</div>
+
+<div class="col-md-6 mb-3">
+    <label for="addStudent">Add Student</label>
+    <button id="addStudentButton" class="btn btn-outline-success form-control">Add student</button>
+</div>
+<div class="col-md-6 mb-3">
+    <label for="removeStudent">Remove Student</label>
+    <button id="removeStudentButton" class="btn btn-outline-danger form-control" style="display: none;">Remove student</button>
+</div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+
+
+                    </div>
+
+
+
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+
+
 <style>
     .spinner-border-sm {
         width: 1.2rem;
@@ -220,7 +365,7 @@
     .search-result {
         background-color: white;
         border-radius: 0.25rem;
-        border: 1px solid #ccc;
+        /* border: 1px solid #ccc; */
     }
     .search-result-item {
         padding: 8px;
@@ -325,82 +470,6 @@
 </script>
 
 
-                <!-- Additional Non-Editable Details -->
-                <div class="row mt-4">
-                    <!-- Student Image -->
-                    <div class="col-xl-3 mb-3">
-                        <label for="studentImage">Student Image</label>
-                        <div class="text-center">
-                            <img id="image" src="{{ $bed->user->profile_photo_path ?? 'img/placeholder.jpg' }}" alt="Student Image"
-                                class="img-fluid " id="studentImage" style="max-width: 100%; height: auto;">
-                                <input type="text" name="image" id="imageInput" hidden>
-                        </div>
-                    </div>
-
-                    <!-- Student Details -->
-                    <div class="col-xl-9">
-                        <div class="row" id="reset">
-                            <!-- Name -->
-                            <div class="col-md-6 mb-3">
-                                <label for="name">Name</label>
-                                <input type="text" class="form-control" id="name" value="{{ $bed->user->name ?? '' }}" disabled>
-                            </div>
-
-                            <!-- Registration Number -->
-                            <div class="col-md-6 mb-3">
-                                <label for="registrationNumber">Registration Number</label>
-                                <input type="text" class="form-control" id="registrationNumber" value="{{ $bed->user->registration_number ?? '' }}" disabled>
-                            </div>
-
-                            <!-- Sponsorship -->
-                            <div class="col-md-6 mb-3">
-                                <label for="sponsorship">Sponsorship</label>
-                                <input type="text" class="form-control" id="sponsorship" value="{{ $bed->user->sponsorship ?? '' }}" disabled>
-                            </div>
-
-                            <!-- Phone -->
-                            <div class="col-md-6 mb-3">
-                                <label for="phone">Phone</label>
-                                <input type="text" class="form-control" id="phone" value="{{ $bed->user->phone ?? '' }}" disabled>
-                            </div>
-
-                            <!-- Gender -->
-                            <div class="col-md-6 mb-3">
-                                <label for="gender">Gender</label>
-                                <input type="text" class="form-control" id="gender" value="{{ $bed->user->gender ?? '' }}" disabled>
-                            </div>
-
-                            <!-- Nationality -->
-                            <div class="col-md-6 mb-3">
-                                <label for="nationality">Nationality</label>
-                                <input type="text" class="form-control" id="nationality" value="{{ $bed->user->nationality ?? '' }}" disabled>
-                            </div>
-
-                            <!-- Course -->
-                            <div class="col-md-6 mb-3">
-                                <label for="course">Course</label>
-                                <input type="text" class="form-control" id="course" value="{{ $bed->user->course ?? '' }}" disabled>
-                            </div>
-
-<!-- Email -->
-<div class="col-md-6 mb-3">
-    <label for="email">Email</label>
-    <input type="text" class="form-control" id="email" value="{{ $bed->user->email ?? '' }}" disabled>
-</div>
-
-<div class="col-md-6 mb-3">
-    <label for="addStudent">Add Student</label>
-    <button id="addStudentButton" class="btn btn-outline-success form-control">Add student</button>
-</div>
-<div class="col-md-6 mb-3">
-    <label for="removeStudent">Remove Student</label>
-    <button id="removeStudentButton" class="btn btn-outline-danger form-control" style="display: none;">Remove student</button>
-</div>
-
-                        </div>
-
-                    </div>
-                </div>
             </div>
 
 

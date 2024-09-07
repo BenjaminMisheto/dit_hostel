@@ -79,7 +79,6 @@ class ApplicationController extends Controller
     ]);
 }
 
-
 public function search(Request $request)
 {
     $query = $request->input('query', '');
@@ -121,12 +120,14 @@ public function search(Request $request)
                         <th scope="col">Img</th>
                         <th scope="col">Name</th>
                         <th scope="col">Reg No</th>
+                             <th scope="col">Course</th>
                         <th scope="col">Floor</th>
                         <th scope="col">Room</th>
                         <th scope="col">Bed</th>
                         <th scope="col">Payment</th>
-                        <th scope="col">Actions</th>
-                        <th scope="col">Status</th>
+
+                        <th scope="col">View</th>
+                      <th scope="col">Actions</th>
                     </tr>
                   </thead>';
         $html .= '<tbody>';
@@ -139,8 +140,16 @@ public function search(Request $request)
             $floor = optional($user->bed->floor)->floor_number ?? 'N/A';
             $room = optional($user->bed->room)->room_number ?? 'N/A';
             $bed = $user->bed->bed_number ?? 'N/A';
-            $paymentStatus = $user->payment_status ? 'Paid' : 'Not Paid';
-            $paymentClass = $user->payment_status ? 'text-success' : 'text-danger';
+
+            // Check if the user's payment status or expiration date affects the display
+            if (Carbon::now()->greaterThan($user->expiration_date) && empty($user->payment_status)) {
+                $paymentStatus = 'Expired';
+                $paymentClass = 'text-danger';
+            } else {
+                $paymentStatus = $user->payment_status ? 'Paid' : 'Not Paid';
+                $paymentClass = $user->payment_status ? 'text-success' : 'text-warning';
+            }
+
             $bedId = $user->bed->id;
             $userId = $user->id;
             $status = $user->status;
@@ -174,7 +183,6 @@ public function search(Request $request)
 
     return response()->make($html, 200, ['Content-Type' => 'text/html']);
 }
-
 
 
 

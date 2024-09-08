@@ -16,10 +16,12 @@ return new class extends Migration
     $table->string('name');
     $table->integer('registration_number')->nullable();
     $table->integer('counter')->default(0);
+    $table->integer('checkin')->default(0);
+    $table->integer('checkout')->default(0);
     $table->boolean('confirmation')->default(0);
     $table->boolean('application')->default(0);
     $table->string('status')->default('disapproved'); // Add status column with default value
-    $table->string('payment_status')->nullable();
+    $table->bigInteger('payment_status')->nullable();
     $table->bigInteger('Control_Number')->nullable();
 
     $table->integer('block_id')->nullable();

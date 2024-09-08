@@ -49,7 +49,7 @@
                     </div>
                 </div>
             </div>
-            <!-- End Card -->
+            <!-- End Card  jdcwqve-->
         </div>
     </div>
     <script>
@@ -187,9 +187,16 @@
                         Information
                     </h5>
 
+
                 </div>
+                <hr>
                 <div class="card-body pt-3">
-                    <div class="alert alert-success mb-4">
+
+
+
+                    @if ($user->payment_status == '')
+
+                    <div class="alert alert-success ">
                         <strong>Congratulations, {{$user->name}}!</strong><br>
                         <span>
                             We are pleased to inform you that your application has been approved. Please review the details below. Kindly generate a control number and complete the payment before  {{ $formattedExpirationDate }}. Failure to do so may result in your bed being reallocated to another student, and you will need to reapply.
@@ -197,8 +204,14 @@
 
                     </div>
 
+                    @else
+
+                    @endif
+
+
+
                     <div class="row mb-3">
-                        <div class="col font-weight-bold text-muted">
+                        <div class="col font-weight-bold ">
                             Name:
                         </div>
                         <div class="col">
@@ -207,7 +220,7 @@
                     </div>
 
                     <div class="row mb-3">
-                        <div class="col font-weight-bold text-muted">
+                        <div class="col font-weight-bold ">
                             Registration Number:
                         </div>
                         <div class="col">
@@ -216,7 +229,7 @@
                     </div>
 
                     <div class="row mb-3">
-                        <div class="col font-weight-bold text-muted">
+                        <div class="col font-weight-bold ">
                             Hostel:
                         </div>
                         <div class="col">
@@ -225,7 +238,7 @@
                     </div>
 
                     <div class="row mb-3">
-                        <div class="col font-weight-bold text-muted">
+                        <div class="col font-weight-bold ">
                             Room:
                         </div>
                         <div class="col">
@@ -234,7 +247,7 @@
                     </div>
 
                     <div class="row mb-4">
-                        <div class="col font-weight-bold text-muted">
+                        <div class="col font-weight-bold ">
                             Bed:
                         </div>
                         <div class="col">
@@ -246,7 +259,7 @@
 
 
                     <div class="row mb-4">
-                        <div class="col font-weight-bold text-muted">
+                        <div class="col font-weight-bold ">
                             Time left:
                         </div>
                         <div class="col">
@@ -381,7 +394,7 @@
                     @endif
                     @if (!empty($user->payment_status) && !empty($user->Control_Number))
                     <div class="row mb-4 ">
-                        <div class="col font-weight-bold text-muted">
+                        <div class="col font-weight-bold ">
                             Control Number:
                         </div>
                         <div class="col">
@@ -395,15 +408,238 @@
                                     Paid Amount:
                                 </div>
                                 <div class="col">
-                                    <span id="paidAmount" class="p-2">{{ number_format($user->payment_status) }}</span>
+                                    <span id="paidAmount" class="p-2">{{ number_format($user->payment_status) ?? 'NULL' }}</span>
 
                                 </div>
                             </div>
+                            <div class="alert alert-info">
+                                <strong>Important Notice:</strong><br>
+                                <span>
+                                    Please ensure you visit your Block Manager, <strong>{{$user->block->manager}}</strong>, by <strong>April 1, 2024</strong>, to confirm your hostel accommodation. After confirmation, kindly complete the form below to proceed with your check-in.
 
-                    <div class="alert alert-danger">
-                        <strong>Note!</strong><br>
-                        <span>Please visit your Block Manager before April 1, 2024, to confirm your accommodation at the hostel. Failure to adhere to this directive may result in the reassignment of your hostel accommodation to another student, and refunds will not be issued.</span>
-                    </div>
+                                    Ensure that all required items are brought with you, and carefully inspect all check-out items before confirming their condition, as you will be responsible for returning them in the <strong>same condition</strong>.
+
+                                    Failure to adhere to these guidelines may result in your accommodation being <strong>reassigned</strong> to another student, and <strong>no refunds</strong> will be issued.
+                                </span>
+                            </div>
+
+                            <style>
+                                .list-group-numbered li::before {
+                                    counter-increment: list-counter;
+                                    content: counter(list-counter) ". ";
+                                    font-weight: bold;
+                                    margin-right: 10px;
+                                }
+
+                                ol.list-group-numbered {
+                                    counter-reset: list-counter;
+                                    padding-left: 0;
+                                }
+
+                                .list-group-numbered li {
+                                    display: flex;
+                                    align-items: center;
+                                }
+                            </style>
+
+                            <div class="mt-4">
+                                <div class="form">
+                                    <div class="row">
+                                        <!-- Items to Bring Section -->
+                                        <div class="col-md-6">
+                                            <h5 class="mb-3">Items to Bring:</h5>
+                                            @if($confirmation)
+                                                @if($confirmation->items_to_bring_names)
+                                                    @php
+                                                        $itemsToBring = json_decode($confirmation->items_to_bring_names, true);
+                                                    @endphp
+                                                    @if(empty($itemsToBring))
+                                                        <div class="alert alert-warning">
+                                                            <strong>Note:</strong> No items to bring data available in the confirmation record.
+                                                        </div>
+                                                    @else
+                                                        <ol class="list-group list-group-numbered">
+                                                            @foreach($itemsToBring as $item)
+                                                                @if(is_array($item))
+                                                                    <li class="list-group-item border-0">
+                                                                        <div>
+                                                                            <strong>{{ $item['name'] ?? 'Unknown' }}</strong>
+                                                                            <p class="mb-0">Quantity: <span>{{ $item['quantity'] ?? 'N/A' }}</span></p>
+                                                                            {{-- <p class="mb-0">Status: <span>{{ $item['status'] ?? 'N/A' }}</span></p> --}}
+                                                                            <input type="hidden" name="requirement_ids[]" value="{{ $item['id'] ?? '' }}">
+                                                                        </div>
+                                                                    </li>
+                                                                @else
+                                                                    <div class="alert alert-warning">
+                                                                        <strong>Note:</strong> Unexpected data format in items to bring.
+                                                                    </div>
+                                                                @endif
+                                                            @endforeach
+                                                        </ol>
+                                                    @endif
+                                                @else
+                                                    <div class="alert alert-warning">
+                                                        <strong>Note:</strong> Items to bring data is not available in the confirmation record.
+                                                    </div>
+                                                @endif
+                                            @else
+                                                @if($requirements->isEmpty())
+                                                    <div class="alert alert-warning">
+                                                        <strong>Note:</strong> Items are not specified by admin. Please contact the admin, as you will not be able to complete your application without them.
+                                                    </div>
+                                                @else
+                                                    <ol class="list-group list-group-numbered">
+                                                        @foreach($requirements as $requirement)
+                                                            <li class="list-group-item border-0">
+                                                                <div>
+                                                                    <strong>{{ $requirement->name }}</strong>
+                                                                    <p class="mb-0">Quantity: <span>{{ $requirement->quantity }}</span></p>
+                                                                    {{-- <p class="mb-0">Status: <span>{{ $requirement->status }}</span></p> --}}
+                                                                    <input type="hidden" name="requirement_ids[]" value="{{ $requirement->id }}">
+                                                                </div>
+                                                            </li>
+                                                        @endforeach
+                                                    </ol>
+                                                @endif
+                                            @endif
+                                        </div>
+
+                                        <!-- Check-Out Items Section -->
+                                        <div class="col-md-6">
+                                            <h5 class="mb-3">Given Items:</h5>
+                                            @if($confirmation)
+                                                @if($confirmation->checkout_items_names)
+                                                    @php
+                                                        $checkoutItemsNames = json_decode($confirmation->checkout_items_names, true);
+                                                    @endphp
+                                                    @if(empty($checkoutItemsNames))
+                                                        <div class="alert alert-warning">
+                                                            <strong>Note:</strong> No check-out items data available in the confirmation record.
+                                                        </div>
+                                                    @else
+                                                        <ol class="list-group list-group-numbered">
+                                                            @foreach($checkoutItemsNames as $item)
+                                                                @if(is_array($item))
+                                                                    <li class="list-group-item border-0">
+                                                                        <div>
+                                                                            <strong>{{ $item['name'] ?? 'Unknown' }}</strong>
+                                                                            <p class="mb-0">Condition: <span>{{ $item['condition'] ?? 'N/A' }}</span></p>
+                                                                            <input type="hidden" name="item_ids[]" value="{{ $item['id'] ?? '' }}">
+                                                                        </div>
+                                                                    </li>
+                                                                @else
+                                                                    <div class="alert alert-warning">
+                                                                        <strong>Note:</strong> Unexpected data format in check-out items.
+                                                                    </div>
+                                                                @endif
+                                                            @endforeach
+                                                        </ol>
+                                                    @endif
+                                                @else
+                                                    <div class="alert alert-warning">
+                                                        <strong>Note:</strong> Check-out items data is not available in the confirmation record.
+                                                    </div>
+                                                @endif
+                                            @else
+                                                @if($checkOutItems->isEmpty())
+                                                    <div class="alert alert-warning">
+                                                        <strong>Note:</strong> Check-out items are not specified by admin. Please contact the admin, as you will not be able to complete your application without them.
+                                                    </div>
+                                                @else
+                                                    <ol class="list-group list-group-numbered">
+                                                        @foreach($checkOutItems as $item)
+                                                            <li class="list-group-item border-0">
+                                                                <div>
+                                                                    <strong>{{ $item->name }}</strong>
+                                                                    <p class="mb-0">Condition: <span>{{ $item->condition }}</span></p>
+                                                                    <input type="hidden" name="item_ids[]" value="{{ $item->id }}">
+                                                                </div>
+                                                            </li>
+                                                        @endforeach
+                                                    </ol>
+                                                @endif
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <!-- Buttons for Confirm -->
+                                    @if(!$requirements->isEmpty() && !$checkOutItems->isEmpty())
+
+                                        @if($confirmation)
+                                        @if($user->checkin == 2)
+                                        <div class="text-center mt-4">
+                                            <div class="alert alert-success">
+                                                <strong>Note:</strong> Congratulations! You are now officially a member of {{$user->block->name}}. Enjoy your stay at the hostel, and please adhere to all regulations.
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="text-center mt-4">
+                                            <div class="alert alert-success">
+                                                <strong>Note:</strong> You have already confirmed your items. Please await confirmation from the admin to complete your check-in process.
+                                            </div>
+                                        </div>
+                                    @endif
+
+
+
+
+
+
+
+                                        @else
+                                            <div class="text-center mt-4">
+                                                <button id="confirm" class="btn btn-outline-primary">Confirm Check-Out Items</button>
+                                            </div>
+                                        @endif
+                                    @endif
+                                </div>
+                            </div>
+
+
+
+
+
+<script>
+    $(document).ready(function() {
+
+        $('#confirm').click(function() {
+            if (confirm('Are you sure?')) {
+            $('#overlay').css('display', 'flex');
+            $.ajax({
+                url: '/confirm-requirements-items',
+                method: 'POST',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    user_id: '{{ auth()->id() }}',  // Assuming you have access to user ID in the view
+                    block_id: '{{ $user->block->id }}' // Assuming you have block ID available in the view
+                },
+                success: function(response) {
+                    $('#overlay').fadeOut();
+                    showToast('#success-toast', response.message);
+                    result();
+                },
+                error: function(xhr) {
+                    $('#overlay').fadeOut();
+                    let errorMessage = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'An error occurred while processing your confirmation.';
+                    showToast('#error-toast', errorMessage);
+                }
+            });
+        }
+
+        });
+
+        function showToast(toastId, message) {
+            var $toast = $(toastId);
+            $toast.find('.toast-body').text(message);
+            $toast.toast({
+                delay: 3000
+            });
+            $toast.toast('show');
+        }
+    });
+</script>
+
+
 
                     @else
 
@@ -413,7 +649,7 @@
 
 
                         <div class="row mb-4 ">
-                            <div class="col font-weight-bold text-muted">
+                            <div class="col font-weight-bold ">
                                 Control Number:
                             </div>
                             <div class="col">
@@ -432,7 +668,7 @@
 
                               <!-- Paid Amount Display -->
                               <div class="row mb-4 ">
-                                <div class="col font-weight-bold text-muted">
+                                <div class="col font-weight-bold ">
                                     Paid Amount:
                                 </div>
                                 <div class="col">
@@ -458,7 +694,7 @@
 
                     <!-- Display Control Number -->
                     <div class="row mb-3 ">
-                        <div class="col font-weight-bold text-muted">
+                        <div class="col font-weight-bold ">
                             Control Number:
                         </div>
                         <div class="col">
@@ -477,7 +713,7 @@
 
                     <!-- Paid Amount Display -->
                     <div class="row mb-4 ">
-                        <div class="col font-weight-bold text-muted">
+                        <div class="col font-weight-bold ">
                             Paid Amount:
                         </div>
                         <div class="col">

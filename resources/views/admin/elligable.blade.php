@@ -1,6 +1,6 @@
 <style>
     /* Hide columns progressively based on screen size */
-    @media (max-width: 1200px) {
+    /* @media (max-width: 1200px) {
         .col-sponsor, .col-phone, .col-gender, .col-nationality, .col-course, .col-email, .col-payment-status { display: none; }
     }
     @media (max-width: 992px) {
@@ -14,7 +14,7 @@
     }
     @media (max-width: 400px) {
         .col-course, .col-email, .col-payment-status { display: none; }
-    }
+    } */
 
     th.sorted {
     background-color: #f8f9fa; /* Light gray background for the sorted column */
@@ -36,7 +36,11 @@ th.asc::after {
 th.desc::after {
     content: "▼"; /* Down arrow for descending order */
 }
-
+.table td, .table th {
+        white-space: nowrap; /* Prevent text from wrapping */
+        overflow: hidden; /* Hide overflow */
+        text-overflow: ellipsis; /* Add ellipsis for overflowed text */
+    }
 
 </style>
 <div class="content">

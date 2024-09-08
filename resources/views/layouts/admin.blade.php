@@ -49,6 +49,8 @@
         <!-- Error message will be inserted here -->
     </div>
 </div>
+
+
 <div id="preloder">
     <div class="loader">
         <div class="spinner-border " style="width: 3rem; height: 3rem;"></div>
@@ -240,22 +242,39 @@
                     </li>
 
 
+
+
+
+
+
+                    <li class="side-nav-menu-item" id="nav_checkin">
+                        <a class="side-nav-menu-link media align-items-center" href="#" onclick="checkin()">
+                            <span class="side-nav-menu-icon d-flex mr-3">
+                                <i class="gd-shift-right small"></i>
+                            </span>
+                            <span class="side-nav-fadeout-on-closed media-body text-dark">Check-in</span>
+                        </a>
+                    </li>
+
+
+                    <li class="side-nav-menu-item" id="nav_checkout">
+                        <a class="side-nav-menu-link media align-items-center" href="#" onclick="checkout()">
+                            <span class="side-nav-menu-icon d-flex mr-3">
+                                <i class="gd-shift-left small"></i>
+                            </span>
+                            <span class="side-nav-fadeout-on-closed media-body text-dark">Check-out</span>
+                        </a>
+                    </li>
+
+
+
+
                     <li class="side-nav-menu-item "  id="nav_elligable">
                         <a class="side-nav-menu-link media align-items-center" href="#"onclick="elligable()">
                             <span class="side-nav-menu-icon d-flex mr-3">
                                 <i class="gd-user small"></i>
                             </span>
                             <span class="side-nav-fadeout-on-closed media-body  text-dark">Elligable</span>
-                        </a>
-                    </li>
-
-
-                    <li class="side-nav-menu-item "  id="nav_control">
-                        <a class="side-nav-menu-link media align-items-center"  href="#"onclick="control()">
-                            <span class="side-nav-menu-icon d-flex mr-3">
-                                <i class="gd-panel small"></i>
-                            </span>
-                            <span class="side-nav-fadeout-on-closed media-body  text-dark">Control</span>
                         </a>
                     </li>
 
@@ -267,6 +286,15 @@
                                 <i class="gd-printer small"></i>
                             </span>
                             <span class="side-nav-fadeout-on-closed media-body text-dark">Report</span>
+                        </a>
+                    </li>
+
+                    <li class="side-nav-menu-item "  id="nav_control">
+                        <a class="side-nav-menu-link media align-items-center"  href="#"onclick="control()">
+                            <span class="side-nav-menu-icon d-flex mr-3">
+                                <i class="gd-panel small"></i>
+                            </span>
+                            <span class="side-nav-fadeout-on-closed media-body  text-dark">Control</span>
                         </a>
                     </li>
 
@@ -396,6 +424,160 @@
         <script>
 
 
+function checkin(start = 1, end = 10){
+                const selectors = [
+                    "#nav_hostel",
+        "#nav_aplication",
+        "#nav_elligable",
+        "#nav_result",
+        "#nav_control",
+        "#nav_profile",
+        "#nav_setting",
+        "#nav_report",
+        "#nav_checkout",
+
+    ];
+
+    selectors.forEach(function(selector) {
+        $(selector).removeClass("active");
+    });
+    $("#nav_checkin").addClass("active");
+                $("#dash").html(
+                    '<div class="spinner-container">' +
+                    '<div class="black show d-flex align-items-center justify-content-center">' +
+                    '<div class="spinner-border lik" style="width: 3rem; height: 3rem;" role="status">' +
+                    '<span class="sr-only">Loading...</span>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>'
+                );
+
+                $.ajax({
+    url: "{{ route('admin.checkin') }}",
+    method: 'GET',
+    data: {
+        start: start,
+        end: end
+    },
+    success: function(response) {
+        $("#dash").html(response);
+        checkinPagination(); // Use the elligable-specific pagination setup
+    },
+    error: function(xhr) {
+        const msg = `Sorry, but there was an error: ${xhr.status} ${xhr.statusText}`;
+        $("#error").html(msg);
+    }
+});
+
+}
+
+
+// Setup pagination event listeners specifically for the elligable function
+function checkinPagination() {
+$('.pagination a').on('click', function(event) {
+    event.preventDefault(); // Prevent default link behavior
+
+    var url = $(this).attr('href'); // Get the URL from the clicked link
+    var queryParams = new URLSearchParams(url.split('?')[1]); // Parse query parameters
+
+    var page = queryParams.get('page'); // Get the page number
+    var start = (page - 1) * 10 + 1; // Calculate start (10 records per page)
+    var end = start + 9; // Calculate end (10 records per page)
+
+    // Call the `elligable` function with new start and end values
+    checkin(start, end);
+});
+}
+
+
+
+            function checkout(start = 1, end = 10){
+                const selectors = [
+                    "#nav_hostel",
+        "#nav_aplication",
+        "#nav_elligable",
+        "#nav_result",
+        "#nav_control",
+        "#nav_profile",
+        "#nav_setting",
+        "#nav_report",
+        "#nav_checkin",
+
+    ];
+
+    selectors.forEach(function(selector) {
+        $(selector).removeClass("active");
+    });
+    $("#nav_checkout").addClass("active");
+                $("#dash").html(
+                    '<div class="spinner-container">' +
+                    '<div class="black show d-flex align-items-center justify-content-center">' +
+                    '<div class="spinner-border lik" style="width: 3rem; height: 3rem;" role="status">' +
+                    '<span class="sr-only">Loading...</span>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>'
+                );
+
+                $.ajax({
+    url: "{{ route('admin.checkout') }}",
+    method: 'GET',
+    data: {
+        start: start,
+        end: end
+    },
+    success: function(response) {
+        $("#dash").html(response);
+        checkoutPagination(); // Use the elligable-specific pagination setup
+    },
+    error: function(xhr) {
+        const msg = `Sorry, but there was an error: ${xhr.status} ${xhr.statusText}`;
+        $("#error").html(msg);
+    }
+});
+            }
+
+
+            // Setup pagination event listeners specifically for the elligable function
+function checkoutPagination() {
+$('.pagination a').on('click', function(event) {
+    event.preventDefault(); // Prevent default link behavior
+
+    var url = $(this).attr('href'); // Get the URL from the clicked link
+    var queryParams = new URLSearchParams(url.split('?')[1]); // Parse query parameters
+
+    var page = queryParams.get('page'); // Get the page number
+    var start = (page - 1) * 10 + 1; // Calculate start (10 records per page)
+    var end = start + 9; // Calculate end (10 records per page)
+
+    // Call the `elligable` function with new start and end values
+    checkout(start, end);
+});
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function report(){
                 const selectors = [
                     "#nav_hostel",
@@ -405,6 +587,8 @@ function report(){
         "#nav_control",
         "#nav_profile",
         "#nav_setting",
+        "#nav_checkout",
+        "#nav_checkin",
 
     ];
 
@@ -444,6 +628,8 @@ function report(){
         "#nav_control",
         "#nav_setting",
         "#nav_report",
+        "#nav_checkout",
+        "#nav_checkin",
     ];
 
     selectors.forEach(function(selector) {
@@ -478,6 +664,8 @@ function report(){
         "#nav_control",
         "#nav_profile",
         "#nav_report",
+        "#nav_checkout",
+        "#nav_checkin",
     ];
 
     selectors.forEach(function(selector) {
@@ -512,6 +700,8 @@ function hostel() {
         "#nav_control",
         "#nav_setting",
         "#nav_report",
+        "#nav_checkout",
+        "#nav_checkin",
     ];
 
     selectors.forEach(function(selector) {
@@ -545,6 +735,8 @@ function aplication(start = 1, end = 100) {
         "#nav_control",
         "#nav_setting",
         "#nav_report",
+        "#nav_checkout",
+        "#nav_checkin",
     ];
 
     selectors.forEach(function(selector) {
@@ -611,6 +803,8 @@ function room(blockId) {
         "#nav_control",
         "#nav_setting",
         "#nav_report",
+        "#nav_checkout",
+        "#nav_checkin",
     ];
 
     selectors.forEach(function(selector) {
@@ -646,6 +840,8 @@ function floorAction(action, floorId) {
         "#nav_control",
         "#nav_setting",
         "#nav_report",
+        "#nav_checkout",
+        "#nav_checkin",
     ];
 
     selectors.forEach(function(selector) {
@@ -700,6 +896,8 @@ const selectors = [
     "#nav_control",
     "#nav_setting",
     "#nav_report",
+    "#nav_checkout",
+    "#nav_checkin",
 ];
 
 selectors.forEach(function(selector) {
@@ -735,6 +933,9 @@ $.ajax({
 });
 }
 
+
+
+
 // Setup pagination event listeners specifically for the elligable function
 function setupElligablePagination() {
 $('.pagination a').on('click', function(event) {
@@ -764,6 +965,8 @@ function control() {
         "#nav_elligable",
         "#nav_setting",
         "#nav_report",
+        "#nav_checkout",
+        "#nav_checkin",
     ];
 
     selectors.forEach(function(selector) {
@@ -802,6 +1005,8 @@ function control() {
         "#nav_finish",
         "#nav_setting",
         "#nav_report",
+        "#nav_checkout",
+        "#nav_checkin",
     ];
 
     selectors.forEach(function(selector) {
@@ -831,6 +1036,9 @@ function control() {
         $(".loader").fadeOut();
         $("#preloder").delay(200).fadeOut("slow");
     });
+
+
+
         </script>
 
     </body>

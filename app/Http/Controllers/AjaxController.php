@@ -14,6 +14,9 @@ use App\Models\Bed;
 use App\Models\Publish;
 use App\Models\SliderData;
 use Illuminate\Support\Facades\DB;
+use App\Models\CheckOutItem;
+use App\Models\Requirement;
+use App\Models\RequirementItemConfirmation;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf; // Ensure you have Barryvdh\DomPDF installed
 
@@ -790,21 +793,33 @@ public function getUserInfo()
     // Return the view with user information
     return view('user.finish', ['user' => $user]);
 }
-
-public function getUserInfoResult()
+public function getUserInfoResult(Request $request)
 {
     // Retrieve the authenticated user
     $user = auth()->user();
 
+    // Retrieve the selected block ID from the user
+    $selectedBlockId = $user->block_id;
+
     // Convert expiration_date to ISO 8601 format
     $expirationDate = Carbon::parse($user->expiration_date)->toIso8601String();
     $formattedExpirationDate = Carbon::parse($user->expiration_date)->format('F j, Y');
+
     // Retrieve all records from the publishes table
     $publishes = Publish::all();
 
-    // Pass the user, publishes, and expirationDate to the 'user.result' view
-    return view('user.result', compact('user', 'publishes', 'expirationDate','formattedExpirationDate'));
+    // Retrieve requirements and check-out items for the selected block
+    $requirements = Requirement::where('block_id', $selectedBlockId)->get();
+    $checkOutItems = CheckOutItem::where('block_id', $selectedBlockId)->get();
+
+    // Check if a confirmation record already exists for the user and block
+    $confirmation = RequirementItemConfirmation::where('user_id', $user->id)->first();
+
+    // Pass the user, publishes, expirationDate, formattedExpirationDate, requirements, checkOutItems, and confirmation to the view
+    return view('user.result', compact('user', 'publishes', 'expirationDate', 'formattedExpirationDate', 'requirements', 'checkOutItems', 'confirmation'));
 }
+
+
 
 
 public function updateExpirationapp(Request $request)
@@ -1253,7 +1268,6 @@ public function updateControlNumber(Request $request)
             'courses' => $courses
         ]);
     }
-
 
 
 

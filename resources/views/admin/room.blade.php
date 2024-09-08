@@ -1,813 +1,1145 @@
-{{-- <style>
-    #dash {
-        position: relative;
-        width: 100%;
-        height: 100vh; /* Adjust the height as needed */
-        overflow: hidden;
-    }
-
-    #dash::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-image: url('{{ $block->image_data }}'); /* Replace with your image path */
-        background-size: cover;
-        background-position: center;
-        opacity: 0.1;
-        z-index: -1; /* Ensure the pseudo-element is behind the content */
-    }
-</style> --}}
 @php
 use Carbon\Carbon;
 use App\Models\User;
 
 @endphp
+
 <div id="dash">
-    @foreach($block->floors as $index => $floor)
-    <!-- Modal -->
-    <div id="deletefloor{{ $floor->id }}" class="modal fade" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog rounded" role="document">
-            <div class="modal-content">
-                <div class="modal-body text-center">
-                    <div class="text-center rounded">
-                        <i class="gd-alert icon-text icon-text-xxl d-block text-danger mb-3 mb-md-4"></i>
-                        <div class="h5 font-weight-semi-bold mb-2">Delete Floor
-                            {{ $floor->floor_number }}</div>
-                        <p class="mb-3 mb-md-4">Deleting this floor will also remove all
-                            associated rooms and beds.</p>
-                        <div class="d-flex justify-content-between mb-4">
-                            <a class="btn btn-outline-success" href="#"
-                                onclick="deleteFloor(event, {{ $floor->id }})">Yes</a>
-                            <a class="btn btn-outline-danger" href="#" data-dismiss="modal">No</a>
+
+
+        <ul class="nav nav-v2 nav-primary nav-justified d-block d-xl-flex  container" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center py-2 px-3 p-xl-4  active" href="#tabs1-tab1" role="tab" aria-selected="true"
+                   data-toggle="tab">{{$block->name}}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center py-2 px-3 p-xl-4 " href="#tabs1-tab2" role="tab" aria-selected="false"
+                   data-toggle="tab">Check-Out Items
+                </a>
+            </li>
+        </ul>
+
+
+
+        <div id="tabsContent1" class="card-body tab-content p-0">
+            <div class="tab-pane fade show active" id="tabs1-tab1" role="tabpanel">
+                @foreach($block->floors as $index => $floor)
+                <!-- Modal -->
+                <div id="deletefloor{{ $floor->id }}" class="modal fade" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog rounded" role="document">
+                        <div class="modal-content">
+                            <div class="modal-body text-center">
+                                <div class="text-center rounded">
+                                    <i class="gd-alert icon-text icon-text-xxl d-block text-danger mb-3 mb-md-4"></i>
+                                    <div class="h5 font-weight-semi-bold mb-2">Delete Floor
+                                        {{ $floor->floor_number }}</div>
+                                    <p class="mb-3 mb-md-4">Deleting this floor will also remove all
+                                        associated rooms and beds.</p>
+                                    <div class="d-flex justify-content-between mb-4">
+                                        <a class="btn btn-outline-success" href="#"
+                                            onclick="deleteFloor(event, {{ $floor->id }})">Yes</a>
+                                        <a class="btn btn-outline-danger" href="#" data-dismiss="modal">No</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End Modal -->
+                @endforeach
+
+
+
+
+                <!-- Modal -->
+            <div id="deleteBlock" class="modal fade" role="dialog" aria-labelledby="exampleModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog rounded" role="document">
+                    <div class="modal-content">
+                        <div class="modal-body text-center">
+                            <div class="text-center rounded">
+                                <i class="gd-alert icon-text icon-text-xxl d-block text-danger mb-3 mb-md-4"></i>
+                                <div class="h5 font-weight-semi-bold mb-2">Delete Block {{ $block->name }} </div>
+                                <p class="mb-3 mb-md-4">Deleting this Block will also remove all associated floors, rooms, and beds.
+                                </p>
+                                <div class="d-flex justify-content-between mb-4">
+                                    <a class="btn btn-outline-success" href="#"
+                                        onclick="deleteBlock(event, {{ $block->id }})">Yes</a>
+                                    <a class="btn btn-outline-danger" href="#" data-dismiss="modal">No</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-    <!-- End Modal -->
-    @endforeach
 
+            <!-- End Modal -->
 
+            <!-- Modal -->
+            <div id="updateBlock" class="modal fade" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Update {{$block->name}}</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="container text-center">
+                                <div class="d-flex justify-content-center align-items-center mb-4">
+                                    <div id="imagePlaceholder" style="
+                                        width: 400px;
+                                        height: 450px;
+                                        background-image: url('{{$block->image_data}}');
+                                        background-size: cover;
+                                        background-position: center;
+                                        position: relative;">
+                                        <input type="file" id="imageInput" style="display: none;" accept="image/*">
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                    <button id="uploadButton" class="btn btn-default">Upload Image</button>
+                                </div>
+                            </div>
 
+                            <input type="file" id="imageInput" accept="image/*" hidden>
+                            <form id="blockForm" data-block-id="{{ $block->id }}">
+                                <div id="step1">
+                                    <div class="form-group">
+                                        <label  for="blockName">Block Name</label>
+                                        <input type="text" class="form-control" id="blockName" value="{{$block->name}}">
+                                        <small id="blockNameError" class=" text-danger"></small>
 
-    <!-- Modal -->
-<div id="deleteBlock" class="modal fade" role="dialog" aria-labelledby="exampleModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog rounded" role="document">
-        <div class="modal-content">
-            <div class="modal-body text-center">
-                <div class="text-center rounded">
-                    <i class="gd-alert icon-text icon-text-xxl d-block text-danger mb-3 mb-md-4"></i>
-                    <div class="h5 font-weight-semi-bold mb-2">Delete Block {{ $block->name }} </div>
-                    <p class="mb-3 mb-md-4">Deleting this Block will also remove all associated floors, rooms, and beds.
-                    </p>
-                    <div class="d-flex justify-content-between mb-4">
-                        <a class="btn btn-outline-success" href="#"
-                            onclick="deleteBlock(event, {{ $block->id }})">Yes</a>
-                        <a class="btn btn-outline-danger" href="#" data-dismiss="modal">No</a>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="blockManager">Block Manager</label>
+                                        <input type="text" class="form-control" id="blockManager" value="{{$block->manager}}">
+                                        <small id="blockManagerError" class=" text-danger"></small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="location">Location</label>
+                                        <input type="text" class="form-control" id="location" name="location"
+                                            value="{{$block->location}}">
+                                        <small id="locationError" class=" text-danger"></small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="blockPrice">Block Price</label>
+                                        <input type="number" class="form-control" id="blockPrice" value="{{$block->price}}">
+                                        <small id="blockPriceError" class=" text-danger"></small>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-primary" id="nextButton" onclick="updateblock()">Submit</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- End Modal -->
-
-<!-- Modal -->
-<div id="updateBlock" class="modal fade" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Update {{$block->name}}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="container text-center">
-                    <div class="d-flex justify-content-center align-items-center mb-4">
-                        <div id="imagePlaceholder" style="
-                            width: 400px;
-                            height: 450px;
-                            background-image: url('{{$block->image_data}}');
-                            background-size: cover;
-                            background-position: center;
-                            position: relative;">
-                            <input type="file" id="imageInput" style="display: none;" accept="image/*">
-                        </div>
-                    </div>
-                    <div class="text-center">
-                        <button id="uploadButton" class="btn btn-default">Upload Image</button>
-                    </div>
-                </div>
-
-                <input type="file" id="imageInput" accept="image/*" hidden>
-                <form id="blockForm" data-block-id="{{ $block->id }}">
-                    <div id="step1">
-                        <div class="form-group">
-                            <label  for="blockName">Block Name</label>
-                            <input type="text" class="form-control" id="blockName" value="{{$block->name}}">
-                            <small id="blockNameError" class=" text-danger"></small>
-
-                        </div>
-                        <div class="form-group">
-                            <label for="blockManager">Block Manager</label>
-                            <input type="text" class="form-control" id="blockManager" value="{{$block->manager}}">
-                            <small id="blockManagerError" class=" text-danger"></small>
-                        </div>
-                        <div class="form-group">
-                            <label for="location">Location</label>
-                            <input type="text" class="form-control" id="location" name="location"
-                                value="{{$block->location}}">
-                            <small id="locationError" class=" text-danger"></small>
-                        </div>
-                        <div class="form-group">
-                            <label for="blockPrice">Block Price</label>
-                            <input type="number" class="form-control" id="blockPrice" value="{{$block->price}}">
-                            <small id="blockPriceError" class=" text-danger"></small>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" id="nextButton" onclick="updateblock()">Submit</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 
 
 
-<!-- End Modal -->
+            <!-- End Modal -->
 
-<script>
+            <script>
 
-$(document).ready(function() {
-    var $imageInput = $('#imageInput');
-    var $uploadButton = $('#uploadButton');
-    var $imagePlaceholder = $('#imagePlaceholder');
-    var croppieInstance;
+            $(document).ready(function() {
+                var $imageInput = $('#imageInput');
+                var $uploadButton = $('#uploadButton');
+                var $imagePlaceholder = $('#imagePlaceholder');
+                var croppieInstance;
 
-    // Trigger file input click on upload button click
-    $uploadButton.on('click', function() {
-        $imageInput.trigger('click');
-    });
+                // Trigger file input click on upload button click
+                $uploadButton.on('click', function() {
+                    $imageInput.trigger('click');
+                });
 
-    // Handle file input change
-    $imageInput.on('change', function(event) {
-        $('#imagePlaceholder').css('background-image', 'none');
-        if (event.target.files && event.target.files[0]) {
-            var file = event.target.files[0];
-            if (file.type.match('image.*')) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    if (croppieInstance) {
-                        croppieInstance.destroy();
-                        croppieInstance = null;
-                    }
-                    croppieInstance = new Croppie($imagePlaceholder[0], {
-                        viewport: { width: 400, height: 400, type: 'square' },
-                        boundary: { width: 400, height: 400 },
-                        showZoomer: true,
-                        enableOrientation: true
-                    });
-                    croppieInstance.bind({ url: e.target.result });
+                // Handle file input change
+                $imageInput.on('change', function(event) {
+                    $('#imagePlaceholder').css('background-image', 'none');
+                    if (event.target.files && event.target.files[0]) {
+                        var file = event.target.files[0];
+                        if (file.type.match('image.*')) {
+                            var reader = new FileReader();
+                            reader.onload = function(e) {
+                                if (croppieInstance) {
+                                    croppieInstance.destroy();
+                                    croppieInstance = null;
+                                }
+                                croppieInstance = new Croppie($imagePlaceholder[0], {
+                                    viewport: { width: 400, height: 400, type: 'square' },
+                                    boundary: { width: 400, height: 400 },
+                                    showZoomer: true,
+                                    enableOrientation: true
+                                });
+                                croppieInstance.bind({ url: e.target.result });
 
 
-                };
-                reader.readAsDataURL(file);
-            }
-        } else {
-            $imageInput.val('');
-        }
-    });
-
-    // Form submit function for updating the block with validation
-    window.updateblock = function(event) {
-        if (event) {
-            event.preventDefault();
-        }
-
-        var isValid = true;
-
-        // Clear previous error messages
-        $('.form-text.text-danger').text('');
-
-        var blockName = $('#blockName').val().trim();
-        var blockLocation = $('#location').val().trim();
-        var blockManager = $('#blockManager').val().trim();
-        var blockPrice = $('#blockPrice').val().trim();
-
-        // Validation
-        if (!blockName) {
-
-            $('#blockNameError').text('Block Name is required.');
-
-            isValid = false;
-        }
-
-        if (!blockManager) {
-            $('#blockManagerError').text('Block manager are required.');
-            isValid = false;
-        }
-
-        if (!blockLocation) {
-            $('#locationError').text('Location is required.');
-            isValid = false;
-        }
-
-        if (blockPrice === '' || isNaN(blockPrice) || parseFloat(blockPrice) <= 0) {
-            $('#blockPriceError').text('Please enter a valid price.');
-            isValid = false;
-        }
-
-        if (!isValid) {
-            return; // Stop form submission if validation fails
-        }
-
-        var imagePromise = croppieInstance ? croppieInstance.result('base64') : Promise.resolve(null);
-
-        imagePromise.then(function(image) {
-            $('#submitButton').prop('disabled', true);
-            $('#overlay').css('display', 'flex');
-
-            var csrfToken = $('meta[name="csrf-token"]').attr('content');
-            var blockId = $('#blockForm').data('block-id');
-
-            var formData = {
-                blockName: blockName,
-                blocklocation: blockLocation,
-                blockManager: blockManager,
-                blockPrice: parseFloat(blockPrice),
-                image: image || null
-            };
-
-            $.ajax({
-                url: '/blocks/update/' + blockId,
-                type: 'PUT',
-                data: {
-                    _token: csrfToken,
-                    blocklocation: formData.blocklocation,
-                    blockName: formData.blockName,
-                    blockManager: formData.blockManager,
-                    blockPrice: formData.blockPrice,
-                    image: formData.image
-                },
-                success: function(response) {
-                    if (response.success) {
-                        showToast('success', 'Block updated successfully!');
-                        closeModalAndExecuteHostel();
-                        $('#overlay').fadeOut();
-                    } else {
-                        showToast('error', response.message);
-                        $('#submitButton').prop('disabled', false);
-                    }
-                },
-                error: function(xhr) {
-                    if (xhr.status === 422) {
-                        var errors = xhr.responseJSON.errors;
-                        for (var key in errors) {
-                            if (errors.hasOwnProperty(key)) {
-                                $('#' + key + 'Error').text(errors[key][0]);
-                            }
+                            };
+                            reader.readAsDataURL(file);
                         }
                     } else {
-                        showToast('error', 'An error occurred while updating the block.');
+                        $imageInput.val('');
                     }
-                    $('#submitButton').prop('disabled', false);
-                    $('#overlay').fadeOut();
-                }
-            });
-        });
-    };
-
-    function showToast(type, message) {
-        var $toast = type === 'success' ? $('#success-toast') : $('#error-toast');
-        $toast.find('.toast-body').text(message);
-        $toast.toast({ delay: 3000 }).toast('show');
-    }
-
-    function closeModalAndExecuteHostel() {
-        $('#updateBlock').modal('hide');
-        $('#updateBlock').on('hidden.bs.modal', function() {
-            room({{ $block->id }})
-        });
-    }
-});
-
-
-</script>
-<script>
-    $(document).ready(function() {
-        // Function to handle the block deletion
-        window.deleteBlock = function(event, blockId) {
-            event.preventDefault(); // Prevent default action
-            // Show the overlay
-            $('#overlay').css('display', 'flex');
-            // Disable the button to prevent multiple submissions
-            $('#deleteblock .btn-outline-success').prop('disabled', true);
-            // Get the CSRF token from the meta tag in the HTML
-            var csrfToken = $('meta[name="csrf-token"]').attr('content');
-            // Make the AJAX request to delete the block
-            $.ajax({
-                url: '/blocks/' + blockId, // Dynamic URL for the AJAX request
-                type: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken // Include the CSRF token in the request headers
-                },
-                success: function(response) {
-                    // Show success toast
-                    showToast('success-toast',
-                        'Block and associated data deleted successfully.');
-
-
-                    closeModalAndExecuteHostel();
-
-                    $('#overlay').fadeOut(); // Hide the overlay
-                },
-                error: function(xhr) {
-                    // Show error toast
-                    showToast('error-toast', 'An error occurred while deleting the block.');
-                },
-                complete: function() {
-                    // Always hide the overlay and re-enable the button
-                    $('#overlay').fadeOut('fast', function() {
-                        $('#deleteblock .btn-outline-success').prop('disabled', false);
-                    });
-                }
-            });
-        };
-
-        function showToast(toastId, message) {
-            var toastElement = $('#' + toastId);
-            toastElement.find('.toast-body').text(message);
-            toastElement.toast('show');
-        }
-
-
-        function  closeModalAndExecuteHostel() {
-
-            // Close the modal
-            $('#deleteBlock').modal('hide'); // Use the correct ID of your modal
-            // Ensure that hostel() is called after the modal is closed
-            $('#deleteBlock').on('hidden.bs.modal', function() {
-
-                // Adjust this if you need to call a specific function or update the page
-                hostel();
-            });
-        }
-
-    });
-</script>
-
-    <div class="content py-4 px-3 px-md-4">
-        <div class="">
-            <div class="d-flex justify-content-between mb-4">
-
-
-                <button class="btn btn-outline-secondary" onclick="hostel()"><i class="gd-shift-left"></i> </button>
-                <button class="btn btn-outline-secondary" onclick="room({{ $block->id }})"> <i
-                        class="gd-loop "></i></button>
-
-
-                        <a href="#" class="text-dark btn border shadow-sm mx-2" title="Update Block {{$block->name}}" data-toggle="modal" data-target="#updateBlock">
-                        <i class="gd-pencil"></i>
-                    </a>
-
-
-
-                <button class="btn btn-outline-secondary" data-toggle="modal" data-target="#createModal"
-                    title="Add Floor">
-                    <i class="gd-plus"></i>
-                </button>
-
-                <a href="#" class="text-danger btn border shadow-sm mx-2" title="Delete Block {{$block->name}}" data-toggle="modal"data-target="#deleteBlock">
-                    <i class="gd-trash text-danger" style="cursor: pointer"  ></i>
-            </a>
-
-
-            </div>
-            <!-- Widgets -->
-            <div class="row bg-imagee">
-                <!-- Existing columns -->
-                <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
-                    <div class="card flex-row align-items-center p-3 p-md-4 ">
-                        <div class="d-flex justify-content-between w-100">
-                            <div>
-                                <h6 class="mb-0">Block Name</h6>
-                            </div>
-                            <div>
-                                <h6 class="lh-1 mb-0">{{ $block->name }}</h6>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
-                    <div class="card flex-row align-items-center p-3 p-md-4 ">
-                        <div class="d-flex justify-content-between w-100">
-                            <div>
-                                <h6 class="mb-0">Eligible Gender</h6>
-                            </div>
-                            <div>
-                                <h6 class="lh-1 mb-0">{{ implode(', ', $blockGenders) }}</h6>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
-                    <div class="card flex-row align-items-center p-3 p-md-4 ">
-                        <div class="d-flex justify-content-between w-100">
-                            <div>
-                                <h6 class="mb-0">Eligible Students</h6>
-                            </div>
-                            <div>
-                                <h6 class="lh-1 mb-0">{{ implode(', ', $blockEligibility) }}</h6>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- New column for Price -->
-                <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
-                    <div class="card flex-row align-items-center p-3 p-md-4 ">
-                        <div class="d-flex justify-content-between w-100">
-                            <div>
-                                <h6 class="mb-0">Price/Annual</h6>
-                            </div>
-                            <div>
-                                <h6 class="lh-1 mb-0">TZS {{ number_format($block->price, 2, ',', '.') }}</h6>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
-                    <div class="card flex-row align-items-center p-3 p-md-4 ">
-                        <div class="d-flex justify-content-between w-100">
-                            <div>
-                                <h6 class="mb-0">Block Manager</h6>
-                            </div>
-                            <div>
-                                <h6 class="lh-1 mb-0">{{ $block->manager }}</h6>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
-                    <div class="card flex-row align-items-center p-3 p-md-4 ">
-                        <div class="d-flex justify-content-between w-100">
-                            <div>
-                                <h6 class="mb-0">Location</h6>
-                            </div>
-                            <div>
-                                <h6 class="lh-1 mb-0">{{ $block->location }}</h6>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
-
-
-
-                <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
-                    <!-- Widget -->
-                    <div class="card flex-row align-items-center p-3 p-md-4">
-                        <div class="icon icon-lg bg-soft-warning rounded-circle mr-3">
-                            <i class="gd-key icon-text d-inline-block text-warning"></i>
-                        </div>
-                        <div>
-                            <h4 class="lh-1 mb-1">{{ $totalBeds }}</h4> <!-- Display the total number of beds -->
-                            <h6 class="mb-0">Total Beds</h6>
-                        </div>
-                    </div>
-                    <!-- End Widget -->
-                </div>
-
-
-                <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
-                    <!-- Widget -->
-                    <div class="card flex-row align-items-center p-3 p-md-4 ">
-                        <div class="icon icon-lg bg-soft-dark rounded-circle mr-3">
-                            <i class="gd-key icon-text d-inline-block text-dark"></i>
-                        </div>
-                        <div>
-                            <h4 class="lh-1 mb-1">{{ $totalOpenBeds }}</h4>
-                            <h6 class="mb-0">Total Open Bed</h6>
-                        </div>
-                    </div>
-                    <!-- End Widget -->
-                </div>
-
-                <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
-                    <!-- Widget -->
-                    <div class="card flex-row align-items-center p-3 p-md-4">
-                        <div class="icon icon-lg bg-soft-info rounded-circle mr-3">
-                            <i class="gd-key icon-text d-inline-block text-info"></i>
-                        </div>
-                        <div>
-                            <h4 class="lh-1 mb-1">{{ $totalBeds - $totalOccupiedBeds }}</h4>
-                            <h6 class="mb-0">Total Remaining Bed</h6>
-                        </div>
-                    </div>
-                    <!-- End Widget -->
-                </div>
-
-
-
-
-
-
-                <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
-                    <!-- Widget -->
-                    <div class="card flex-row align-items-center p-3 p-md-4 alert-success">
-                        <div class="icon icon-lg bg-soft-success rounded-circle mr-3">
-                            <i class="gd-key icon-text d-inline-block text-success"></i>
-                        </div>
-                        <div>
-                            <h4 class="lh-1 mb-1">{{ $totalOccupiedBeds }}</h4> <!-- Display the total number of occupied beds -->
-                            <h6 class="mb-0">Total Occupied Bed</h6>
-                        </div>
-                    </div>
-                    <!-- End Widget -->
-                </div>
-
-
-
-
-
-
-
-
-                <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
-                    <!-- Widget -->
-                    <div class="card flex-row align-items-center p-3 p-md-4 alert-warning">
-                        <div class="icon icon-lg bg-soft-warning rounded-circle mr-3">
-                            <i class="gd-key icon-text d-inline-block text-warning"></i>
-                        </div>
-                        <div>
-                            <h4 class="lh-1 mb-1">{{ $totalReservedBeds }}</h4>
-                            <h6 class="mb-0">Total Reserved Bed</h6>
-                        </div>
-                    </div>
-                    <!-- End Widget -->
-                </div>
-
-                <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
-                    <!-- Widget -->
-                    <div class="card flex-row align-items-center p-3 p-md-4 alert-danger">
-                        <div class="icon icon-lg bg-soft-danger rounded-circle mr-3">
-                            <i class="gd-key icon-text d-inline-block text-danger"></i>
-                        </div>
-                        <div>
-                            <h4 class="lh-1 mb-1">{{ $totalUnderMaintenanceBeds }}</h4>
-                            <h6 class="mb-0">Total Maintenance Bed</h6>
-                        </div>
-                    </div>
-                    <!-- End Widget -->
-                </div>
-
-
-            </div>
-        </div>
-
-        <div class="d-flex justify-content-between mb-4">
-            <div class="container-fluid">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-muted">Hostel Occupancy</span>
-                    <span id="occupancy-percentage">{{ round($occupancyPercentage, 2) }}%</span>
-                </div>
-                <div class="progress" style="height: 6px;">
-                    <div id="occupancy-progress-bar" class="progress-bar" role="progressbar"
-                        style="width: {{ $occupancyPercentage }}%;" aria-valuenow="{{ $occupancyPercentage }}" aria-valuemin="0" aria-valuemax="100">
-                        <span class="sr-only">{{ round($occupancyPercentage, 2) }}% Full</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <script>
-            $(document).ready(function() {
-                // Get the percentage from the element
-                var percentage = parseInt($('#occupancy-percentage').text(), 10);
-
-                // Get the progress bar element
-                var $progressBar = $('#occupancy-progress-bar');
-
-                // Determine the class to apply based on the percentage
-                var progressClass;
-                if (percentage === 100) {
-                    progressClass = 'bg-danger';
-                } else if (percentage >= 75) {
-                    progressClass = 'bg-warning';
-                } else {
-                    progressClass = 'bg-success';
-                }
-
-                // Apply the determined class to the progress bar
-                $progressBar.removeClass('bg-success bg-warning bg-danger').addClass(progressClass);
-            });
-        </script>
-<!-- Floor Details -->
-<div class="row">
-    <div class="col-12">
-        <div class="card mb-3 mb-md-4">
-            <div class="card-header border-bottom p-0">
-                <ul class="nav nav-v2 nav-primary nav-justified d-block d-xl-flex w-100" role="tablist">
-                    @if($block->floors->isEmpty())
-                        <li class="nav-item border-bottom border-xl-bottom-0">
-                            <span class="nav-link d-flex align-items-center py-2 px-3 p-xl-4">
-                                No Floors Available
-                            </span>
-                        </li>
-                    @else
-                        @foreach($block->floors as $index => $floor)
-                        <li class="nav-item border-bottom border-xl-bottom-0 ">
-                            <a class="nav-link d-flex align-items-center py-2 px-3 p-xl-4 {{ $index === 0 ? 'active' : '' }}"
-                                href="#floor{{ $floor->id }}" role="tab"
-                                aria-selected="{{ $index === 0 ? 'true' : 'false' }}" data-toggle="tab">
-                                <span>Floor {{ $floor->floor_number }}</span>
-                            </a>
-                        </li>
-                        @endforeach
-                    @endif
-                </ul>
-            </div>
-
-            <div class="card-body tab-content">
-                @if($block->floors->isEmpty())
-                    <div class="text-center">
-                        <button class="btn btn-outline-secondary" data-toggle="modal" data-target="#createModal"
-                            title="Add Floor">
-                            <i class="gd-plus"></i>
-                        </button>
-                    </div>
-                @else
-                    @foreach($block->floors as $index => $floor)
-                    @php
-                    // Decode the gender JSON to get allowed genders for the floor
-                    $allowedGenders = json_decode($floor->gender, true);
-
-                    // Check if multiple genders are allowed
-                    $multipleGendersAllowed = is_array($allowedGenders) && count(array_unique($allowedGenders)) > 1;
-
-                    // Collect all gender values from rooms on this floor, including null
-                    $roomGendersArray = $floor->rooms->map(function ($room) {
-                        return $room->gender;
-                    });
-
-                    // Check if any room on this floor has a null gender column
-                    $roomsWithNullGender = $floor->rooms->filter(function ($room) {
-                        return is_null($room->gender);
-                    });
-
-                    // Determine if warning should be displayed for null values
-                    $warningForNullGender = $roomsWithNullGender->isNotEmpty();
-                @endphp
-
-
-
-                    <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}" id="floor{{ $floor->id }}"
-                        role="tabpanel">
-
-                        <!-- Eligible Gender and Students -->
-                        <div class="row mt-3 text-center">
-                            <div class="col-4">
-                                <h6 class="text-muted">Total Rooms: {{ $floor->rooms->count() }}</h6>
-                            </div>
-                            <div class="col-4">
-                                <h6 class="text-muted">Eligible Gender: {{ implode(', ', $allowedGenders) }}</h6>
-                            </div>
-                            <div class="col-4">
-                                <h6 class="text-muted">Eligible Students: {{ implode(', ', json_decode($floor->eligibility, true)) }}</h6>
-                            </div>
-                        </div>
-
-                        <!-- Row for Actions -->
-                        <div class="d-flex justify-content-center mb-4 mt-5">
-                            <a href="#" class="text-dark btn border shadow-sm mx-2" title="Update Floor" onclick="floorAction('update',{{ $floor->id }})">
-                                <i class="gd-pencil"></i>
-                            </a>
-                            <a href="#" class="text-danger btn border shadow-sm mx-2" title="Delete Floor {{ $floor->floor_number }}" data-toggle="modal" data-target="#deletefloor{{ $floor->id}}">
-                                <i class="gd-trash"></i>
-                            </a>
-                        </div>
-                        {{-- <h3>Room Gender Data</h3>
-                         <pre>{{ json_encode($roomGendersArray->toArray(), JSON_PRETTY_PRINT) }}</pre> --}}
-
-                        <!-- Warning if any rooms have empty gender field -->
-                        @if ($warningForNullGender)
-                        <div class="alert alert-warning">
-
-                            <strong>Warning:</strong> Some rooms on this floor do not have a specified gender, although multiple genders are allowed for this floor. Please ensure that all rooms are assigned a gender to proceed.
-                        </div>
-                        @endif
-
-                        <!-- Room and Bed Details (Only if no warning) -->
-                        @if (!$warningForNullGender)
-
-                        <div class="radio-tile-group">
-                            @foreach($floor->rooms as $room)
-                            <div class="card mb-2">
-                                <div class="card-header text-center">
-                                    Room {{ $room->room_number }} - {{ $room->beds->count() }} beds <br><br>
-                                    <span class="badge badge-sm rounded-circle @if(strtolower($room->gender) === 'female') badge-success @elseif(strtolower($room->gender) === 'male') badge-secondary @else badge-secondary @endif">
-                                        @if(strtolower($room->gender) === 'female')
-                                            F
-                                        @elseif(strtolower($room->gender) === 'male')
-                                            M
-                                        @else
-                                            {{ $room->gender }} <!-- Fallback if the gender is neither 'female' nor 'male' -->
-                                        @endif
-                                    </span>
-                                </div>
-
-                                <div class="card-body">
-                                    @foreach($room->beds as $bed)
-                                    @php
-                                    $usertime = User::find($bed->user_id);
-                                    if ($usertime) {
-                                        $expirationDate = $usertime->expiration_date;
+                });
+
+                // Form submit function for updating the block with validation
+                window.updateblock = function(event) {
+                    if (event) {
+                        event.preventDefault();
+                    }
+
+                    var isValid = true;
+
+                    // Clear previous error messages
+                    $('.form-text.text-danger').text('');
+
+                    var blockName = $('#blockName').val().trim();
+                    var blockLocation = $('#location').val().trim();
+                    var blockManager = $('#blockManager').val().trim();
+                    var blockPrice = $('#blockPrice').val().trim();
+
+                    // Validation
+                    if (!blockName) {
+
+                        $('#blockNameError').text('Block Name is required.');
+
+                        isValid = false;
+                    }
+
+                    if (!blockManager) {
+                        $('#blockManagerError').text('Block manager are required.');
+                        isValid = false;
+                    }
+
+                    if (!blockLocation) {
+                        $('#locationError').text('Location is required.');
+                        isValid = false;
+                    }
+
+                    if (blockPrice === '' || isNaN(blockPrice) || parseFloat(blockPrice) <= 0) {
+                        $('#blockPriceError').text('Please enter a valid price.');
+                        isValid = false;
+                    }
+
+                    if (!isValid) {
+                        return; // Stop form submission if validation fails
+                    }
+
+                    var imagePromise = croppieInstance ? croppieInstance.result('base64') : Promise.resolve(null);
+
+                    imagePromise.then(function(image) {
+                        $('#submitButton').prop('disabled', true);
+                        $('#overlay').css('display', 'flex');
+
+                        var csrfToken = $('meta[name="csrf-token"]').attr('content');
+                        var blockId = $('#blockForm').data('block-id');
+
+                        var formData = {
+                            blockName: blockName,
+                            blocklocation: blockLocation,
+                            blockManager: blockManager,
+                            blockPrice: parseFloat(blockPrice),
+                            image: image || null
+                        };
+
+                        $.ajax({
+                            url: '/blocks/update/' + blockId,
+                            type: 'PUT',
+                            data: {
+                                _token: csrfToken,
+                                blocklocation: formData.blocklocation,
+                                blockName: formData.blockName,
+                                blockManager: formData.blockManager,
+                                blockPrice: formData.blockPrice,
+                                image: formData.image
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    showToast('success', 'Block updated successfully!');
+                                    closeModalAndExecuteHostel();
+                                    $('#overlay').fadeOut();
+                                } else {
+                                    showToast('error', response.message);
+                                    $('#submitButton').prop('disabled', false);
+                                }
+                            },
+                            error: function(xhr) {
+                                if (xhr.status === 422) {
+                                    var errors = xhr.responseJSON.errors;
+                                    for (var key in errors) {
+                                        if (errors.hasOwnProperty(key)) {
+                                            $('#' + key + 'Error').text(errors[key][0]);
+                                        }
                                     }
+                                } else {
+                                    showToast('error', 'An error occurred while updating the block.');
+                                }
+                                $('#submitButton').prop('disabled', false);
+                                $('#overlay').fadeOut();
+                            }
+                        });
+                    });
+                };
 
-                                        // Initialize status class and text
-                                        $statusClass = '';
-                                        $statusText = '';
+                function showToast(type, message) {
+                    var $toast = type === 'success' ? $('#success-toast') : $('#error-toast');
+                    $toast.find('.toast-body').text(message);
+                    $toast.toast({ delay: 3000 }).toast('show');
+                }
 
-                                        // Determine the status class and text based on the bed's status and user_id
-                                        if ($bed->user_id) {
-                                            if ($expirationDate && Carbon::now()->greaterThan($expirationDate) &&  empty($usertime->payment_status) ) {
-                                                $statusClass = 'alert-danger';
-                                                $statusText = 'Expire';
-                                            } else {
-                                                $statusClass = 'alert-success';
-                                                $statusText = 'Taken';
-                                            }
-
-                                        }
+                function closeModalAndExecuteHostel() {
+                    $('#updateBlock').modal('hide');
+                    $('#updateBlock').on('hidden.bs.modal', function() {
+                        room({{ $block->id }})
+                    });
+                }
+            });
 
 
+            </script>
+            <script>
+                $(document).ready(function() {
+                    // Function to handle the block deletion
+                    window.deleteBlock = function(event, blockId) {
+                        event.preventDefault(); // Prevent default action
+                        // Show the overlay
+                        $('#overlay').css('display', 'flex');
+                        // Disable the button to prevent multiple submissions
+                        $('#deleteblock .btn-outline-success').prop('disabled', true);
+                        // Get the CSRF token from the meta tag in the HTML
+                        var csrfToken = $('meta[name="csrf-token"]').attr('content');
+                        // Make the AJAX request to delete the block
+                        $.ajax({
+                            url: '/blocks/' + blockId, // Dynamic URL for the AJAX request
+                            type: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken // Include the CSRF token in the request headers
+                            },
+                            success: function(response) {
+                                // Show success toast
+                                showToast('success-toast',
+                                    'Block and associated data deleted successfully.');
 
-                                        else {
-                                            switch ($bed->status) {
-                                                case 'activate':
-                                                    $statusText = 'Open';
-                                                    $statusClass = 'text-dark'; // Add this class for active beds
-                                                    break;
-                                                case 'under_maintenance':
-                                                    $statusText = 'Maintenance';
-                                                    $statusClass = 'alert-danger'; // Add this class for beds under maintenance
-                                                    break;
-                                                case 'reserve':
-                                                    $statusText = 'Reserved';
-                                                    $statusClass = 'alert-warning'; // Add this class for reserved beds
-                                                    break;
-                                                default:
-                                                    $statusText = 'Unknown';
-                                                    $statusClass = 'text-muted'; // Add this class for unknown status
-                                                    break;
-                                            }
-                                        }
-                                    @endphp
 
-                                    <div class="input-container" style="cursor: pointer;">
-                                        <div class="radio-tile {{ $statusClass }}" onclick="floorAction('bed', {{ $bed->id }})"style="cursor: pointer;" >
-                                            <label class="radio-tile-label mt-2" style="cursor: pointer;">
-                                                {{ $room->room_number }} - Bed {{ $bed->bed_number }}
-                                            </label>
-                                            <label class="radio-tile-label  {{ $statusClass }}" style="cursor: pointer;">
-                                                {{ $statusText }}
-                                            </label>
+                                closeModalAndExecuteHostel();
+
+                                $('#overlay').fadeOut(); // Hide the overlay
+                            },
+                            error: function(xhr) {
+                                // Show error toast
+                                showToast('error-toast', 'An error occurred while deleting the block.');
+                            },
+                            complete: function() {
+                                // Always hide the overlay and re-enable the button
+                                $('#overlay').fadeOut('fast', function() {
+                                    $('#deleteblock .btn-outline-success').prop('disabled', false);
+                                });
+                            }
+                        });
+                    };
+
+                    function showToast(toastId, message) {
+                        var toastElement = $('#' + toastId);
+                        toastElement.find('.toast-body').text(message);
+                        toastElement.toast('show');
+                    }
+
+
+                    function  closeModalAndExecuteHostel() {
+
+                        // Close the modal
+                        $('#deleteBlock').modal('hide'); // Use the correct ID of your modal
+                        // Ensure that hostel() is called after the modal is closed
+                        $('#deleteBlock').on('hidden.bs.modal', function() {
+
+                            // Adjust this if you need to call a specific function or update the page
+                            hostel();
+                        });
+                    }
+
+                });
+            </script>
+
+                <div class="content py-4 px-3 px-md-4">
+                    <div class="">
+                        <div class="d-flex justify-content-between mb-4">
+
+
+                            <button class="btn btn-outline-secondary" onclick="hostel()"><i class="gd-shift-left"></i> </button>
+                            <button class="btn btn-outline-secondary" onclick="room({{ $block->id }})"> <i
+                                    class="gd-loop "></i></button>
+
+
+                                    <a href="#" class="text-dark btn border shadow-sm mx-2" title="Update Block {{$block->name}}" data-toggle="modal" data-target="#updateBlock">
+                                    <i class="gd-pencil"></i>
+                                </a>
+
+
+
+                            <button class="btn btn-outline-secondary" data-toggle="modal" data-target="#createModal"
+                                title="Add Floor">
+                                <i class="gd-plus"></i>
+                            </button>
+
+                            <a href="#" class="text-danger btn border shadow-sm mx-2" title="Delete Block {{$block->name}}" data-toggle="modal"data-target="#deleteBlock">
+                                <i class="gd-trash text-danger" style="cursor: pointer"  ></i>
+                        </a>
+
+
+                        </div>
+                        <!-- Widgets -->
+                        <div class="row bg-imagee">
+                            <!-- Existing columns -->
+                            <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
+                                <div class="card flex-row align-items-center p-3 p-md-4 ">
+                                    <div class="d-flex justify-content-between w-100">
+                                        <div>
+                                            <h6 class="mb-0">Block Name</h6>
+                                        </div>
+                                        <div>
+                                            <h6 class="lh-1 mb-0">{{ $block->name }}</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
+                                <div class="card flex-row align-items-center p-3 p-md-4 ">
+                                    <div class="d-flex justify-content-between w-100">
+                                        <div>
+                                            <h6 class="mb-0">Eligible Gender</h6>
+                                        </div>
+                                        <div>
+                                            <h6 class="lh-1 mb-0">{{ implode(', ', $blockGenders) }}</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
+                                <div class="card flex-row align-items-center p-3 p-md-4 ">
+                                    <div class="d-flex justify-content-between w-100">
+                                        <div>
+                                            <h6 class="mb-0">Eligible Students</h6>
+                                        </div>
+                                        <div>
+                                            <h6 class="lh-1 mb-0">{{ implode(', ', $blockEligibility) }}</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- New column for Price -->
+                            <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
+                                <div class="card flex-row align-items-center p-3 p-md-4 ">
+                                    <div class="d-flex justify-content-between w-100">
+                                        <div>
+                                            <h6 class="mb-0">Price/Annual</h6>
+                                        </div>
+                                        <div>
+                                            <h6 class="lh-1 mb-0">TZS {{ number_format($block->price, 2, ',', '.') }}</h6>
 
                                         </div>
                                     </div>
-                                    @endforeach
                                 </div>
                             </div>
-                            @endforeach
+
+                            <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
+                                <div class="card flex-row align-items-center p-3 p-md-4 ">
+                                    <div class="d-flex justify-content-between w-100">
+                                        <div>
+                                            <h6 class="mb-0">Block Manager</h6>
+                                        </div>
+                                        <div>
+                                            <h6 class="lh-1 mb-0">{{ $block->manager }}</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
+                                <div class="card flex-row align-items-center p-3 p-md-4 ">
+                                    <div class="d-flex justify-content-between w-100">
+                                        <div>
+                                            <h6 class="mb-0">Location</h6>
+                                        </div>
+                                        <div>
+                                            <h6 class="lh-1 mb-0">{{ $block->location }}</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+
+
+                            <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
+                                <!-- Widget -->
+                                <div class="card flex-row align-items-center p-3 p-md-4">
+                                    <div class="icon icon-lg bg-soft-warning rounded-circle mr-3">
+                                        <i class="gd-key icon-text d-inline-block text-warning"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="lh-1 mb-1">{{ $totalBeds }}</h4> <!-- Display the total number of beds -->
+                                        <h6 class="mb-0">Total Beds</h6>
+                                    </div>
+                                </div>
+                                <!-- End Widget -->
+                            </div>
+
+
+                            <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
+                                <!-- Widget -->
+                                <div class="card flex-row align-items-center p-3 p-md-4 ">
+                                    <div class="icon icon-lg bg-soft-dark rounded-circle mr-3">
+                                        <i class="gd-key icon-text d-inline-block text-dark"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="lh-1 mb-1">{{ $totalOpenBeds }}</h4>
+                                        <h6 class="mb-0">Total Open Bed</h6>
+                                    </div>
+                                </div>
+                                <!-- End Widget -->
+                            </div>
+
+                            <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
+                                <!-- Widget -->
+                                <div class="card flex-row align-items-center p-3 p-md-4">
+                                    <div class="icon icon-lg bg-soft-info rounded-circle mr-3">
+                                        <i class="gd-key icon-text d-inline-block text-info"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="lh-1 mb-1">{{ $totalBeds - $totalOccupiedBeds }}</h4>
+                                        <h6 class="mb-0">Total Remaining Bed</h6>
+                                    </div>
+                                </div>
+                                <!-- End Widget -->
+                            </div>
+
+
+
+
+
+
+                            <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
+                                <!-- Widget -->
+                                <div class="card flex-row align-items-center p-3 p-md-4 alert-success">
+                                    <div class="icon icon-lg bg-soft-success rounded-circle mr-3">
+                                        <i class="gd-key icon-text d-inline-block text-success"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="lh-1 mb-1">{{ $totalOccupiedBeds }}</h4> <!-- Display the total number of occupied beds -->
+                                        <h6 class="mb-0">Total Occupied Bed</h6>
+                                    </div>
+                                </div>
+                                <!-- End Widget -->
+                            </div>
+
+
+
+
+
+
+
+
+                            <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
+                                <!-- Widget -->
+                                <div class="card flex-row align-items-center p-3 p-md-4 alert-warning">
+                                    <div class="icon icon-lg bg-soft-warning rounded-circle mr-3">
+                                        <i class="gd-key icon-text d-inline-block text-warning"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="lh-1 mb-1">{{ $totalReservedBeds }}</h4>
+                                        <h6 class="mb-0">Total Reserved Bed</h6>
+                                    </div>
+                                </div>
+                                <!-- End Widget -->
+                            </div>
+
+                            <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
+                                <!-- Widget -->
+                                <div class="card flex-row align-items-center p-3 p-md-4 alert-danger">
+                                    <div class="icon icon-lg bg-soft-danger rounded-circle mr-3">
+                                        <i class="gd-key icon-text d-inline-block text-danger"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="lh-1 mb-1">{{ $totalUnderMaintenanceBeds }}</h4>
+                                        <h6 class="mb-0">Total Maintenance Bed</h6>
+                                    </div>
+                                </div>
+                                <!-- End Widget -->
+                            </div>
+
+
                         </div>
-                        @endif
                     </div>
-                    @endforeach
-                @endif
+
+                    <div class="d-flex justify-content-between mb-4">
+                        <div class="container-fluid">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted">Hostel Occupancy</span>
+                                <span id="occupancy-percentage">{{ round($occupancyPercentage, 2) }}%</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div id="occupancy-progress-bar" class="progress-bar" role="progressbar"
+                                    style="width: {{ $occupancyPercentage }}%;" aria-valuenow="{{ $occupancyPercentage }}" aria-valuemin="0" aria-valuemax="100">
+                                    <span class="sr-only">{{ round($occupancyPercentage, 2) }}% Full</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                        $(document).ready(function() {
+                            // Get the percentage from the element
+                            var percentage = parseInt($('#occupancy-percentage').text(), 10);
+
+                            // Get the progress bar element
+                            var $progressBar = $('#occupancy-progress-bar');
+
+                            // Determine the class to apply based on the percentage
+                            var progressClass;
+                            if (percentage === 100) {
+                                progressClass = 'bg-danger';
+                            } else if (percentage >= 75) {
+                                progressClass = 'bg-warning';
+                            } else {
+                                progressClass = 'bg-success';
+                            }
+
+                            // Apply the determined class to the progress bar
+                            $progressBar.removeClass('bg-success bg-warning bg-danger').addClass(progressClass);
+                        });
+                    </script>
+            <!-- Floor Details -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card mb-3 mb-md-4">
+                        <div class="card-header border-bottom p-0">
+                            <ul class="nav nav-v2 nav-primary nav-justified d-block d-xl-flex w-100" role="tablist">
+                                @if($block->floors->isEmpty())
+                                    <li class="nav-item border-bottom border-xl-bottom-0">
+                                        <span class="nav-link d-flex align-items-center py-2 px-3 p-xl-4">
+                                            No Floors Available
+                                        </span>
+                                    </li>
+                                @else
+                                    @foreach($block->floors as $index => $floor)
+                                    <li class="nav-item border-bottom border-xl-bottom-0 ">
+                                        <a class="nav-link d-flex align-items-center py-2 px-3 p-xl-4 {{ $index === 0 ? 'active' : '' }}"
+                                            href="#floor{{ $floor->id }}" role="tab"
+                                            aria-selected="{{ $index === 0 ? 'true' : 'false' }}" data-toggle="tab">
+                                            <span>Floor {{ $floor->floor_number }}</span>
+                                        </a>
+                                    </li>
+                                    @endforeach
+                                @endif
+                            </ul>
+                        </div>
+
+                        <div class="card-body tab-content">
+                            @if($block->floors->isEmpty())
+                                <div class="text-center">
+                                    <button class="btn btn-outline-secondary" data-toggle="modal" data-target="#createModal"
+                                        title="Add Floor">
+                                        <i class="gd-plus"></i>
+                                    </button>
+                                </div>
+                            @else
+                                @foreach($block->floors as $index => $floor)
+                                @php
+                                // Decode the gender JSON to get allowed genders for the floor
+                                $allowedGenders = json_decode($floor->gender, true);
+
+                                // Check if multiple genders are allowed
+                                $multipleGendersAllowed = is_array($allowedGenders) && count(array_unique($allowedGenders)) > 1;
+
+                                // Collect all gender values from rooms on this floor, including null
+                                $roomGendersArray = $floor->rooms->map(function ($room) {
+                                    return $room->gender;
+                                });
+
+                                // Check if any room on this floor has a null gender column
+                                $roomsWithNullGender = $floor->rooms->filter(function ($room) {
+                                    return is_null($room->gender);
+                                });
+
+                                // Determine if warning should be displayed for null values
+                                $warningForNullGender = $roomsWithNullGender->isNotEmpty();
+                            @endphp
+
+
+
+                                <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}" id="floor{{ $floor->id }}"
+                                    role="tabpanel">
+
+                                    <!-- Eligible Gender and Students -->
+                                    <div class="row mt-3 text-center">
+                                        <div class="col-4">
+                                            <h6 class="text-muted">Total Rooms: {{ $floor->rooms->count() }}</h6>
+                                        </div>
+                                        <div class="col-4">
+                                            <h6 class="text-muted">Eligible Gender: {{ implode(', ', $allowedGenders) }}</h6>
+                                        </div>
+                                        <div class="col-4">
+                                            <h6 class="text-muted">Eligible Students: {{ implode(', ', json_decode($floor->eligibility, true)) }}</h6>
+                                        </div>
+                                    </div>
+
+                                    <!-- Row for Actions -->
+                                    <div class="d-flex justify-content-center mb-4 mt-5">
+                                        <a href="#" class="text-dark btn border shadow-sm mx-2" title="Update Floor" onclick="floorAction('update',{{ $floor->id }})">
+                                            <i class="gd-pencil"></i>
+                                        </a>
+                                        <a href="#" class="text-danger btn border shadow-sm mx-2" title="Delete Floor {{ $floor->floor_number }}" data-toggle="modal" data-target="#deletefloor{{ $floor->id}}">
+                                            <i class="gd-trash"></i>
+                                        </a>
+                                    </div>
+                                    {{-- <h3>Room Gender Data</h3>
+                                     <pre>{{ json_encode($roomGendersArray->toArray(), JSON_PRETTY_PRINT) }}</pre> --}}
+
+                                    <!-- Warning if any rooms have empty gender field -->
+                                    @if ($warningForNullGender)
+                                    <div class="alert alert-warning">
+
+                                        <strong>Warning:</strong> Some rooms on this floor do not have a specified gender, although multiple genders are allowed for this floor. Please ensure that all rooms are assigned a gender to proceed.
+                                    </div>
+                                    @endif
+
+                                    <!-- Room and Bed Details (Only if no warning) -->
+                                    @if (!$warningForNullGender)
+
+                                    <div class="radio-tile-group">
+                                        @foreach($floor->rooms as $room)
+                                        <div class="card mb-2">
+                                            <div class="card-header text-center">
+                                                Room {{ $room->room_number }} - {{ $room->beds->count() }} beds <br><br>
+                                                <span class="badge badge-sm rounded-circle @if(strtolower($room->gender) === 'female') badge-success @elseif(strtolower($room->gender) === 'male') badge-secondary @else badge-secondary @endif">
+                                                    @if(strtolower($room->gender) === 'female')
+                                                        F
+                                                    @elseif(strtolower($room->gender) === 'male')
+                                                        M
+                                                    @else
+                                                        {{ $room->gender }} <!-- Fallback if the gender is neither 'female' nor 'male' -->
+                                                    @endif
+                                                </span>
+                                            </div>
+
+                                            <div class="card-body">
+                                                @foreach($room->beds as $bed)
+                                                @php
+                                                $usertime = User::find($bed->user_id);
+                                                if ($usertime) {
+                                                    $expirationDate = $usertime->expiration_date;
+                                                }
+
+                                                    // Initialize status class and text
+                                                    $statusClass = '';
+                                                    $statusText = '';
+
+                                                    // Determine the status class and text based on the bed's status and user_id
+                                                    if ($bed->user_id) {
+                                                        if ($expirationDate && Carbon::now()->greaterThan($expirationDate) &&  empty($usertime->payment_status) ) {
+                                                            $statusClass = 'alert-danger';
+                                                            $statusText = 'Expire';
+                                                        } else {
+                                                            $statusClass = 'alert-success';
+                                                            $statusText = 'Taken';
+                                                        }
+
+                                                    }
+
+
+
+                                                    else {
+                                                        switch ($bed->status) {
+                                                            case 'activate':
+                                                                $statusText = 'Open';
+                                                                $statusClass = 'text-dark'; // Add this class for active beds
+                                                                break;
+                                                            case 'under_maintenance':
+                                                                $statusText = 'Maintenance';
+                                                                $statusClass = 'alert-danger'; // Add this class for beds under maintenance
+                                                                break;
+                                                            case 'reserve':
+                                                                $statusText = 'Reserved';
+                                                                $statusClass = 'alert-warning'; // Add this class for reserved beds
+                                                                break;
+                                                            default:
+                                                                $statusText = 'Unknown';
+                                                                $statusClass = 'text-muted'; // Add this class for unknown status
+                                                                break;
+                                                        }
+                                                    }
+                                                @endphp
+
+                                                <div class="input-container" style="cursor: pointer;">
+                                                    <div class="radio-tile {{ $statusClass }}" onclick="floorAction('bed', {{ $bed->id }})"style="cursor: pointer;" >
+                                                        <label class="radio-tile-label mt-2" style="cursor: pointer;">
+                                                            {{ $room->room_number }} - Bed {{ $bed->bed_number }}
+                                                        </label>
+                                                        <label class="radio-tile-label  {{ $statusClass }}" style="cursor: pointer;">
+                                                            {{ $statusText }}
+                                                        </label>
+
+                                                    </div>
+                                                </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                    @endif
+                                </div>
+                                @endforeach
+                            @endif
+                        </div>
+                    </div>
+                </div>
             </div>
+
+
+
+                </div>
+
+
+            </div>
+
+            <div class="tab-pane fade" id="tabs1-tab2" role="tabpanel">
+                <div class="content py-4 px-3 px-md-4">
+
+
+                    <!-- Check-Out Items Management -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="container-fluid">
+                                <h5 class="mb-4">Manage Check-Out Items</h5>
+                                <input type="hidden" id="blockId" value="{{ $block->id }}">
+                                <div id="itemsContainer" class="row">
+                                    @forelse ($checkOutItems as $item)
+                                        <div class="col-md-12 mb-3">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" value="{{ $item->name }}">
+                                                <select class="nice-select" data-placeholder="Select Condition">
+                                                    <option value="Good" {{ $item->condition == 'Good' ? 'selected' : '' }}>Good</option>
+                                                    <option value="Bad" {{ $item->condition == 'Bad' ? 'selected' : '' }}>Bad</option>
+                                                </select>
+                                                <button class="btn btn-outline-default btn-sm" type="button" onclick="removeItem(this)">
+                                                    <i class="gd-trash text-danger"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    @empty
+                                       <!-- Notification Message -->
+                                              <div class="alert alert-info" role="alert">
+                                           <strong>Notice:</strong> The items and requirements listed below are predefined and have not yet been saved to the database. Customize them as needed and click "Save Changes" to add them to the database.
+                                        </div>
+                                        <!-- Predefined items -->
+                                        <div class="col-md-12 mb-3">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" value="Mattress">
+                                                <select class="nice-select" data-placeholder="Select Condition">
+                                                    <option value="Good">Good</option>
+                                                    <option value="Bad">Bad</option>
+                                                </select>
+                                                <button class="btn btn-outline-default btn-sm" type="button" onclick="removeItem(this)">
+                                                    <i class="gd-trash text-danger"></i>
+                                                </button>
+                                                <span class="text-muted">Predefined Item</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" value="Room Key">
+                                                <select class="nice-select" data-placeholder="Select Condition">
+                                                    <option value="Good">Good</option>
+                                                    <option value="Bad">Bad</option>
+                                                </select>
+                                                <button class="btn btn-outline-default btn-sm" type="button" onclick="removeItem(this)">
+                                                    <i class="gd-trash text-danger"></i>
+                                                </button>
+                                                <span class="text-muted">Predefined Item</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" value="Cleaning Done">
+                                                <select class="nice-select" data-placeholder="Select Condition">
+                                                    <option value="Good">Good</option>
+                                                    <option value="Bad">Bad</option>
+                                                </select>
+                                                <button class="btn btn-outline-default btn-sm" type="button" onclick="removeItem(this)">
+                                                    <i class="gd-trash text-danger"></i>
+                                                </button>
+                                                <span class="text-muted">Predefined Item</span>
+                                            </div>
+                                        </div>
+                                    @endforelse
+                                </div>
+                                <div class="text-center mt-3">
+                                    <button id="addItem" class="btn btn-outline-primary">
+                                        <i class="gd-plus"></i> Add Item
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Manage Requirements Section -->
+                        <div class="col-md-6 mb-3">
+                            <div class="container-fluid">
+                                <h5 class="mb-4">Manage Requirements</h5>
+                                <div id="requirementsContainer" class="row">
+                                    @forelse ($requirements as $requirement)
+                                        <div class="col-md-12 mb-3">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" value="{{ $requirement->name }}">
+                                                <input type="number" class="form-control col-2" value="{{ $requirement->quantity }}" min="1">
+                                                <button class="btn btn-outline-default btn-sm" type="button" onclick="removeRequirement(this)">
+                                                    <i class="gd-trash text-danger"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    @empty
+                                       <!-- Notification Message -->
+                    <div class="alert alert-info" role="alert">
+                        <strong>Notice:</strong> The items and requirements listed below are predefined and have not yet been saved to the database. Customize them as needed and click "Save Changes" to add them to the database.
+                    </div>
+                                        <!-- Predefined requirements -->
+                                        <div class="col-md-12 mb-3">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" value="Bucket">
+                                                <input type="number" class="form-control col-2" value="1" min="1">
+                                                <button class="btn btn-outline-default btn-sm" type="button" onclick="removeRequirement(this)">
+                                                    <i class="gd-trash text-danger"></i>
+                                                </button>
+                                                <span class="text-muted">Predefined Requirement</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" value="Mosquito Net">
+                                                <input type="number" class="form-control col-2" value="1" min="1">
+                                                <button class="btn btn-outline-default btn-sm" type="button" onclick="removeRequirement(this)">
+                                                    <i class="gd-trash text-danger"></i>
+                                                </button>
+                                                <span class="text-muted">Predefined Requirement</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" value="Sweeper Broom">
+                                                <input type="number" class="form-control col-2" value="1" min="1">
+                                                <button class="btn btn-outline-default btn-sm" type="button" onclick="removeRequirement(this)">
+                                                    <i class="gd-trash text-danger"></i>
+                                                </button>
+                                                <span class="text-muted">Predefined Requirement</span>
+                                            </div>
+                                        </div>
+                                    @endforelse
+                                </div>
+                                <div class="text-center mt-3">
+                                    <button id="addRequirement" class="btn btn-outline-primary">
+                                        <i class="gd-plus"></i> Add Requirement
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Save Changes Button -->
+                    <div class="text-center mt-4">
+                        <button id="saveChanges" class="btn btn-outline-success">
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <script>
+                $(document).ready(function() {
+                    // Initialize niceSelect
+                    $('select').niceSelect();
+
+                    // Add new check-out item
+                    $('#addItem').click(function() {
+                        $('#itemsContainer').append(
+                            `<div class="col-md-12 mb-3">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="New Item">
+                                    <select class="nice-select" data-placeholder="Select Condition">
+                                        <option value="">Select Condition</option>
+                                        <option value="Good">Good</option>
+                                        <option value="Bad">Bad</option>
+                                    </select>
+                                    <button class="btn btn-outline-default btn-sm" type="button" onclick="removeItem(this)">
+                                        <i class="gd-trash text-danger"></i>
+                                    </button>
+                                    <input type="hidden" class="item-id" value=""> <!-- Hidden input to track item IDs -->
+                                </div>
+                            </div>`
+                        );
+                        // Reinitialize niceSelect for the new select elements
+                        $('select').niceSelect();
+                    });
+
+                    // Add new requirement
+                    $('#addRequirement').click(function() {
+                        $('#requirementsContainer').append(
+                            `<div class="col-md-12 mb-3">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="New Requirement">
+                                    <input type="number" class="form-control col-2" value="1" min="1">
+                                    <button class="btn btn-outline-default btn-sm" type="button" onclick="removeRequirement(this)">
+                                        <i class="gd-trash text-danger"></i>
+                                    </button>
+                                    <input type="hidden" class="requirement-id" value=""> <!-- Hidden input to track requirement IDs -->
+                                </div>
+                            </div>`
+                        );
+                    });
+
+                    // Function to show the tab
+                    function showTab(tabId) {
+                        var tabTriggerEl = $('a[href="' + tabId + '"]');
+                        if (tabTriggerEl.length) {
+                            var tab = new bootstrap.Tab(tabTriggerEl[0]);
+                            tab.show();
+                        }
+                    }
+
+                    $('#saveChanges').click(function() {
+                        // Collect data for check-out items
+                        let items = [];
+                        let allItemsValid = true;
+                        $('#itemsContainer .input-group').each(function() {
+                            let itemId = $(this).find('.item-id').val(); // Track the ID of the item
+                            let itemName = $(this).find('input[type="text"]').val();
+                            let itemCondition = $(this).find('select').val();
+
+                            if (itemName === '' || itemCondition === '' || itemCondition === undefined) {
+                                allItemsValid = false;
+                            } else if (itemId === '' || itemId === undefined) {
+                                items.push({ name: itemName, condition: itemCondition });
+                            }
+                        });
+
+                        // Validate that at least one item exists and all conditions are selected
+                        if (items.length === 0) {
+                            showToast('#error-toast', 'At least one check-out item must be added.');
+                            return; // Stop the process if validation fails
+                        }
+
+                        // Check if all items have conditions selected
+                        if (!allItemsValid) {
+                            showToast('#error-toast', 'Please select a condition for each check-out item.');
+                            return; // Stop the process if validation fails
+                        }
+
+                        // Collect data for requirements
+                        let requirements = [];
+                        let allRequirementsValid = true;
+                        $('#requirementsContainer .input-group').each(function() {
+                            let requirementId = $(this).find('.requirement-id').val(); // Track the ID of the requirement
+                            let requirementName = $(this).find('input[type="text"]').val();
+                            let requirementQuantity = $(this).find('input[type="number"]').val();
+
+                            if (requirementName === '' || requirementQuantity === '' || requirementQuantity <= 0) {
+                                allRequirementsValid = false;
+                            } else if (requirementId === '' || requirementId === undefined) {
+                                requirements.push({ name: requirementName, quantity: requirementQuantity });
+                            }
+                        });
+
+                        // Validate that at least one requirement exists and all quantities are valid
+                        if (requirements.length === 0) {
+                            showToast('#error-toast', 'At least one requirement must be added.');
+                            return; // Stop the process if validation fails
+                        }
+
+                        if (!allRequirementsValid) {
+                            showToast('#error-toast', 'Please ensure all quantities are greater than zero for each requirement.');
+                            return; // Stop the process if validation fails
+                        }
+
+                        // Get the block ID from a hidden input or another source
+                        let blockId = $('#blockId').val(); // Assuming you have a hidden input with ID 'blockId'
+                        $('#overlay').css('display', 'flex'); // Show the overlay
+
+                        // Send data to server
+                        $.ajax({
+                            url: '/save-check-out-items', // Adjust the URL according to your route
+                            method: 'POST',
+                            data: {
+                                _token: '{{ csrf_token() }}', // Include CSRF token for security
+                                block_id: blockId,
+                                items: items,
+                                requirements: requirements
+                            },
+                            success: function(response) {
+                                // Handle success
+                                if (response.success) {
+                                    showToast('#success-toast', 'Changes saved successfully!');
+                                    $('#overlay').fadeOut(); // Hide the overlay
+
+                                    // Call the room function with the block ID
+                                    room(blockId);
+
+                                    // Activate the second navigation item
+                                    $('.nav-item .nav-link').removeClass('active');
+                                    $('.nav-item').eq(1).find('.nav-link').addClass('active');
+
+                                    // Show the second tab
+                                    showTab('#tabs1-tab2');
+                                } else {
+                                    showToast('#error-toast', response.message);
+                                    $('#overlay').fadeOut(); // Hide the overlay
+                                }
+                            },
+                            error: function(xhr) {
+                                // Handle error
+                                showToast('#error-toast', 'An error occurred while saving changes.');
+                                $('#overlay').fadeOut(); // Hide the overlay
+                            }
+                        });
+                    });
+                });
+
+                function removeItem(button) {
+                    $(button).closest('.col-md-12').remove();
+                }
+
+                function removeRequirement(button) {
+                    $(button).closest('.col-md-12').remove();
+                }
+
+                function showToast(toastId, message) {
+                    var $toast = $(toastId);
+                    $toast.find('.toast-body').text(message);
+                    $toast.toast({
+                        delay: 3000
+                    }); // Set the delay for the toast to hide automatically
+                    $toast.toast('show');
+                }
+            </script>
+
+
+
+
         </div>
-    </div>
+
+
+
 </div>
 
 
 
-    </div>
-</div>
+
+
+
+
 <script>
     function floorAction(action, id) {
         const selectors = [

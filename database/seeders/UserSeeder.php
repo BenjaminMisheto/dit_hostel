@@ -31,7 +31,11 @@ class UserSeeder extends Seeder
                 'confirmation' => 1,
                 'application' => 1,
                 'status' => 'approved',
-                'payment_status' => $faker->randomElement(['paid', null]), // Randomly 'paid' or null
+         'payment_status' => $faker->optional()->randomElement([
+    $block->price ?? $faker->numerify('#########'), // Use block price if available, otherwise generate a 9-digit number
+    null
+]),
+
                 'Control_Number' => $faker->unique()->numerify('#########'), // Generates a 9-digit number
                 'block_id' => $block->id,
                 'room_id' => $room->id,

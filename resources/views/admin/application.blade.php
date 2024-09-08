@@ -252,19 +252,7 @@ th.desc::after {
                                     <i class="gd-arrow-top-right"></i>
                                 </button>
                             </td>
-
-
                             @endif
-
-
-
-
-
-
-
-
-
-
                                 <td>
                                     <button class="btn btn-sm btn-toggle {{ $user->status === 'approved' ? 'btn-lightgreen' : 'btn-lightred' }}" data-user-id="{{ $user->id }}" data-status="{{ $user->status }}" onclick="toggleStatus(this)">
                                         {{ $user->status === 'approved' ? 'Yes' : 'No' }}

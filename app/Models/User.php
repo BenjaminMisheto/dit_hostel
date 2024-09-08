@@ -36,6 +36,8 @@ class User extends Authenticatable
         'confirmation',
         'application',
         'counter',
+        'checkin',
+        'checkout',
     ];
 
     protected $hidden = [

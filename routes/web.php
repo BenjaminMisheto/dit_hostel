@@ -123,6 +123,8 @@ Route::post('/update-profile', [SearchController::class, 'updateProfile']);
     Route::post('/ room_select', [AjaxController::class, 'room_select']);
 
     Route::get('get.expiration.date', [AjaxController::class, 'getExpirationDate'])->name('get.expiration.date');
+    Route::post('/confirm-requirements-items', [RoomController::class, 'confirmapplication']);
+
 
 
 
@@ -162,6 +164,7 @@ Route::middleware(['admin'])->group(function () {
 
     route::post('admin.updateSetting', [AjaxController::class, 'updateSetting'])->name('admin.updateSetting');
 
+    Route::post('/admin/checkout', [ElligableStudentController::class, 'studentout'])->name('admin.checkout.student');
 
 
 
@@ -259,6 +262,21 @@ Route::get('/get-course-options/{roomId}', [AjaxController::class, 'getCourseOpt
     route::get('admin.application.search', [ApplicationController::class, 'search'])->name('admin.application.search');
 
     route::get('search.students.elligable', [SearchController::class, 'search_elligable'])->name('search.students.elligable');
+
+    Route::get('admin.checkout', [ElligableStudentController::class, 'checkout'])->name('admin.checkout');
+    Route::get('admin.checkin', [ElligableStudentController::class, 'checkin'])->name('admin.checkin');
+    Route::post('/update-checkin-status/{userId}', [ElligableStudentController::class, 'updateCheckinStatus'])->name('update.checkin.status');
+    Route::get('/search/checkin', [ElligableStudentController::class, 'searchCheckin'])->name('search.checkin');
+    Route::get('/search/checkout', [ElligableStudentController::class, 'searchCheckout'])->name('search.checkout');
+    Route::get('/bed/checkout/{bedId}', [ElligableStudentController::class, 'out'])->name('admin.out');
+
+
+    // web.php
+Route::post('/save-checkout-requirements', [RoomController::class, 'saveCheckOutRequirements']);
+route::post('/save-check-out-items', [RoomController::class, 'saveCheckOutItems'])->name('saveCheckOutItems');
+
+
+
 });
 
 Route::post('/admin.logout', function () {

@@ -4,7 +4,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Block;
 use App\Models\Bed;
+use App\Models\User;
 use Carbon\Carbon;
+use App\Models\CheckOutItem;
+use App\Models\Requirement;
+
+use App\Models\RequirementItemConfirmation;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
+
 
 class RoomController extends Controller
 {
@@ -15,7 +23,6 @@ class RoomController extends Controller
      * @param  int  $id
      * @return \Illuminate\View\View
      */
-
      public function show($id)
 {
     // Retrieve the block with its floors and rooms
@@ -75,9 +82,26 @@ class RoomController extends Controller
         $blockEligibility = array_unique(array_merge($blockEligibility, $eligibility));
     }
 
-    // Pass the block, totalBeds, totalOccupiedBeds, totalOpenBeds, totalReservedBeds, totalUnderMaintenanceBeds, blockGenders, blockEligibility, and occupancyPercentage to the view
-    return view('admin.room', compact('block', 'totalBeds', 'totalOccupiedBeds', 'totalOpenBeds', 'totalReservedBeds', 'totalUnderMaintenanceBeds', 'blockGenders', 'blockEligibility', 'occupancyPercentage'));
+    // Retrieve check-out items and requirements
+    $checkOutItems = CheckOutItem::where('block_id', $id)->get();
+    $requirements = Requirement::where('block_id', $id)->get();
+
+    // Pass data to the view
+    return view('admin.room', compact(
+        'block',
+        'totalBeds',
+        'totalOccupiedBeds',
+        'totalOpenBeds',
+        'totalReservedBeds',
+        'totalUnderMaintenanceBeds',
+        'blockGenders',
+        'blockEligibility',
+        'occupancyPercentage',
+        'checkOutItems',
+        'requirements'
+    ));
 }
+
 
 
 
@@ -94,25 +118,123 @@ public function showBed($bedId)
 }
 
 
+public function saveCheckOutItems(Request $request)
+{
+    $items = $request->input('items');
+    $requirements = $request->input('requirements');
+    $blockId = $request->input('block_id');
+
+    // Check if block_id is provided
+    if (!$blockId) {
+        return response()->json(['success' => false, 'message' => 'Block ID is required.']);
+    }
+
+    // Validate that at least one item and one requirement must exist
+    if (empty($items) || empty($requirements)) {
+        return response()->json(['success' => false, 'message' => 'At least one check-out item and one requirement must exist.']);
+    }
+
+    // Save or update check-out items
+    $existingItems = CheckOutItem::where('block_id', $blockId)->get()->keyBy('name');
+
+    foreach ($items as $item) {
+        CheckOutItem::updateOrCreate(
+            ['name' => $item['name'], 'block_id' => $blockId],
+            ['condition' => $item['condition']]
+        );
+
+        // Remove item from existing items array
+        $existingItems->forget($item['name']);
+    }
+
+    // Delete items that are not in the request
+    CheckOutItem::where('block_id', $blockId)
+        ->whereIn('name', $existingItems->keys())
+        ->delete();
+
+    // Save or update requirements
+    $existingRequirements = Requirement::where('block_id', $blockId)->get()->keyBy('name');
+
+    foreach ($requirements as $requirement) {
+        Requirement::updateOrCreate(
+            ['name' => $requirement['name'], 'block_id' => $blockId],
+            ['quantity' => $requirement['quantity']]
+        );
+
+        // Remove requirement from existing requirements array
+        $existingRequirements->forget($requirement['name']);
+    }
+
+    // Delete requirements that are not in the request
+    Requirement::where('block_id', $blockId)
+        ->whereIn('name', $existingRequirements->keys())
+        ->delete();
+
+    return response()->json(['success' => true]);
+}
+
+public function confirmapplication(Request $request)
+{
+    // Validate the request
+    $validated = $request->validate([
+        'user_id' => 'required|exists:users,id',
+        'block_id' => 'required|exists:blocks,id',
+    ]);
+
+    // Retrieve the user and update check-in status
+    $user = User::find($validated['user_id']);
+    $user->checkin = 1;
+    $user->save();
+
+    // Retrieve requirements and check-out items for the given block
+    $requirements = Requirement::where('block_id', $validated['block_id'])->get();
+    $checkOutItems = CheckOutItem::where('block_id', $validated['block_id'])->get();
+
+    // Check if a confirmation record already exists for the user
+    $confirmation = RequirementItemConfirmation::where('user_id', $validated['user_id'])->first();
+
+    if ($confirmation) {
+        // Update existing confirmation record
+        $confirmation->items_to_bring_names = $requirements->map(function($req) {
+            return [
+                'name' => $req->name,
+                'quantity' => $req->quantity,
+                'status' => $req->status,
+            ];
+        })->toJson();
+
+        $confirmation->checkout_items_names = $checkOutItems->map(function($item) {
+            return [
+                'name' => $item->name,
+                'condition' => $item->condition,
+            ];
+        })->toJson();
+
+        $confirmation->save();
+    } else {
+        // Create a new confirmation record
+        $confirmation = new RequirementItemConfirmation();
+        $confirmation->user_id = $validated['user_id'];
+        $confirmation->items_to_bring_names = $requirements->map(function($req) {
+            return [
+                'name' => $req->name,
+                'quantity' => $req->quantity,
+                'status' => $req->status,
+            ];
+        })->toJson();
+
+        $confirmation->checkout_items_names = $checkOutItems->map(function($item) {
+            return [
+                'name' => $item->name,
+                'condition' => $item->condition,
+            ];
+        })->toJson();
+
+        $confirmation->save();
+    }
+
+    return response()->json(['message' => 'Confirmation saved successfully'], 200);
+}
 
 
-
-
-
-// public function showBed($bedId)
-// {
-//     // Eager load the related data: room, floor, block, and user
-//     $bed = Bed::with(['room.floor.block', 'user'])->findOrFail($bedId);
-
-//     $userExpirationStatus = null;
-
-//     // Check if the bed has an associated user and if the user's expiration time has passed
-//     if ($bed->user) {
-//         $user = $bed->user;
-//         $userExpirationStatus = Carbon::now()->greaterThan($user->expiration_date) ? 'Expired' : 'Active';
-//     }
-
-//     // Return the view with the bed data and user expiration status
-//     return view('admin.bed', compact('bed', 'userExpirationStatus'));
-// }
 }

@@ -87,6 +87,21 @@
         <input type="date" id="deadlineDate" class="form-control" value="{{ $deadlineDate }}">
     </div>
 </div>
+<hr>
+
+
+
+<!-- Report Date Input -->
+<div class="form-group row align-items-center mb-3">
+    <label for="reportDate" class="col-sm-10 col-form-label">
+        Report Date
+    </label>
+    <div class="col-sm-2 text-right">
+        <input type="date" id="reportDate" class="form-control" value="{{ $reportDate }}">
+    </div>
+</div>
+
+
 
 
         </div>
@@ -173,51 +188,61 @@ $(document).ready(function() {
 
 </script>
 
-<script>$(document).ready(function() {
-    const $deadlineDateInput = $('#deadlineDate');
-    const $openDateInput = $('#openDate');
 
-    // Function to send AJAX request to update dates
-    function updateDates() {
-        const deadlineDate = new Date($deadlineDateInput.val());
-        const openDate = new Date($openDateInput.val());
+<script>
+    $(document).ready(function() {
+        const $reportDateInput = $('#reportDate');
+        const $deadlineDateInput = $('#deadlineDate');  // Added deadline date
+        const $openDateInput = $('#openDate');
 
-        // Make sure the dates are not empty and open date is not greater than deadline date
-        if (deadlineDate && openDate && openDate <= deadlineDate) {
-            $.ajax({
-                url: 'update-dates',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ deadline: $deadlineDateInput.val(), open_date: $openDateInput.val() }),
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(data) {
-                    if (data.success) {
-                        // Show success toast
-                        showToast('success-toast', 'Dates updated successfully');
-                    } else {
-                        // Show error toast
-                        showToast('error-toast', 'Failed to update dates');
-                    }
-                },
-                error: function() {
-                    // Show error toast
-                    showToast('error-toast', 'An error occurred. Please try again.');
-                }
-            });
-        } else if (openDate > deadlineDate) {
-            // Show error toast if open date is greater than deadline date
-            showToast('error-toast', 'Open date cannot be greater than deadline date.');
+        // Function to send AJAX request to update dates
+        function updateDates() {
+            const reportDate = new Date($reportDateInput.val());
+            const deadlineDate = new Date($deadlineDateInput.val());  // Added deadline date
+            const openDate = new Date($openDateInput.val());
+
+            // Make sure the dates are not empty and open date is not greater than deadline date, and deadline date is not greater than report date
+            if (reportDate && deadlineDate && openDate && openDate <= deadlineDate && deadlineDate <= reportDate) {
+                $.ajax({
+    url: 'update-dates',
+    type: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({
+        report_date: $reportDateInput.val(),
+        deadline: $deadlineDateInput.val(),  // Changed to 'deadline'
+        open_date: $openDateInput.val()
+    }),
+    headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    },
+    success: function(data) {
+        if (data.success) {
+            showToast('success-toast', 'Dates updated successfully');
+        } else {
+            showToast('error-toast', 'Failed to update dates');
         }
-    }
-
-    // Event listener for when the deadline date or open date is changed
-    $deadlineDateInput.add($openDateInput).on('change', updateDates);
-
-    // Function to show toast notifications
-    function showToast(toastId, message) {
-        $('#' + toastId).find('.toast-body').text(message).end().toast('show');
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+        showToast('error-toast', 'An error occurred. Please try again.');
+        console.error("Error details:", jqXHR, textStatus, errorThrown);
     }
 });
-</script>
+
+            } else if (openDate > deadlineDate) {
+                // Show error toast if open date is greater than deadline date
+                showToast('error-toast', 'Open date cannot be greater than deadline date.');
+            } else if (deadlineDate > reportDate) {
+                // Show error toast if deadline date is greater than report date
+                showToast('error-toast', 'Deadline date cannot be greater than report date.');
+            }
+        }
+
+        // Event listener for when the report date, deadline date, or open date is changed
+        $reportDateInput.add($deadlineDateInput).add($openDateInput).on('change', updateDates);
+
+        // Function to show toast notifications
+        function showToast(toastId, message) {
+            $('#' + toastId).find('.toast-body').text(message).end().toast('show');
+        }
+    });
+    </script>

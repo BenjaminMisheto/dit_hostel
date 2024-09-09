@@ -93,7 +93,8 @@ th.desc::after {
                         <th scope="col" data-sort="room" style="cursor: pointer">Room</th>
                         <th scope="col" data-sort="bed" style="cursor: pointer">Bed</th>
                         <th scope="col" data-sort="pay" style="cursor: pointer">Payment</th>
-                        <th scope="col" style="cursor: pointer">Out</th>
+                        <th scope="col" data-sort="pay" style="cursor: pointer">Status</th>
+                        <th scope="col" style="cursor: pointer">Action</th>
                     </tr>
                 </thead>
                 <tbody id="studentTableBody">
@@ -108,6 +109,7 @@ th.desc::after {
                             <td class="col-gender">{{ optional($student->bed->room)->room_number ?? 'N/A' }}</td>
                             <td class="col-course">{{ $student->bed->bed_number ?? 'N/A' }}</td>
                             <td class="col-course"> {{ !empty($student->payment_status) ? 'Paid' : 'Not Paid' }}</td>
+                            <td class="col-course">  @if ($student->checkout === 1) <span class="text-success">Check-Out</span>  @else <span class="text-danger">Waiting</span>  @endif </td>
                             <td>
                                 <button class="btn btn-sm shadow-sm" onclick="checkoutAction({{ $student->bed->id }})">
                                     <i class="gd-arrow-top-right"></i>

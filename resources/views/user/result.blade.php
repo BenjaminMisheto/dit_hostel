@@ -49,7 +49,7 @@
                     </div>
                 </div>
             </div>
-            <!-- End Card  jdcwqve-->
+            <!-- End Card -->
         </div>
     </div>
     <script>
@@ -189,7 +189,7 @@
 
 
                 </div>
-                <hr>
+
                 <div class="card-body pt-3">
 
 
@@ -398,7 +398,7 @@
                             Control Number:
                         </div>
                         <div class="col">
-                            <span class="p-2">{{$user->Control_Number}}</span>
+                            <span class="">{{$user->Control_Number}}</span>
 
                         </div>
                     </div>
@@ -408,16 +408,17 @@
                                     Paid Amount:
                                 </div>
                                 <div class="col">
-                                    <span id="paidAmount" class="p-2">{{ number_format($user->payment_status) ?? 'NULL' }}</span>
+                                    <span id="paidAmount" class="">{{ number_format($user->payment_status) ?? 'NULL' }}</span>
 
                                 </div>
                             </div>
                             <div class="alert alert-info">
                                 <strong>Important Notice:</strong><br>
                                 <span>
-                                    Please ensure you visit your Block Manager, <strong>{{$user->block->manager}}</strong>, by <strong>April 1, 2024</strong>, to confirm your hostel accommodation. After confirmation, kindly complete the form below to proceed with your check-in.
+                                    Please ensure you visit your Block Manager, <strong>{{$user->block->manager}}</strong>, start from <strong>{{ \Carbon\Carbon::parse($publishes->first()->report_date)->format('d M Y') }}</strong>
+                                    , to confirm your hostel accommodation. After confirmation, kindly complete the form below to proceed with your check-in.
 
-                                    Ensure that all required items are brought with you, and carefully inspect all check-out items before confirming their condition, as you will be responsible for returning them in the <strong>same condition</strong>.
+                                    Ensure that all required items are brought with you, and carefully inspect all Given items before confirming their condition, as you will be responsible for returning them in the <strong>same condition</strong>.
 
                                     Failure to adhere to these guidelines may result in your accommodation being <strong>reassigned</strong> to another student, and <strong>no refunds</strong> will be issued.
                                 </span>
@@ -444,6 +445,7 @@
 
                             <div class="mt-4">
                                 <div class="form">
+
                                     <div class="row">
                                         <!-- Items to Bring Section -->
                                         <div class="col-md-6">
@@ -458,24 +460,23 @@
                                                             <strong>Note:</strong> No items to bring data available in the confirmation record.
                                                         </div>
                                                     @else
-                                                        <ol class="list-group list-group-numbered">
+                                                        <div class="row">
                                                             @foreach($itemsToBring as $item)
                                                                 @if(is_array($item))
-                                                                    <li class="list-group-item border-0">
-                                                                        <div>
-                                                                            <strong>{{ $item['name'] ?? 'Unknown' }}</strong>
+                                                                    <div class="col-md-4 mb-3">
+                                                                        <div class="card p-3">
+                                                                            <h6 class="card-title mb-1">{{ $item['name'] ?? 'Unknown' }}</h6>
                                                                             <p class="mb-0">Quantity: <span>{{ $item['quantity'] ?? 'N/A' }}</span></p>
-                                                                            {{-- <p class="mb-0">Status: <span>{{ $item['status'] ?? 'N/A' }}</span></p> --}}
                                                                             <input type="hidden" name="requirement_ids[]" value="{{ $item['id'] ?? '' }}">
                                                                         </div>
-                                                                    </li>
+                                                                    </div>
                                                                 @else
                                                                     <div class="alert alert-warning">
                                                                         <strong>Note:</strong> Unexpected data format in items to bring.
                                                                     </div>
                                                                 @endif
                                                             @endforeach
-                                                        </ol>
+                                                        </div>
                                                     @endif
                                                 @else
                                                     <div class="alert alert-warning">
@@ -488,18 +489,17 @@
                                                         <strong>Note:</strong> Items are not specified by admin. Please contact the admin, as you will not be able to complete your application without them.
                                                     </div>
                                                 @else
-                                                    <ol class="list-group list-group-numbered">
+                                                    <div class="row">
                                                         @foreach($requirements as $requirement)
-                                                            <li class="list-group-item border-0">
-                                                                <div>
-                                                                    <strong>{{ $requirement->name }}</strong>
+                                                            <div class="col-md-4 mb-3">
+                                                                <div class="card p-3">
+                                                                    <h6 class="card-title mb-1">{{ $requirement->name }}</h6>
                                                                     <p class="mb-0">Quantity: <span>{{ $requirement->quantity }}</span></p>
-                                                                    {{-- <p class="mb-0">Status: <span>{{ $requirement->status }}</span></p> --}}
                                                                     <input type="hidden" name="requirement_ids[]" value="{{ $requirement->id }}">
                                                                 </div>
-                                                            </li>
+                                                            </div>
                                                         @endforeach
-                                                    </ol>
+                                                    </div>
                                                 @endif
                                             @endif
                                         </div>
@@ -517,23 +517,23 @@
                                                             <strong>Note:</strong> No check-out items data available in the confirmation record.
                                                         </div>
                                                     @else
-                                                        <ol class="list-group list-group-numbered">
+                                                        <div class="row border">
                                                             @foreach($checkoutItemsNames as $item)
                                                                 @if(is_array($item))
-                                                                    <li class="list-group-item border-0">
-                                                                        <div>
-                                                                            <strong>{{ $item['name'] ?? 'Unknown' }}</strong>
-                                                                            <p class="mb-0">Condition: <span>{{ $item['condition'] ?? 'N/A' }}</span></p>
+                                                                    <div class="col-md-4 mb-3">
+                                                                        <div class="card p-3">
+                                                                            <h6 class="card-title mb-1">{{ $item['name'] ?? 'Unknown' }}</h6>
+                                                                            <p class="mb-0">Condition: <span class="fw-bold @if($item['condition'] === 'Good') text-success @elseif($item['condition'] === 'Bad') text-danger @elseif($item['condition'] === 'None') text-warning @endif">{{ $item['condition'] ?? 'N/A' }}</span></p>
                                                                             <input type="hidden" name="item_ids[]" value="{{ $item['id'] ?? '' }}">
                                                                         </div>
-                                                                    </li>
+                                                                    </div>
                                                                 @else
                                                                     <div class="alert alert-warning">
                                                                         <strong>Note:</strong> Unexpected data format in check-out items.
                                                                     </div>
                                                                 @endif
                                                             @endforeach
-                                                        </ol>
+                                                        </div>
                                                     @endif
                                                 @else
                                                     <div class="alert alert-warning">
@@ -546,39 +546,108 @@
                                                         <strong>Note:</strong> Check-out items are not specified by admin. Please contact the admin, as you will not be able to complete your application without them.
                                                     </div>
                                                 @else
-                                                    <ol class="list-group list-group-numbered">
+                                                    <div class="row">
                                                         @foreach($checkOutItems as $item)
-                                                            <li class="list-group-item border-0">
-                                                                <div>
-                                                                    <strong>{{ $item->name }}</strong>
-                                                                    <p class="mb-0">Condition: <span>{{ $item->condition }}</span></p>
+                                                            <div class="col-md-4 mb-3">
+                                                                <div class="card p-3">
+                                                                    <h6 class="card-title mb-1">{{ $item->name }}</h6>
+                                                                    <p class="mb-0">Condition: <span class="fw-bold @if($item->condition === 'Good') text-success @elseif($item->condition === 'Bad') text-danger @elseif($item->condition === 'None') text-warning @endif">{{ $item->condition }}</span></p>
                                                                     <input type="hidden" name="item_ids[]" value="{{ $item->id }}">
                                                                 </div>
-                                                            </li>
+                                                            </div>
                                                         @endforeach
-                                                    </ol>
+                                                    </div>
                                                 @endif
                                             @endif
                                         </div>
                                     </div>
 
+
+
+
+
                                     <!-- Buttons for Confirm -->
                                     @if(!$requirements->isEmpty() && !$checkOutItems->isEmpty())
 
-                                        @if($confirmation)
-                                        @if($user->checkin == 2)
-                                        <div class="text-center mt-4">
-                                            <div class="alert alert-success">
-                                                <strong>Note:</strong> Congratulations! You are now officially a member of {{$user->block->name}}. Enjoy your stay at the hostel, and please adhere to all regulations.
-                                            </div>
-                                        </div>
-                                    @else
-                                        <div class="text-center mt-4">
-                                            <div class="alert alert-success">
-                                                <strong>Note:</strong> You have already confirmed your items. Please await confirmation from the admin to complete your check-in process.
-                                            </div>
-                                        </div>
-                                    @endif
+ @if($confirmation)
+@if($user->checkin == 2)
+
+@if($user->checkout == 1)
+
+<h5 class="mb-3">Return According to Admin</h5>
+
+@if($checkOutItemsadmin->isEmpty())
+    <p class="text-muted">No items to display.</p>
+@else
+    <div class="row border">
+        @php
+            $needsToPay = false;
+            $allGood = true; // Assume all items are good initially
+        @endphp
+
+        @foreach($checkOutItemsadmin as $item)
+            @if($item->condition === 'Bad' || $item->condition === 'None')
+                @php
+                    $needsToPay = true;
+                    $allGood = false; // At least one item is not good
+                @endphp
+            @endif
+
+            <div class="col-md-4 mb-3">
+                <div class="card p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">{{ $item->name }}</h6>
+                            <p class="mb-0">Condition: <span class="fw-bold @if($item->condition === 'Good') text-success @elseif($item->condition === 'Bad') text-danger @elseif($item->condition === 'None') text-warning @endif">{{ $item->condition }}</span></p>
+                            <input type="hidden" name="item_ids[]" value="{{ $item->id }}">
+                        </div>
+                        @if($item->condition === 'Bad')
+                            <span class="badge bg-danger text-light">Requires Payment</span>
+                        @elseif($item->condition === 'None')
+                            <span class="badge bg-warning text-dark">Not Returned - Payment Required</span>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
+
+    @if($needsToPay)
+    <div class="alert alert-warning mt-3">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        Attention: You are required to make payment for any items marked as "Bad" or not returned. The cost for these items will be assessed by the institute. Failure to settle these charges may result in further actions, including potential legal consequences for damage to institute property. Please ensure all outstanding payments are resolved to complete your checkout process.
+    </div>
+
+    @elseif($allGood)
+        <div class="alert alert-success mt-3">
+            <i class="bi bi-check-circle me-2"></i> Congratulations! All items have been returned in good condition. Thank you, and we hope to see you next time.
+        </div>
+    @endif
+@endif
+
+
+
+
+
+
+@else
+<div class="text-center mt-4">
+    <div class="alert alert-success">
+        <strong>Note:</strong> Congratulations! You are now officially a member of {{$user->block->name}}. Enjoy your stay at the hostel, and please adhere to all regulations.
+    </div>
+</div>
+@endif
+
+
+
+
+@else
+    <div class="text-center mt-4">
+        <div class="alert alert-success">
+            <strong>Note:</strong> You have already confirmed your items. Please await confirmation from the admin to complete your check-in process.
+        </div>
+    </div>
+@endif
 
 
 
@@ -588,7 +657,7 @@
 
                                         @else
                                             <div class="text-center mt-4">
-                                                <button id="confirm" class="btn btn-outline-primary">Confirm Check-Out Items</button>
+                                                <button id="confirm" class="btn btn-outline-primary">Confirm Given Items</button>
                                             </div>
                                         @endif
                                     @endif
@@ -653,7 +722,7 @@
                                 Control Number:
                             </div>
                             <div class="col">
-                                <span class="p-2">{{$user->Control_Number}}</span>
+                                <span class="">{{$user->Control_Number}}</span>
 
                             </div>
                         </div>
@@ -672,7 +741,7 @@
                                     Paid Amount:
                                 </div>
                                 <div class="col">
-                                    <span id="paidAmount" class=" p-2">Not Paid</span>
+                                    <span id="paidAmount" class="">Not Paid</span>
                                 </div>
                             </div>
 
@@ -698,7 +767,7 @@
                             Control Number:
                         </div>
                         <div class="col">
-                            <span id="controlNumber" class=" p-2">Not Generated</span>
+                            <span id="controlNumber" class=" ">Not Generated</span>
                         </div>
                     </div>
 
@@ -717,7 +786,7 @@
                             Paid Amount:
                         </div>
                         <div class="col">
-                            <span id="paidAmount" class=" p-2">Not Paid</span>
+                            <span id="paidAmount" class=" ">Not Paid</span>
                         </div>
                     </div>
 

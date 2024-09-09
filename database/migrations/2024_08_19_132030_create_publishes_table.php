@@ -16,6 +16,7 @@ class CreatePublishesTable extends Migration
     $table->boolean('maintenance_bed')->default(false);
     $table->integer('expiration_date')->default(1);
     $table->date('open_date')->nullable();
+    $table->date('report_date')->nullable();
     $table->date('deadline')->nullable();
             $table->timestamps();
         });

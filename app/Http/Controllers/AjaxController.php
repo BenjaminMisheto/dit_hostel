@@ -16,6 +16,8 @@ use App\Models\SliderData;
 use Illuminate\Support\Facades\DB;
 use App\Models\CheckOutItem;
 use App\Models\Requirement;
+use App\Models\AdminCheckout;
+
 use App\Models\RequirementItemConfirmation;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf; // Ensure you have Barryvdh\DomPDF installed
@@ -811,12 +813,13 @@ public function getUserInfoResult(Request $request)
     // Retrieve requirements and check-out items for the selected block
     $requirements = Requirement::where('block_id', $selectedBlockId)->get();
     $checkOutItems = CheckOutItem::where('block_id', $selectedBlockId)->get();
+    $checkOutItemsadmin = AdminCheckout::where('user_id', $user->id)->get();
 
     // Check if a confirmation record already exists for the user and block
     $confirmation = RequirementItemConfirmation::where('user_id', $user->id)->first();
 
     // Pass the user, publishes, expirationDate, formattedExpirationDate, requirements, checkOutItems, and confirmation to the view
-    return view('user.result', compact('user', 'publishes', 'expirationDate', 'formattedExpirationDate', 'requirements', 'checkOutItems', 'confirmation'));
+    return view('user.result', compact('user', 'publishes', 'expirationDate', 'formattedExpirationDate', 'requirements', 'checkOutItems', 'confirmation','checkOutItemsadmin'));
 }
 
 
@@ -1017,13 +1020,15 @@ public function setting()
     // Retrieve the stored expiration_days, defaulting to 1 if not set
     $expirationDays = $settings && $settings->expiration_date ? $settings->expiration_date : 1;
 
-    // Retrieve the deadline and open date, defaulting to null if not set
+    // Retrieve the deadline, open date, and report date, defaulting to null if not set
     $deadlineDate = $settings ? $settings->deadline : null;
     $openDate = $settings ? $settings->open_date : null;
+    $reportDate = $settings ? $settings->report_date : null; // Added report_date
 
-    // Pass settings data, expirationDays, deadlineDate, and openDate to the view
-    return view('admin.setting', compact('settings', 'expirationDays', 'deadlineDate', 'openDate'));
+    // Pass settings data, expirationDays, deadlineDate, openDate, and reportDate to the view
+    return view('admin.setting', compact('settings', 'expirationDays', 'deadlineDate', 'openDate', 'reportDate'));
 }
+
 
 
 
@@ -1097,6 +1102,7 @@ public function updateDates(Request $request)
 {
     // Validate the request
     $request->validate([
+        'report_date' => 'required|date', // Added report date validation
         'deadline' => 'required|date',
         'open_date' => 'required|date',
     ]);
@@ -1106,6 +1112,7 @@ public function updateDates(Request $request)
 
     if ($settings) {
         // Update the settings
+        $settings->report_date = $request->report_date; // Added report date update
         $settings->deadline = $request->deadline;
         $settings->open_date = $request->open_date;
         $settings->save();
@@ -1117,6 +1124,7 @@ public function updateDates(Request $request)
         return response()->json(['success' => false, 'message' => 'Settings not found'], 404);
     }
 }
+
 
 
 

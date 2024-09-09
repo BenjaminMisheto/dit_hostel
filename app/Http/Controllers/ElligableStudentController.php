@@ -302,8 +302,6 @@ public function searchCheckout(Request $request)
 
     return response()->make($html, 200, ['Content-Type' => 'text/html']);
 }
-
-
 public function out($bedId)
 {
     // Fetch the bed and associated user details
@@ -315,8 +313,9 @@ public function out($bedId)
     // Fetch check-out items related to this user, if any
     $adminCheckouts = AdminCheckout::where('user_id', $user->id)->get();
 
-    // If admin check-outs exist, use those. Otherwise, use requirement items confirmation
+    // Determine the confirmation items to use
     if ($adminCheckouts->isNotEmpty()) {
+        // Map admin check-outs to the confirmationItems format
         $confirmationItems = $adminCheckouts->map(function ($checkout) {
             return [
                 'name' => $checkout->name,
@@ -324,6 +323,7 @@ public function out($bedId)
             ];
         });
     } else {
+        // If no admin check-outs, fetch from RequirementItemConfirmation
         $confirmation = RequirementItemConfirmation::where('user_id', $user->id)->first();
         $confirmationItems = $confirmation ? json_decode($confirmation->checkout_items_names, true) : [];
     }
@@ -332,10 +332,10 @@ public function out($bedId)
     return view('admin.out', [
         'bed' => $bed,
         'user' => $user,
-        'confirmationItems' => $confirmationItems
+        'confirmationItems' => $confirmationItems,
+        'checkoutCount' => $adminCheckouts->count() // Pass the count of admin check-outs
     ]);
 }
-
 
 public function studentout(Request $request)
 {
@@ -348,12 +348,18 @@ public function studentout(Request $request)
     ]);
 
     try {
+        // Get the user based on user_id
+        $user = User::findOrFail($request->input('user_id'));
+
+        // Set the user's checkout column to 1
+        $user->update(['checkout' => 1]);
+
         // Loop through each item in the request
         foreach ($request->input('items') as $item) {
             // Use updateOrCreate to either update an existing record or create a new one
             AdminCheckout::updateOrCreate(
                 [
-                    'user_id' => $request->input('user_id'), // Find by user_id
+                    'user_id' => $user->id, // Find by user_id
                     'name' => $item['name'], // Find by item name
                 ],
                 [

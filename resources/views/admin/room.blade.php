@@ -825,8 +825,8 @@ use App\Models\User;
                                             <div class="input-group">
                                                 <input type="text" class="form-control" value="{{ $item->name }}">
                                                 <select class="nice-select" data-placeholder="Select Condition">
-                                                    <option value="Good" {{ $item->condition == 'Good' ? 'selected' : '' }}>Good</option>
-                                                    <option value="Bad" {{ $item->condition == 'Bad' ? 'selected' : '' }}>Bad</option>
+                                                    <option value="Good" {{ $item->condition == 'Good' ? 'selected' : '' }} selected>Good</option>
+
                                                 </select>
                                                 <button class="btn btn-outline-default btn-sm" type="button" onclick="removeItem(this)">
                                                     <i class="gd-trash text-danger"></i>
@@ -843,8 +843,8 @@ use App\Models\User;
                                             <div class="input-group">
                                                 <input type="text" class="form-control" value="Mattress">
                                                 <select class="nice-select" data-placeholder="Select Condition">
-                                                    <option value="Good">Good</option>
-                                                    <option value="Bad">Bad</option>
+                                                    <option value="Good" selected>Good</option>
+
                                                 </select>
                                                 <button class="btn btn-outline-default btn-sm" type="button" onclick="removeItem(this)">
                                                     <i class="gd-trash text-danger"></i>
@@ -856,8 +856,8 @@ use App\Models\User;
                                             <div class="input-group">
                                                 <input type="text" class="form-control" value="Room Key">
                                                 <select class="nice-select" data-placeholder="Select Condition">
-                                                    <option value="Good">Good</option>
-                                                    <option value="Bad">Bad</option>
+                                                    <option value="Good" selected>Good</option>
+
                                                 </select>
                                                 <button class="btn btn-outline-default btn-sm" type="button" onclick="removeItem(this)">
                                                     <i class="gd-trash text-danger"></i>
@@ -869,8 +869,8 @@ use App\Models\User;
                                             <div class="input-group">
                                                 <input type="text" class="form-control" value="Cleaning Done">
                                                 <select class="nice-select" data-placeholder="Select Condition">
-                                                    <option value="Good">Good</option>
-                                                    <option value="Bad">Bad</option>
+                                                    <option value="Good" selected>Good</option>
+
                                                 </select>
                                                 <button class="btn btn-outline-default btn-sm" type="button" onclick="removeItem(this)">
                                                     <i class="gd-trash text-danger"></i>
@@ -971,8 +971,8 @@ use App\Models\User;
                                     <input type="text" class="form-control" placeholder="New Item">
                                     <select class="nice-select" data-placeholder="Select Condition">
                                         <option value="">Select Condition</option>
-                                        <option value="Good">Good</option>
-                                        <option value="Bad">Bad</option>
+                                        <option value="Good" selected>Good</option>
+
                                     </select>
                                     <button class="btn btn-outline-default btn-sm" type="button" onclick="removeItem(this)">
                                         <i class="gd-trash text-danger"></i>

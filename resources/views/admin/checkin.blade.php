@@ -110,6 +110,7 @@ th.desc::after {
                             <td class="col-course"> {{ !empty($student->payment_status) ? 'Paid' : 'Not Paid' }}</td>
                             <td>
                                 @if ($student->checkin === 1)
+
                                     <button class="btn btn-sm btn-toggle btn-lightred"
                                             data-user-id="{{ $student->id }}"
                                             data-status="check-in"
@@ -124,12 +125,25 @@ th.desc::after {
                                         <i class="gd-time"></i> Waiting
                                     </span>
                                 @else
-                                    <button class="btn btn-sm btn-toggle btn-lightgreen"
-                                            data-user-id="{{ $student->id }}"
-                                            data-status="checked-in"
-                                            onclick="toggleStatus(this)">
-                                        Checked-In
-                                    </button>
+
+                                @if ($student->checkin === 2)
+                                <button class="btn btn-sm btn-toggle btn-lightgreen" disabled>
+                                    Checked-In
+                                 </button>
+
+                                @else
+                                <button class="btn btn-sm btn-toggle btn-lightgreen"
+                                data-user-id="{{ $student->id }}"
+                                data-status="checked-in"
+                                onclick="toggleStatus(this)">
+                            Checked-In
+                        </button>
+
+
+
+                                @endif
+
+
                                 @endif
                             </td>
 

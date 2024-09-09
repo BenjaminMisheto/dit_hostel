@@ -66,55 +66,66 @@
                 </div>
             </div>
 
-
 <!-- Check-Out Items Section -->
-<div class="col-md-6">
-    <div class="card p-4">
+<div class="col-12 col-md-6">
+    <div class="card p-3 p-md-4">
         <h5 class="card-title mb-3">Check-Out Items</h5>
         <input type="hidden" id="user_id" value="{{ $user->id }}">
 
-        <p class="mb-4">Please verify that the student has returned the following items:</p>
+        <p class="mb-4">Please verify that the student has returned the following items</p>
 
-        <!-- Checklist for returning items -->
-        <div class="row">
-            @foreach ($confirmationItems as $index => $item)
-                <div class="col-md-6 mb-4">
-                    <input class="form-check-input item-checkbox" type="checkbox" id="checkbox-{{ $index }}" {{ $item['condition'] ? 'checked' : '' }} hidden disabled>
-                    <label class="btn btn-outline-default shadow-sm cursor-pointer d-flex align-items-center" for="checkbox-{{ $index }}" >
-                        <i class="bi bi-check-circle me-2"></i> {{ $item['name'] }}
-                    </label>
 
-                    <!-- Condition radio buttons -->
-                    <div class="condition-radio mt-3" id="condition-{{ $index }}" style="display: {{ $item['condition'] ? 'block' : 'none' }};">
-                        <p class="fw-bold">Condition of {{ $item['name'] }}:</p>
-                        <div class="d-flex justify-content-between">
-                            <div class="d-flex align-items-center">
-                                <input class="form-check-input me-2" type="radio" name="condition-{{ $index }}" value="Good" id="good-{{ $index }}" {{ $item['condition'] === 'Good' ? 'checked' : '' }} hidden>
-                                <label class="btn btn-outline-success cursor-pointer" for="good-{{ $index }}">Good</label>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <input class="form-check-input me-2" type="radio" name="condition-{{ $index }}" value="None" id="none-{{ $index }}" {{ $item['condition'] === 'None' ? 'checked' : '' }} hidden>
-                                <label class="btn btn-outline-warning cursor-pointer" for="none-{{ $index }}">None</label>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <input class="form-check-input me-2" type="radio" name="condition-{{ $index }}" value="Bad" id="bad-{{ $index }}" {{ $item['condition'] === 'Bad' ? 'checked' : '' }} hidden>
-                                <label class="btn btn-outline-danger cursor-pointer" for="bad-{{ $index }}">Bad</label>
-                            </div>
-                        </div>
+<!-- Checklist for returning items -->
+<div class="row">
+    @foreach ($confirmationItems as $index => $item)
+        <div class="col-12 col-sm-6 mb-3">
+            <input class="form-check-input item-checkbox" type="checkbox" id="checkbox-{{ $index }}" {{ $item['condition'] ? 'checked' : '' }} hidden disabled>
+            <label class="btn btn-outline-default d-flex align-items-center w-100" for="checkbox-{{ $index }}">
+                <i class="bi bi-check-circle me-2"></i> {{ $item['name'] }}
+            </label>
+
+            <!-- Condition radio buttons -->
+            <div class="condition-radio mt-2" id="condition-{{ $index }}" style="display: {{ $item['condition'] ? 'block' : 'none' }};">
+                <p class="fw-bold">Condition of {{ $item['name'] }}:</p>
+                <div class="d-flex flex-wrap justify-content-between">
+                    <div class="d-flex align-items-center me-2">
+                        <input class="form-check-input me-1" type="radio" name="condition-{{ $index }}" value="Good" id="good-{{ $index }}" {{ $item['condition'] === 'Good' ? 'checked' : '' }} @if ($checkoutCount > 0) disabled @endif hidden >
+                        <label class="btn btn-outline-success cursor-pointer" for="good-{{ $index }}" @if ($checkoutCount > 0) style="pointer-events: none!important; opacity: 0.6;" @endif>Good</label>
+                    </div>
+                    <div class="d-flex align-items-center me-2">
+                        <input class="form-check-input me-1" type="radio" name="condition-{{ $index }}" value="None" id="none-{{ $index }}" {{ $item['condition'] === 'None' ? 'checked' : '' }} hidden @if ($checkoutCount > 0) disabled @endif>
+                        <label class="btn btn-outline-warning cursor-pointer" for="none-{{ $index }}" @if ($checkoutCount > 0) style="pointer-events: none; opacity: 0.6;" @endif>None</label>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <input class="form-check-input me-1" type="radio" name="condition-{{ $index }}" value="Bad" id="bad-{{ $index }}" {{ $item['condition'] === 'Bad' ? 'checked' : '' }} hidden @if ($checkoutCount > 0) disabled @endif>
+                        <label class="btn btn-outline-danger cursor-pointer" for="bad-{{ $index }}" @if ($checkoutCount > 0) style="pointer-events: none; opacity: 0.6;" @endif>Bad</label>
                     </div>
                 </div>
-            @endforeach
+            </div>
         </div>
+    @endforeach
+</div>
 
-        <!-- Warning message if no items are checked or condition not selected -->
-        <div id="warningMessage" class="text-danger mb-3" style="display: none;">
-            <i class="bi bi-exclamation-triangle me-2"></i> Please ensure all checked items have a condition selected.
-        </div>
 
-        <!-- Submit button -->
-        <button id="submitButton" class="btn btn-outline-primary w-100" onclick="submitCheckout()">Submit Check-Out</button>
+        <!-- Conditional warning message and buttons -->
+        @if ($checkoutCount === 0)
+            <div id="warningMessage" class="alert alert-danger mb-3">
+                <i class="bi bi-exclamation-triangle me-2"></i> Please review the condition of all items above carefully. Once submitted, this action is irreversible and changes cannot be made.
+            </div>
+
+            <!-- Submit button -->
+            <div class="d-grid text-center">
+                <button id="submitButton" class="btn btn-outline-default text-primary" onclick="submitCheckout()" >Submit Check-Out</button>
+            </div>
+        @else
+            <div id="warningMessage" class="alert alert-success mb-3">
+                <i class="bi bi-check-circle me-2"></i> The student has successfully completed the check-out process. You can generate a detailed report on the report page for further information.
+            </div>
+        @endif
     </div>
 </div>
+
+
 <script>
     $(document).ready(function() {
         const submitButton = $('#submitButton');
@@ -195,6 +206,8 @@
                     _token: '{{ csrf_token() }}'
                 },
                 success: function(response) {
+
+
                     $('#overlay').fadeOut();
                     console.log('AJAX success response:', response); // Log the entire response
 
@@ -204,6 +217,8 @@
                         console.log('Error message from server:', response.message); // Log error message
                         showToast('#error-toast', response.message || 'An error occurred.');
                     }
+
+                    checkoutAction({{ $user->bed->id }})
                 },
                 error: function(xhr) {
                     $('#overlay').fadeOut();
@@ -236,3 +251,49 @@
         }
     });
 </script>
+
+<script>
+    function checkoutAction(bedId) {
+    // Deactivate all navigation links
+    const selectors = [
+        "#nav_profile",
+        "#nav_aplication",
+        "#nav_elligable",
+        "#nav_result",
+        "#nav_control",
+        "#nav_setting",
+        "#nav_report",
+        "#nav_checkout",
+        "#nav_checkin",
+    ];
+
+    selectors.forEach(function(selector) {
+        $(selector).removeClass("active");
+    });
+    $("#nav_checkout").addClass("active"); // Set checkout as active
+
+    // Show loading spinner
+    $("#dash").html(
+        '<div class="spinner-container">' +
+        '<div class="black show d-flex align-items-center justify-content-center">' +
+        '<div class="spinner-border lik" style="width: 3rem; height: 3rem;" role="status">' +
+        '<span class="sr-only">Loading...</span>' +
+        '</div>' +
+        '</div>' +
+        '</div>'
+    );
+
+    // Define the checkout URL dynamically
+    let url = `{{ url('bed/checkout') }}/${bedId}`;
+
+    // Load the checkout page for the bed ID
+    $("#dash").load(url, (response, status, xhr) => {
+        if (status === "error") {
+            const msg = `Sorry, but there was an error: ${xhr.status} ${xhr.statusText}`;
+            $("#error").html(msg); // Display error message
+        }
+    });
+}
+
+</script>
+

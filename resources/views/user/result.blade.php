@@ -574,7 +574,8 @@
 
 @if($user->checkout == 1)
 
-<h5 class="mb-3">Return According to Admin</h5>
+<h5 class="mb-3">Returned Items:</h5>
+
 
 @if($checkOutItemsadmin->isEmpty())
     <p class="text-muted">No items to display.</p>

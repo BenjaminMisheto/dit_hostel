@@ -394,9 +394,18 @@ use App\Models\User;
                         <div class="row">
                             <!-- Image Column -->
                             <div class="col-xl-6 mb-3">
-                                <div class="p-3  rounded-start" style="background-image: url('{{ $block->image_data }}'); background-size: cover; background-position: center; height: 100%; width: 100%;">
-                                    <!-- You can add more content here if needed -->
-                                </div>
+
+
+                                <div class=" rounded-start "
+                                style="background-image: url('{{ $block->image_data }}');
+                                      background-size: contain;
+                                       background-repeat: no-repeat;
+                                       background-position: center;
+                                       height: 100%;
+                                       width: 100%;">
+                                <!-- You can add more content here if needed -->
+                            </div>
+
                             </div>
 
 

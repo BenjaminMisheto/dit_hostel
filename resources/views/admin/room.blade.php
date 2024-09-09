@@ -15,7 +15,7 @@ use App\Models\User;
             </li>
             <li class="nav-item">
                 <a class="nav-link d-flex align-items-center py-2 px-3 p-xl-4 " href="#tabs1-tab2" role="tab" aria-selected="false"
-                   data-toggle="tab">Check-Out Items
+                   data-toggle="tab">Manage Items
                 </a>
             </li>
         </ul>
@@ -390,192 +390,161 @@ use App\Models\User;
 
 
                         </div>
-                        <!-- Widgets -->
-                        <div class="row bg-imagee">
-                            <!-- Existing columns -->
-                            <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
-                                <div class="card flex-row align-items-center p-3 p-md-4 ">
-                                    <div class="d-flex justify-content-between w-100">
-                                        <div>
-                                            <h6 class="mb-0">Block Name</h6>
-                                        </div>
-                                        <div>
-                                            <h6 class="lh-1 mb-0">{{ $block->name }}</h6>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
-                                <div class="card flex-row align-items-center p-3 p-md-4 ">
-                                    <div class="d-flex justify-content-between w-100">
-                                        <div>
-                                            <h6 class="mb-0">Eligible Gender</h6>
-                                        </div>
-                                        <div>
-                                            <h6 class="lh-1 mb-0">{{ implode(', ', $blockGenders) }}</h6>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
-                                <div class="card flex-row align-items-center p-3 p-md-4 ">
-                                    <div class="d-flex justify-content-between w-100">
-                                        <div>
-                                            <h6 class="mb-0">Eligible Students</h6>
-                                        </div>
-                                        <div>
-                                            <h6 class="lh-1 mb-0">{{ implode(', ', $blockEligibility) }}</h6>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- New column for Price -->
-                            <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
-                                <div class="card flex-row align-items-center p-3 p-md-4 ">
-                                    <div class="d-flex justify-content-between w-100">
-                                        <div>
-                                            <h6 class="mb-0">Price/Annual</h6>
-                                        </div>
-                                        <div>
-                                            <h6 class="lh-1 mb-0">TZS {{ number_format($block->price, 2, ',', '.') }}</h6>
-
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
-                                <div class="card flex-row align-items-center p-3 p-md-4 ">
-                                    <div class="d-flex justify-content-between w-100">
-                                        <div>
-                                            <h6 class="mb-0">Block Manager</h6>
-                                        </div>
-                                        <div>
-                                            <h6 class="lh-1 mb-0">{{ $block->manager }}</h6>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 col-xl-4 mb-xl-4 mb-2">
-                                <div class="card flex-row align-items-center p-3 p-md-4 ">
-                                    <div class="d-flex justify-content-between w-100">
-                                        <div>
-                                            <h6 class="mb-0">Location</h6>
-                                        </div>
-                                        <div>
-                                            <h6 class="lh-1 mb-0">{{ $block->location }}</h6>
-                                        </div>
-                                    </div>
+                        <div class="row">
+                            <!-- Image Column -->
+                            <div class="col-xl-6 mb-3">
+                                <div class="p-3  rounded-start" style="background-image: url('{{ $block->image_data }}'); background-size: cover; background-position: center; height: 100%; width: 100%;">
+                                    <!-- You can add more content here if needed -->
                                 </div>
                             </div>
 
 
-
-
-
-                            <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
-                                <!-- Widget -->
-                                <div class="card flex-row align-items-center p-3 p-md-4">
-                                    <div class="icon icon-lg bg-soft-warning rounded-circle mr-3">
-                                        <i class="gd-key icon-text d-inline-block text-warning"></i>
+                            <!-- Block Details Column -->
+                            <div class=" col-xl-6 mb-3">
+                                <div class="row">
+                                    <!-- Block Name -->
+                                    <div class="col-12 col-lg-6 mb-3">
+                                        <div class="card p-3">
+                                            <div class="d-flex justify-content-between">
+                                                <h6 class="mb-0">Block Name</h6>
+                                                <h6 class="lh-1 mb-0">{{ $block->name }}</h6>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h4 class="lh-1 mb-1">{{ $totalBeds }}</h4> <!-- Display the total number of beds -->
-                                        <h6 class="mb-0">Total Beds</h6>
+
+                                    <!-- Eligible Gender -->
+                                    <div class="col-12 col-lg-6 mb-3">
+                                        <div class="card p-3">
+                                            <div class="d-flex justify-content-between">
+                                                <h6 class="mb-0">Eligible Gender</h6>
+                                                <h6 class="lh-1 mb-0">{{ implode(', ', $blockGenders) }}</h6>
+                                            </div>
+                                        </div>
                                     </div>
+
+                                    <!-- Eligible Students -->
+                                    <div class="col-12 col-lg-6 mb-3">
+                                        <div class="card p-3">
+                                            <div class="d-flex justify-content-between">
+                                                <h6 class="mb-0">Eligible Students</h6>
+                                                <h6 class="lh-1 mb-0">{{ implode(', ', $blockEligibility) }}</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Price/Annual -->
+                                    <div class="col-12 col-lg-6 mb-3">
+                                        <div class="card p-3">
+                                            <div class="d-flex justify-content-between">
+                                                <h6 class="mb-0">Price/Annual</h6>
+                                                <h6 class="lh-1 mb-0">TZS {{ number_format($block->price, 2, ',', '.') }}</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Block Manager -->
+                                    <div class="col-12 col-lg-6 mb-3">
+                                        <div class="card p-3">
+                                            <div class="d-flex justify-content-between">
+                                                <h6 class="mb-0">Block Manager</h6>
+                                                <h6 class="lh-1 mb-0">{{ $block->manager }}</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Location -->
+                                    <div class="col-12 col-lg-6 mb-3">
+                                        <div class="card p-3">
+                                            <div class="d-flex justify-content-between">
+                                                <h6 class="mb-0">Location</h6>
+                                                <h6 class="lh-1 mb-0">{{ $block->location }}</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Total Beds -->
+                                    <div class="col-12 mb-3">
+                                        <div class="card flex-row align-items-center p-3">
+                                            <div class="icon icon-lg bg-soft-warning rounded-circle mr-3">
+                                                <i class="gd-key text-warning"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="lh-1 mb-1">{{ $totalBeds }}</h4>
+                                                <h6 class="mb-0">Total Beds</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Total Open Beds -->
+                                    <div class="col-12 mb-3">
+                                        <div class="card flex-row align-items-center p-3">
+                                            <div class="icon icon-lg bg-soft-dark rounded-circle mr-3">
+                                                <i class="gd-key text-dark"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="lh-1 mb-1">{{ $totalOpenBeds }}</h4>
+                                                <h6 class="mb-0">Total Open Beds</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Total Remaining Beds -->
+                                    <div class="col-12 mb-3">
+                                        <div class="card flex-row align-items-center p-3">
+                                            <div class="icon icon-lg bg-soft-info rounded-circle mr-3">
+                                                <i class="gd-key text-info"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="lh-1 mb-1">{{ $totalBeds - $totalOccupiedBeds }}</h4>
+                                                <h6 class="mb-0">Total Remaining Beds</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
-                                <!-- End Widget -->
                             </div>
 
-
-                            <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
-                                <!-- Widget -->
-                                <div class="card flex-row align-items-center p-3 p-md-4 ">
-                                    <div class="icon icon-lg bg-soft-dark rounded-circle mr-3">
-                                        <i class="gd-key icon-text d-inline-block text-dark"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="lh-1 mb-1">{{ $totalOpenBeds }}</h4>
-                                        <h6 class="mb-0">Total Open Bed</h6>
-                                    </div>
-                                </div>
-                                <!-- End Widget -->
-                            </div>
-
-                            <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
-                                <!-- Widget -->
-                                <div class="card flex-row align-items-center p-3 p-md-4">
-                                    <div class="icon icon-lg bg-soft-info rounded-circle mr-3">
-                                        <i class="gd-key icon-text d-inline-block text-info"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="lh-1 mb-1">{{ $totalBeds - $totalOccupiedBeds }}</h4>
-                                        <h6 class="mb-0">Total Remaining Bed</h6>
-                                    </div>
-                                </div>
-                                <!-- End Widget -->
-                            </div>
-
-
-
-
-
-
-                            <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
-                                <!-- Widget -->
-                                <div class="card flex-row align-items-center p-3 p-md-4 alert-success">
+                            <!-- Additional Stats -->
+                            <div class="col-12 col-md-6 col-lg-4 mb-3">
+                                <div class="card flex-row align-items-center p-3 alert-success">
                                     <div class="icon icon-lg bg-soft-success rounded-circle mr-3">
-                                        <i class="gd-key icon-text d-inline-block text-success"></i>
+                                        <i class="gd-key text-light"></i>
                                     </div>
                                     <div>
-                                        <h4 class="lh-1 mb-1">{{ $totalOccupiedBeds }}</h4> <!-- Display the total number of occupied beds -->
-                                        <h6 class="mb-0">Total Occupied Bed</h6>
+                                        <h4 class="lh-1 mb-1">{{ $totalOccupiedBeds }}</h4>
+                                        <h6 class="mb-0">Total Occupied Beds</h6>
                                     </div>
                                 </div>
-                                <!-- End Widget -->
                             </div>
 
-
-
-
-
-
-
-
-                            <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
-                                <!-- Widget -->
-                                <div class="card flex-row align-items-center p-3 p-md-4 alert-warning">
+                            <div class="col-12 col-md-6 col-lg-4 mb-3">
+                                <div class="card flex-row align-items-center p-3 alert-warning">
                                     <div class="icon icon-lg bg-soft-warning rounded-circle mr-3">
-                                        <i class="gd-key icon-text d-inline-block text-warning"></i>
+                                        <i class="gd-key text-dark"></i>
                                     </div>
                                     <div>
                                         <h4 class="lh-1 mb-1">{{ $totalReservedBeds }}</h4>
-                                        <h6 class="mb-0">Total Reserved Bed</h6>
+                                        <h6 class="mb-0">Total Reserved Beds</h6>
                                     </div>
                                 </div>
-                                <!-- End Widget -->
                             </div>
 
-                            <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
-                                <!-- Widget -->
-                                <div class="card flex-row align-items-center p-3 p-md-4 alert-danger">
+                            <div class="col-12 col-md-6 col-lg-4 mb-3">
+                                <div class="card flex-row align-items-center p-3 alert-danger">
                                     <div class="icon icon-lg bg-soft-danger rounded-circle mr-3">
-                                        <i class="gd-key icon-text d-inline-block text-danger"></i>
+                                        <i class="gd-key text-light"></i>
                                     </div>
                                     <div>
                                         <h4 class="lh-1 mb-1">{{ $totalUnderMaintenanceBeds }}</h4>
-                                        <h6 class="mb-0">Total Maintenance Bed</h6>
+                                        <h6 class="mb-0">Total Maintenance Beds</h6>
                                     </div>
                                 </div>
-                                <!-- End Widget -->
                             </div>
-
-
                         </div>
+
+
+
                     </div>
 
                     <div class="d-flex justify-content-between mb-4">
@@ -717,7 +686,8 @@ use App\Models\User;
                                         @foreach($floor->rooms as $room)
                                         <div class="card mb-2">
                                             <div class="card-header text-center">
-                                                Room {{ $room->room_number }} - {{ $room->beds->count() }} beds <br><br>
+                                                <span class="p-3 shadow-sm cursor-pointer">Room {{ $room->room_number }} - {{ $room->beds->count() }} beds</span>
+                                                 <br><br>
                                                 <span class="badge badge-sm rounded-circle @if(strtolower($room->gender) === 'female') badge-success @elseif(strtolower($room->gender) === 'male') badge-secondary @else badge-secondary @endif">
                                                     @if(strtolower($room->gender) === 'female')
                                                         F

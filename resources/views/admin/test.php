@@ -569,6 +569,7 @@ $('#paymentSelect').on('change', function () {
         });
 
         // Function to load PDF
+
         function loadPDF(url) {
             return new Promise((resolve, reject) => {
                 var container = document.getElementById('pdfCanvasContainer');
@@ -587,16 +588,16 @@ $('#paymentSelect').on('change', function () {
 
                                 var canvas = document.createElement('canvas');
                                 canvas.classList.add('pdf-canvas');
-                                pageDiv.appendChild(canvas);
-
-                                container.appendChild(pageDiv);
-
+                                var context = canvas.getContext('2d');
                                 var viewport = page.getViewport({ scale: 1.5 });
+
                                 canvas.height = viewport.height;
                                 canvas.width = viewport.width;
+                                pageDiv.appendChild(canvas);
+                                container.appendChild(pageDiv);
 
                                 var renderContext = {
-                                    canvasContext: canvas.getContext('2d'),
+                                    canvasContext: context,
                                     viewport: viewport
                                 };
 
@@ -605,16 +606,86 @@ $('#paymentSelect').on('change', function () {
                         );
                     }
 
-                    return Promise.all(pagesPromises);
-                }).then(() => {
-                    console.log("All pages rendered.");
-                    resolve();
-                }).catch((error) => {
-                    console.error("Error rendering PDF:", error);
+                    Promise.all(pagesPromises).then(function () {
+                        console.log('PDF rendered successfully.');
+
+                        document.getElementById('exportExcel').style.display = 'inline-block';
+                        document.getElementById('downloadPDF').style.display = 'inline-block';
+                        document.getElementById('printPDF').style.display = 'inline-block';
+
+                        resolve();
+                    }).catch(function (error) {
+                        console.error('Error rendering pages:', error);
+                        reject(error);
+                    });
+                }).catch(function (error) {
+                    console.error('Error loading PDF document:', error);
                     reject(error);
                 });
             });
         }
+
+        var printButton = document.getElementById('printPDF');
+        var downloadButton = document.getElementById('downloadPDF');
+        var exportExcelButton = document.getElementById('exportExcel');
+
+        if (printButton) {
+            printButton.addEventListener('click', function () {
+                setButtonText('printPDF', 'Generating...');
+
+                var hostelId = $('#hostelSelect').val();
+                var floorId = $('#floorSelect').val();
+                var roomId = $('#roomSelect').val();
+                var gender = $('#genderSelect').val();
+                var payment = $('#paymentSelect').val();
+                var course = $('#courseSelect').val();
+
+                if (hostelId && floorId && roomId && gender && payment && course) {
+                    // URL to generate the PDF report
+                    var url = '/generate-report-print?hostel_id=' + hostelId + '&floor_id=' + floorId + '&room_id=' + roomId + '&gender=' + gender + '&payment=' + payment + '&course=' + course;
+
+                    // Open the PDF in a new tab
+                    var printWindow = window.open(url, '_blank');
+
+                    // Wait for the new tab to load the PDF before triggering print
+                    printWindow.onload = function () {
+                        printWindow.focus();  // Ensure the new tab is focused
+                        printWindow.print();  // Trigger the print dialog
+                    };
+
+                    restoreButtonText('printPDF', 'Print PDF');
+                } else {
+                    alert('Please select all filters before generating the report.');
+                    restoreButtonText('printPDF', 'Print PDF');
+                }
+            });
+        }
+
+        if (downloadButton) {
+            downloadButton.addEventListener('click', function () {
+                setButtonText('downloadPDF', 'Generating...');
+                var url = '/generate-report?hostel_id=' + $('#hostelSelect').val() + '&floor_id=' + $('#floorSelect').val() + '&room_id=' + $('#roomSelect').val() + '&gender=' + $('#genderSelect').val() + '&payment=' + $('#paymentSelect').val() + '&course=' + $('#courseSelect').val();
+                window.location.href = url;
+                restoreButtonText('downloadPDF', 'Download PDF');
+            });
+        }
+
+        if (exportExcelButton) {
+            exportExcelButton.addEventListener('click', function () {
+                setButtonText('exportExcel', 'Generating...');
+                var url = '/generate-excel-report?hostel_id=' + $('#hostelSelect').val() + '&floor_id=' + $('#floorSelect').val() + '&room_id=' + $('#roomSelect').val() + '&gender=' + $('#genderSelect').val() + '&payment=' + $('#paymentSelect').val() + '&course=' + $('#courseSelect').val();
+                window.location.href = url;
+                restoreButtonText('exportExcel', 'Export as Excel');
+            });
+        }
+
+
+
+
+
+
+
+
     });
 </script>
 

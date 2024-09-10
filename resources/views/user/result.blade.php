@@ -603,7 +603,7 @@
                             <input type="hidden" name="item_ids[]" value="{{ $item->id }}">
                         </div>
                         @if($item->condition === 'Bad')
-                            <span class="badge bg-danger text-light">Requires Payment</span>
+                            <span class="badge bg-danger text-white">Requires Payment</span>
                         @elseif($item->condition === 'None')
                             <span class="badge bg-warning text-dark">Not Returned - Payment Required</span>
                         @endif

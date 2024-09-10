@@ -1267,6 +1267,9 @@ public function updateControlNumber(Request $request)
         ]);
     }
 
+
+
+
      // Fetch gender options based on room ID
  public function getGenderOptions($roomId)
     {
@@ -1285,44 +1288,6 @@ public function updateControlNumber(Request $request)
 
 
 
-
-
-    public function getGenderOptionsForBlock($blockId)
-    {
-        // Fetch gender options for the block. Replace this with your actual logic.
-        $genders = User::where('block_id', $blockId)->pluck('name'); // Example query
-
-        if ($genders->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No gender options available for the selected block.'
-            ]);
-        }
-
-        return response()->json([
-            'success' => true,
-            'genders' => $genders
-        ]);
-    }
-
-    // Method to retrieve course options for a selected block
-    public function getCourseOptionsForBlock($blockId)
-    {
-        // Fetch course options for the block. Replace this with your actual logic.
-        $courses = User::where('block_id', $blockId)->pluck('name'); // Example query
-
-        if ($courses->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No course options available for the selected block.'
-            ]);
-        }
-
-        return response()->json([
-            'success' => true,
-            'courses' => $courses
-        ]);
-    }
 
 
 

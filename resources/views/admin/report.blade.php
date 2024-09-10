@@ -452,6 +452,96 @@
             }
         });
 
+
+        // When gender is selected
+$('#genderSelect').on('change', function () {
+    var gender = $(this).val();
+    var roomId = $('#roomSelect').val();
+    console.log("Selected gender: ", gender);
+
+    // Clear and disable Payment and Course dropdowns initially
+    $('#paymentSelect').html('<option value="">Select Payment</option>').prop('disabled', true);
+    $('#courseSelect').html('<option value="">Select Course</option>').prop('disabled', true);
+
+    if (gender) {
+        console.log("Fetching payment options based on gender: ", gender);
+
+        // Fetch payment options based on the selected gender via AJAX
+        $.ajax({
+            url: '/get-payment-options/' + gender,
+            type: 'GET',
+            success: function (data) {
+                console.log("Payment options received: ", data);
+
+                if (data && data.payments && data.payments.length > 0) {
+                    var paymentOptions = '<option value="">Select Payment</option>' +
+                                         '<option value="all">Both</option>';
+                    $.each(data.payments, function (key, payment) {
+                        paymentOptions += '<option value="' + payment + '">' + payment + '</option>';
+                    });
+
+                    $('#paymentSelect').prop('disabled', false);
+                    $('#paymentSelect').html(paymentOptions); // Set options with "Both" at the top
+
+                    // Update niceSelect
+                    $('#paymentSelect').niceSelect('update');
+                } else {
+                    console.log("No payment options found for this gender.");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.log("Error retrieving payment options:", xhr, status, error);
+
+
+                showToast("Error retrieving payment options.", true);
+
+            }
+        });
+    }
+});
+// When payment is selected
+$('#paymentSelect').on('change', function () {
+    var payment = $(this).val();
+    console.log("Selected payment: ", payment);
+
+    // Clear and disable Course dropdown initially
+    $('#courseSelect').html('<option value="">Select Course</option>').prop('disabled', true);
+
+    if (payment) {
+        console.log("Fetching course options based on payment: ", payment);
+
+        // Fetch course options based on the selected payment via AJAX
+        $.ajax({
+            url: '/get-course-options/' + payment,
+            type: 'GET',
+            success: function (data) {
+                console.log("Course options received: ", data);
+
+                if (data && data.courses && data.courses.length > 0) {
+                    var courseOptions = '<option value="">Select Course</option>' +
+                                        '<option value="all">All Courses</option>';
+                    $.each(data.courses, function (key, course) {
+                        courseOptions += '<option value="' + course + '">' + course + '</option>';
+                    });
+
+                    $('#courseSelect').prop('disabled', false);
+                    $('#courseSelect').html(courseOptions); // Set options with "All Courses" at the top
+
+                    // Update niceSelect
+                    $('#courseSelect').niceSelect('update');
+                } else {
+                    console.log("No course options found for this payment.");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.log("Error retrieving course options:", xhr, status, error);
+                showToast("Error retrieving course options.", true);
+
+            }
+        });
+    }
+});
+
         // Handle report generation based on all filters
         $('#printReport').on('click', function () {
             var hostelId = $('#hostelSelect').val();

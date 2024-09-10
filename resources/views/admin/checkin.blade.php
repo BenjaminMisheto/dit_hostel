@@ -118,12 +118,7 @@ th.desc::after {
                                         Check-In
                                     </button>
                                 @elseif ($student->checkin === 0)
-                                    <span class="btn btn-sm btn-toggle btn-lightred"
-                                          data-user-id="{{ $student->id }}"
-                                          data-status="waiting"
-                                          disabled>
-                                        <i class="gd-time"></i> Waiting
-                                    </span>
+                                <button class="btn btn-sm btn-toggle alert-warning"  disabled><i class="gd-time"></i> Pending</button>
                                 @else
 
                                 @if ($student->checkin === 2)

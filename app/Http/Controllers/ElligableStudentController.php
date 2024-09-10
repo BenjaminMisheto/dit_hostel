@@ -210,7 +210,7 @@ public function checkout(Request $request)
         $checkinButton = '<button class="btn btn-sm btn-toggle btn-lightred" data-user-id="' . $student->id . '" data-status="check-in" onclick="toggleStatus(this)">Check-In</button>';
 
     } else {
-        $checkinButton = '<button class="btn btn-sm btn-toggle btn-lightred" data-user-id="' . $student->id . '" data-status="waiting" disabled><i class="gd-time"></i> Waiting</button>';
+        $checkinButton = '<button class="btn btn-sm btn-toggle alert-warning"  disabled><i class="gd-time"></i> Pending</button>';
 
     }
 

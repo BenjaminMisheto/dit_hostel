@@ -226,23 +226,42 @@ Route::post('admin.updateExpirationDate', [AjaxController::class, 'updateExpirat
 
 
 
+// New routes for retrieving gender and course options based on block selection
+Route::get('/get-gender-options-for-block/{blockId}', [AjaxController::class, 'getGenderOptionsForBlock']);
+Route::get('/get-course-options-for-block/{blockId}', [AjaxController::class, 'getCourseOptionsForBlock']);
 
 
 
 
 
     Route::get('/get-gender-options/{roomId}', [AjaxController::class, 'getGenderOptions']);
-Route::get('/get-payment-options/{roomId}', [AjaxController::class, 'getPaymentOptions']);
+
 Route::get('/get-course-options/{roomId}', [AjaxController::class, 'getCourseOptions']);
 
-
+Route::get('/get-payment-options/{roomId}', [AjaxController::class, 'getPaymentOptions']);
 
 
 
 
     Route::get('/generate-excel-report', [ReportController::class, 'exportExcel'])->name('generate.excel.report');
+
+    Route::get('/generate-report-excel-new', [ReportController::class, 'exportExcelnew'])->name('generate.excel.report.new');
+
+
+
+
+
+
     Route::get('/generate-report', [ReportController::class, 'exportPDF']);
+
+
     Route::get('/generate-report-print', [ReportController::class, 'exportPDFPrint']);
+
+    Route::get('/generate-report-print-check', [ReportController::class, 'exportPDFPrintcheck']);
+
+
+
+    Route::get('/generate-report-print-new', [ReportController::class, 'exportPDFPrintnew']);
 
 
     Route::get('/students/search', [StudentfindController::class, 'search']);

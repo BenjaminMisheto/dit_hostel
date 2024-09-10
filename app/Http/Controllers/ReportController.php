@@ -9,6 +9,7 @@ use App\Models\User;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\UsersExport;
 use Illuminate\Support\Facades\Log;
+use App\Exports\FilteredUsersExport;
 
 
 class ReportController extends Controller
@@ -200,6 +201,277 @@ public function exportPDFPrint(Request $request)
 
     // Return the PDF to be viewed in the browser
     return $pdf->stream('report.pdf');
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public function exportPDFPrintnew(Request $request)
+{
+    $hostelId = $request->query('hostel_id');
+    $gender = $request->query('gender');
+    $course = $request->query('course');
+    $checkinCheckout = $request->query('checkin_checkout'); // New parameter for Check-in/Check-out status
+
+    // Initialize query for filtering users
+    $query = User::query();
+
+    // Apply filters if provided
+    if ($hostelId) {
+        $query->where('block_id', $hostelId);
+    }
+
+
+    if ($gender && $gender !== 'all') {
+        $query->where('gender', $gender);
+    }
+
+
+    if ($course && $course !== 'all') {
+        $query->where('course', $course);
+    }
+
+    // Apply check-in/check-out filter
+    if ($checkinCheckout === 'checkin') {
+        // Check-in
+        $query->where('checkin', 2); // Assuming `checkin_checkout` is used to determine check-in
+        Log::info('Filtering users with check-in status');
+    } elseif ($checkinCheckout === 'checkout') {
+        // Check-out
+        $query->where('checkout', 1); // Assuming `checkin_checkout` is used to determine check-out
+        Log::info('Filtering users with check-out status');
+    }
+
+    // Fetch the filtered users
+    $users = $query->with(['block'])->get();
+
+    // Log the number of users found and their details for debugging
+    Log::info('Number of users found: ' . $users->count());
+    foreach ($users as $user) {
+        Log::info('User: ' . $user->name . ', Check-in/Check-out Status: ' . $user->checkin_checkout);
+    }
+
+    // Get block details for the report header
+    $block = $users->first()->block ?? null;
+
+    // Prepare data for the PDF view
+    $data = [
+        'checkinCheckout'=>$checkinCheckout,
+        'users' => $users,
+        'block' => $block,
+        'date' => now()->format('Y-m-d'), // Current date or format as needed
+    ];
+
+
+    // Generate the file name using the block name and date
+    $blockName = $block ? $block->name : 'report';
+    $date = now()->format('Y-m-d');
+    $fileName = $blockName . '_report_' . $checkinCheckout . '_' . $date . '.pdf';
+
+    // Load the view and generate the PDF
+    $pdf = Pdf::loadView('admin.pdf.reportnew', $data);
+
+    // Return the PDF to be viewed in the browser
+    return $pdf->download($fileName);
+}
+
+
+
+
+public function exportPDFPrintcheck(Request $request)
+{
+    $hostelId = $request->query('hostel_id');
+    $gender = $request->query('gender');
+    $course = $request->query('course');
+    $checkinCheckout = $request->query('checkin_checkout'); // New parameter for Check-in/Check-out status
+
+    // Initialize query for filtering users
+    $query = User::query();
+
+    // Apply filters if provided
+    if ($hostelId) {
+        $query->where('block_id', $hostelId);
+    }
+
+
+    if ($gender && $gender !== 'all') {
+        $query->where('gender', $gender);
+    }
+
+
+    if ($course && $course !== 'all') {
+        $query->where('course', $course);
+    }
+
+    // Apply check-in/check-out filter
+    if ($checkinCheckout === 'checkin') {
+        // Check-in
+        $query->where('checkin', 2); // Assuming `checkin_checkout` is used to determine check-in
+        Log::info('Filtering users with check-in status');
+    } elseif ($checkinCheckout === 'checkout') {
+        // Check-out
+        $query->where('checkout', 1); // Assuming `checkin_checkout` is used to determine check-out
+        Log::info('Filtering users with check-out status');
+    }
+
+    // Fetch the filtered users
+    $users = $query->with(['block'])->get();
+
+    // Log the number of users found and their details for debugging
+    Log::info('Number of users found: ' . $users->count());
+    foreach ($users as $user) {
+        Log::info('User: ' . $user->name . ', Check-in/Check-out Status: ' . $user->checkin_checkout);
+    }
+
+    // Get block details for the report header
+    $block = $users->first()->block ?? null;
+
+    // Prepare data for the PDF view
+    $data = [
+        'checkinCheckout'=>$checkinCheckout,
+        'users' => $users,
+        'block' => $block,
+        'date' => now()->format('Y-m-d'), // Current date or format as needed
+    ];
+
+
+    // Generate the file name using the block name and date
+    $blockName = $block ? $block->name : 'report';
+    $date = now()->format('Y-m-d');
+    $fileName = $blockName . '_report_' . $checkinCheckout . '_' . $date . '.pdf';
+
+    // Load the view and generate the PDF
+    $pdf = Pdf::loadView('admin.pdf.reportnew', $data);
+
+    // Return the PDF to be viewed in the browser
+    return $pdf->stream($fileName);
+}
+
+
+
+
+
+public function exportExcelnew(Request $request)
+{
+    $hostelId = $request->query('hostel_id');
+    $gender = $request->query('gender');
+    $course = $request->query('course');
+    $checkinCheckout = $request->query('checkin_checkout');
+
+    // Initialize query for filtering users
+    $query = User::query();
+
+    // Apply filters if provided
+    if ($hostelId) {
+        $query->where('block_id', $hostelId);
+    }
+    if ($gender && $gender !== 'all') {
+        $query->where('gender', $gender);
+    }
+    if ($course && $course !== 'all') {
+        $query->where('course', $course);
+    }
+    if ($checkinCheckout === 'checkin') {
+        $query->where('checkin', 2);
+    } elseif ($checkinCheckout === 'checkout') {
+        $query->where('checkout', 1);
+    }
+
+    // Fetch the filtered users
+    $users = $query->with(['block', 'requirementItemConfirmation', 'adminCheckouts'])->get();
+
+    // Prepare data for the Excel export
+    $exportData = [];
+    foreach ($users as $user) {
+        if ($checkinCheckout === 'checkin') {
+            if ($user->requirementItemConfirmation) {
+                $checkoutItems = json_decode($user->requirementItemConfirmation->checkout_items_names, true);
+                if ($checkoutItems) {
+                    foreach ($checkoutItems as $item) {
+                        $exportData[] = [
+                            $user->name,
+                            $user->registration_number,
+                            $user->block->name ?? 'Not Available',
+                            $user->course,
+                            $user->gender,
+                            $item['name'] ?? 'Not Available',
+                            $item['condition'] ?? 'Not Available'
+                        ];
+                    }
+                } else {
+                    $exportData[] = [
+                        $user->name,
+                        $user->registration_number,
+                        $user->block->name ?? 'Not Available',
+                        $user->course,
+                        $user->gender,
+                        'Not Available',
+                        'Not Available'
+                    ];
+                }
+            } else {
+                $exportData[] = [
+                    $user->name,
+                    $user->registration_number,
+                    $user->block->name ?? 'Not Available',
+                    $user->course,
+                    $user->gender,
+                    'Not Available',
+                    'Not Available'
+                ];
+            }
+        } else { // check-out
+            if ($user->adminCheckouts->isNotEmpty()) {
+                foreach ($user->adminCheckouts as $adminCheckout) {
+                    $exportData[] = [
+                        $user->name,
+                        $user->registration_number,
+                        $user->block->name ?? 'Not Available',
+                        $user->course,
+                        $user->gender,
+                        $adminCheckout->name,
+                        $adminCheckout->condition
+                    ];
+                }
+            } else {
+                $exportData[] = [
+                    $user->name,
+                    $user->registration_number,
+                    $user->block->name ?? 'Not Available',
+                    $user->course,
+                    $user->gender,
+                    'Not Available',
+                    'Not Available'
+                ];
+            }
+        }
+    }
+
+    // Generate the file name using the block name and date
+    $blockName = $users->first()->block->name ?? 'report';
+    $date = now()->format('Y-m-d');
+    $fileName = $blockName . '_report_' . $checkinCheckout . '_' . $date . '.xlsx';
+
+    // Pass the formatted data to the Excel export class
+    return Excel::download(new FilteredUsersExport($exportData), $fileName);
 }
 
 }

@@ -362,7 +362,27 @@ use App\Models\User;
 
                 });
             </script>
+<style>
+    .responsive-bg {
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        height: 300px; /* Default height for desktops */
+        width: 100%;
+    }
 
+    @media (max-width: 768px) {
+        .responsive-bg {
+            height: 200px; /* Adjust height for mobile devices */
+        }
+    }
+
+    @media (max-width: 576px) {
+        .responsive-bg {
+            height: 150px; /* Further adjustment for smaller devices */
+        }
+    }
+</style>
                 <div class="content py-4 px-3 px-md-4">
                     <div class="">
                         <div class="d-flex justify-content-between mb-4">
@@ -394,19 +414,23 @@ use App\Models\User;
                         <div class="row">
                             <!-- Image Column -->
                             <div class="col-xl-6 mb-3">
+                                <div class="rounded-start"
+                                     style="background-image: url('{{ $block->image_data }}');
+                                           background-size: contain;
+                                           background-repeat: no-repeat;
+                                           background-position: center;
+                                           height: 500px; /* Set a default height */
+                                           width: 100%;">
 
+                                    <!-- Additional content can go here -->
 
-                                <div class=" rounded-start "
-                                style="background-image: url('{{ $block->image_data }}');
-                                      background-size: contain;
-                                       background-repeat: no-repeat;
-                                       background-position: center;
-                                       height: 100%;
-                                       width: 100%;">
-                                <!-- You can add more content here if needed -->
+                                </div>
                             </div>
 
-                            </div>
+
+                            <!-- Add responsive styling using a media query for mobile -->
+
+
 
 
                             <!-- Block Details Column -->
@@ -521,7 +545,7 @@ use App\Models\User;
                                         <i class="gd-key text-light"></i>
                                     </div>
                                     <div>
-                                        <h4 class="lh-1 mb-1">{{ $totalOccupiedBeds }}</h4>
+                                        <h4 class="lh-1 mb-1">{{ $totalOccupiedBeds }}/{{$totalBeds}}</h4>
                                         <h6 class="mb-0">Total Occupied Beds</h6>
                                     </div>
                                 </div>
@@ -533,7 +557,7 @@ use App\Models\User;
                                         <i class="gd-key text-dark"></i>
                                     </div>
                                     <div>
-                                        <h4 class="lh-1 mb-1">{{ $totalReservedBeds }}</h4>
+                                        <h4 class="lh-1 mb-1">{{ $totalReservedBeds }}/{{$totalBeds}}</h4>
                                         <h6 class="mb-0">Total Reserved Beds</h6>
                                     </div>
                                 </div>
@@ -545,7 +569,7 @@ use App\Models\User;
                                         <i class="gd-key text-light"></i>
                                     </div>
                                     <div>
-                                        <h4 class="lh-1 mb-1">{{ $totalUnderMaintenanceBeds }}</h4>
+                                        <h4 class="lh-1 mb-1">{{ $totalUnderMaintenanceBeds }}/{{$totalBeds}}</h4>
                                         <h6 class="mb-0">Total Maintenance Beds</h6>
                                     </div>
                                 </div>

@@ -78,5 +78,19 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Room::class, 'room_id');
     }
+
+    public function adminCheckouts()
+{
+    return $this->hasMany(AdminCheckout::class);
+}
+
+
+public function RequirementItemConfirmation()
+{
+    return $this->hasOne(RequirementItemConfirmation::class);
+}
+
+
+
 }
 

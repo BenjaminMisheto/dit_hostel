@@ -217,7 +217,7 @@
                         <i class="gd-key icon-text d-inline-block text-success"></i>
                     </div>
                     <div>
-                        <h4 class="lh-1 mb-1">{{$total_Open_beds}}</h4>
+                        <h4 class="lh-1 mb-1">{{$total_Open_beds}}/{{ $total_beds }}</h4>
                         <h6 class="mb-0">Total Open Bed</h6>
                     </div>
 
@@ -231,7 +231,7 @@
                         <i class="gd-key icon-text d-inline-block text-warning"></i>
                     </div>
                     <div>
-                        <h4 class="lh-1 mb-1">{{$total_reserve_beds}}</h4>
+                        <h4 class="lh-1 mb-1">{{$total_reserve_beds}}/{{ $total_beds }}</h4>
                         <h6 class="mb-0">Total Reserved Bed</h6>
                     </div>
 
@@ -245,7 +245,7 @@
                         <i class="gd-key icon-text d-inline-block text-danger"></i>
                     </div>
                     <div>
-                        <h4 class="lh-1 mb-1">{{$total_under_maintenance_beds}}</h4>
+                        <h4 class="lh-1 mb-1">{{$total_under_maintenance_beds}}/{{ $total_beds }}</h4>
                         <h6 class="mb-0">Total Maintanance Bed</h6>
                     </div>
 

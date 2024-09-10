@@ -1231,21 +1231,7 @@ public function updateControlNumber(Request $request)
 }
 
 
- // Fetch gender options based on room ID
- public function getGenderOptions($roomId)
-    {
-        // Example logic to get gender options based on room ID
-        // You might need to adapt this based on your actual data model
-        $room = Room::find($roomId);
-        $genders = []; // Fetch gender options logic
 
-        // Example static gender options, replace with dynamic data as needed
-        $genders = ['male', 'female'];
-
-        return response()->json([
-            'genders' => $genders
-        ]);
-    }
 
     // Fetch payment options based on room ID
     public function getPaymentOptions($roomId)
@@ -1262,6 +1248,10 @@ public function updateControlNumber(Request $request)
         ]);
     }
 
+
+
+
+
     // Fetch course options based on room ID
     public function getCourseOptions($roomId)
     {
@@ -1277,6 +1267,62 @@ public function updateControlNumber(Request $request)
         ]);
     }
 
+     // Fetch gender options based on room ID
+ public function getGenderOptions($roomId)
+    {
+        // Example logic to get gender options based on room ID
+        // You might need to adapt this based on your actual data model
+        $room = Room::find($roomId);
+        $genders = []; // Fetch gender options logic
+
+        // Example static gender options, replace with dynamic data as needed
+        $genders = ['male', 'female'];
+
+        return response()->json([
+            'genders' => $genders
+        ]);
+    }
+
+
+
+
+
+    public function getGenderOptionsForBlock($blockId)
+    {
+        // Fetch gender options for the block. Replace this with your actual logic.
+        $genders = User::where('block_id', $blockId)->pluck('name'); // Example query
+
+        if ($genders->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No gender options available for the selected block.'
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'genders' => $genders
+        ]);
+    }
+
+    // Method to retrieve course options for a selected block
+    public function getCourseOptionsForBlock($blockId)
+    {
+        // Fetch course options for the block. Replace this with your actual logic.
+        $courses = User::where('block_id', $blockId)->pluck('name'); // Example query
+
+        if ($courses->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No course options available for the selected block.'
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'courses' => $courses
+        ]);
+    }
 
 
 

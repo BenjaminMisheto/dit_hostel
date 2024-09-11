@@ -802,6 +802,7 @@ public function getUserInfoResult(Request $request)
 
     // Retrieve the selected block ID from the user
     $selectedBlockId = $user->block_id;
+    $selectedRoomId= $user->room_id;
 
     // Convert expiration_date to ISO 8601 format
     $expirationDate = Carbon::parse($user->expiration_date)->toIso8601String();
@@ -812,7 +813,8 @@ public function getUserInfoResult(Request $request)
 
     // Retrieve requirements and check-out items for the selected block
     $requirements = Requirement::where('block_id', $selectedBlockId)->get();
-    $checkOutItems = CheckOutItem::where('block_id', $selectedBlockId)->get();
+    $checkOutItems = CheckOutItem::where('room_id', $selectedRoomId)->get();
+
     $checkOutItemsadmin = AdminCheckout::where('user_id', $user->id)->get();
 
     // Check if a confirmation record already exists for the user and block

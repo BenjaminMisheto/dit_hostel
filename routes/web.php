@@ -70,15 +70,21 @@ Route::get('/', function () {
     // Save visitor count data
     $visitor->save();
 
-    // Log updated visitor counts
-    Log::info('Updated visitor counts', [
-        'total_visitors' => $visitor->total_visitors,
-        'new_visitors' => $visitor->new_visitors,
-        "visitors_{$currentMonth}" => $visitor["visitors_{$currentMonth}"],
-    ]);
 
-    return view('welcome');
+    $blocks = Block::all();
+
+    return view('welcome', compact('blocks'));
 });
+
+
+
+Route::get('expire', function () {
+    $blocks = Block::all();
+    return view('welcome', compact('blocks'));
+})->name('expire');
+
+
+
 
 
 
@@ -193,6 +199,15 @@ Route::post('admin.updateExpirationDate', [AjaxController::class, 'updateExpirat
     Route::post('/hostel_create', [AjaxController::class, 'hostel_create'])->name('hostel_create');
     Route::get('/room/{id}', [RoomController::class, 'show'])->name('room.show');
 
+
+
+    Route::get('/roomitem/{id}', [RoomController::class, 'showroomitem'])->name('room.showitem');
+
+
+
+
+
+
     //     Route::get('/floor/add/{id}', [FloorController::class, 'add'])->name('floor.add');
     Route::get('/floor/update/{id}', [FloorController::class, 'edit'])->name('floor.edit'); // Renamed for consistency
 
@@ -293,6 +308,10 @@ Route::get('/get-payment-options/{roomId}', [AjaxController::class, 'getPaymentO
     // web.php
 Route::post('/save-checkout-requirements', [RoomController::class, 'saveCheckOutRequirements']);
 route::post('/save-check-out-items', [RoomController::class, 'saveCheckOutItems'])->name('saveCheckOutItems');
+route::post('/save-check-out-items-room', [RoomController::class, 'saveCheckOutItemsroom'])->name('aveCheckOutItemsroom');
+
+
+
 
 
 

@@ -78,7 +78,10 @@ th.desc::after {
 
 
         @if($paginatedUsers->isEmpty())
-            <p>No eligible students found.</p>
+        <div class="alert alert-warning text-center" role="alert">
+            <p>No Result found</p>
+        </div>
+
         @else
         <div class="table-responsive">
             <table class="table table-striped">

@@ -831,6 +831,56 @@ function room(blockId) {
 }
 
 
+
+
+
+
+
+
+function roomitem(RoomId) {
+    const selectors = [
+        "#nav_profile",
+        "#nav_aplication",
+        "#nav_elligable",
+        "#nav_result",
+        "#nav_control",
+        "#nav_setting",
+        "#nav_report",
+        "#nav_checkout",
+        "#nav_checkin",
+    ];
+
+    selectors.forEach(function(selector) {
+        $(selector).removeClass("active");
+    });
+    $("#nav_hostel").addClass("active");
+
+    $("#dash").html(
+        '<div class="spinner-container">' +
+        '<div class="black show d-flex align-items-center justify-content-center">' +
+        '<div class="spinner-border lik" style="width: 3rem; height: 3rem;" role="status">' +
+        '<span class="sr-only">Loading...</span>' +
+        '</div>' +
+        '</div>' +
+        '</div>'
+    );
+
+    $("#dash").load("{{ url('roomitem') }}/" + RoomId, (response, status, xhr) => {
+        if (status === "error") {
+            const msg = `Sorry, but there was an error: ${xhr.status} ${xhr.statusText}`;
+            $("#error").html(msg);
+        }
+    });
+}
+
+
+
+
+
+
+
+
+
 function floorAction(action, floorId) {
     const selectors = [
         "#nav_profile",

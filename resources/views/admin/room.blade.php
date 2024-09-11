@@ -15,7 +15,7 @@ use App\Models\User;
             </li>
             <li class="nav-item">
                 <a class="nav-link d-flex align-items-center py-2 px-3 p-xl-4 " href="#tabs1-tab2" role="tab" aria-selected="false"
-                   data-toggle="tab">Manage Items
+                   data-toggle="tab">Manage General Items
                 </a>
             </li>
         </ul>
@@ -719,9 +719,9 @@ use App\Models\User;
                                         @foreach($floor->rooms as $room)
                                         <div class="card mb-2">
                                             <div class="card-header text-center">
-                                                <span class="p-3 shadow-sm cursor-pointer">Room {{ $room->room_number }} - {{ $room->beds->count() }} beds</span>
+                                                <span class="p-3 shadow-sm cursor-pointer" onclick=" roomitem({{ $room->id }})">Room {{ $room->room_number }} - {{ $room->beds->count() }} beds</span>
                                                  <br><br>
-                                                <span class="badge badge-sm rounded-circle @if(strtolower($room->gender) === 'female') badge-success @elseif(strtolower($room->gender) === 'male') badge-secondary @else badge-secondary @endif">
+                                                <span  class="badge badge-sm rounded-circle @if(strtolower($room->gender) === 'female') badge-success @elseif(strtolower($room->gender) === 'male') badge-secondary @else badge-secondary @endif" >
                                                     @if(strtolower($room->gender) === 'female')
                                                         F
                                                     @elseif(strtolower($room->gender) === 'male')
@@ -818,83 +818,14 @@ use App\Models\User;
 
                     <!-- Check-Out Items Management -->
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <div class="container-fluid">
-                                <h5 class="mb-4">Manage Check-Out Items</h5>
-                                <input type="hidden" id="blockId" value="{{ $block->id }}">
-                                <div id="itemsContainer" class="row">
-                                    @forelse ($checkOutItems as $item)
-                                        <div class="col-md-12 mb-3">
-                                            <div class="input-group">
-                                                <input type="text" class="form-control" value="{{ $item->name }}">
-                                                <select class="nice-select" data-placeholder="Select Condition">
-                                                    <option value="Good" {{ $item->condition == 'Good' ? 'selected' : '' }} selected>Good</option>
 
-                                                </select>
-                                                <button class="btn btn-outline-default btn-sm" type="button" onclick="removeItem(this)">
-                                                    <i class="gd-trash text-danger"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    @empty
-                                       <!-- Notification Message -->
-                                              <div class="alert alert-info" role="alert">
-                                           <strong>Notice:</strong> The items and requirements listed below are predefined and have not yet been saved to the database. Customize them as needed and click "Save Changes" to add them to the database.
-                                        </div>
-                                        <!-- Predefined items -->
-                                        <div class="col-md-12 mb-3">
-                                            <div class="input-group">
-                                                <input type="text" class="form-control" value="Mattress">
-                                                <select class="nice-select" data-placeholder="Select Condition">
-                                                    <option value="Good" selected>Good</option>
-
-                                                </select>
-                                                <button class="btn btn-outline-default btn-sm" type="button" onclick="removeItem(this)">
-                                                    <i class="gd-trash text-danger"></i>
-                                                </button>
-                                                <span class="text-muted">Predefined Item</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-12 mb-3">
-                                            <div class="input-group">
-                                                <input type="text" class="form-control" value="Room Key">
-                                                <select class="nice-select" data-placeholder="Select Condition">
-                                                    <option value="Good" selected>Good</option>
-
-                                                </select>
-                                                <button class="btn btn-outline-default btn-sm" type="button" onclick="removeItem(this)">
-                                                    <i class="gd-trash text-danger"></i>
-                                                </button>
-                                                <span class="text-muted">Predefined Item</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-12 mb-3">
-                                            <div class="input-group">
-                                                <input type="text" class="form-control" value="Cleaning Done">
-                                                <select class="nice-select" data-placeholder="Select Condition">
-                                                    <option value="Good" selected>Good</option>
-
-                                                </select>
-                                                <button class="btn btn-outline-default btn-sm" type="button" onclick="removeItem(this)">
-                                                    <i class="gd-trash text-danger"></i>
-                                                </button>
-                                                <span class="text-muted">Predefined Item</span>
-                                            </div>
-                                        </div>
-                                    @endforelse
-                                </div>
-                                <div class="text-center mt-3">
-                                    <button id="addItem" class="btn btn-outline-primary">
-                                        <i class="gd-plus"></i> Add Item
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
 
                         <!-- Manage Requirements Section -->
                         <div class="col-md-6 mb-3">
                             <div class="container-fluid">
                                 <h5 class="mb-4">Manage Requirements</h5>
+                                <input type="hidden" id="blockId" value="{{ $block->id }}">
+
                                 <div id="requirementsContainer" class="row">
                                     @forelse ($requirements as $requirement)
                                         <div class="col-md-12 mb-3">
@@ -966,28 +897,6 @@ use App\Models\User;
                     // Initialize niceSelect
                     $('select').niceSelect();
 
-                    // Add new check-out item
-                    $('#addItem').click(function() {
-                        $('#itemsContainer').append(
-                            `<div class="col-md-12 mb-3">
-                                <div class="input-group">
-                                    <input type="text" class="form-control" placeholder="New Item">
-                                    <select class="nice-select" data-placeholder="Select Condition">
-                                        <option value="">Select Condition</option>
-                                        <option value="Good" selected>Good</option>
-
-                                    </select>
-                                    <button class="btn btn-outline-default btn-sm" type="button" onclick="removeItem(this)">
-                                        <i class="gd-trash text-danger"></i>
-                                    </button>
-                                    <input type="hidden" class="item-id" value=""> <!-- Hidden input to track item IDs -->
-                                </div>
-                            </div>`
-                        );
-                        // Reinitialize niceSelect for the new select elements
-                        $('select').niceSelect();
-                    });
-
                     // Add new requirement
                     $('#addRequirement').click(function() {
                         $('#requirementsContainer').append(
@@ -1014,33 +923,6 @@ use App\Models\User;
                     }
 
                     $('#saveChanges').click(function() {
-                        // Collect data for check-out items
-                        let items = [];
-                        let allItemsValid = true;
-                        $('#itemsContainer .input-group').each(function() {
-                            let itemId = $(this).find('.item-id').val(); // Track the ID of the item
-                            let itemName = $(this).find('input[type="text"]').val();
-                            let itemCondition = $(this).find('select').val();
-
-                            if (itemName === '' || itemCondition === '' || itemCondition === undefined) {
-                                allItemsValid = false;
-                            } else if (itemId === '' || itemId === undefined) {
-                                items.push({ name: itemName, condition: itemCondition });
-                            }
-                        });
-
-                        // Validate that at least one item exists and all conditions are selected
-                        if (items.length === 0) {
-                            showToast('#error-toast', 'At least one check-out item must be added.');
-                            return; // Stop the process if validation fails
-                        }
-
-                        // Check if all items have conditions selected
-                        if (!allItemsValid) {
-                            showToast('#error-toast', 'Please select a condition for each check-out item.');
-                            return; // Stop the process if validation fails
-                        }
-
                         // Collect data for requirements
                         let requirements = [];
                         let allRequirementsValid = true;
@@ -1078,7 +960,6 @@ use App\Models\User;
                             data: {
                                 _token: '{{ csrf_token() }}', // Include CSRF token for security
                                 block_id: blockId,
-                                items: items,
                                 requirements: requirements
                             },
                             success: function(response) {
@@ -1109,10 +990,6 @@ use App\Models\User;
                         });
                     });
                 });
-
-                function removeItem(button) {
-                    $(button).closest('.col-md-12').remove();
-                }
 
                 function removeRequirement(button) {
                     $(button).closest('.col-md-12').remove();

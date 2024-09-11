@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Block;
 use App\Models\Bed;
+use App\Models\Room;
 use App\Models\User;
 use Carbon\Carbon;
 use App\Models\CheckOutItem;
@@ -102,6 +103,28 @@ class RoomController extends Controller
     ));
 }
 
+public function showroomitem($id)
+{
+    // Fetch the room with users, ordered by 'id' in descending order
+    $room = Room::with(['users' => function($query) {
+        $query->orderBy('id', 'desc');  // Order users by 'id' in descending order
+    }])->findOrFail($id);
+
+    // Fetch the block related to the room and its related entities (floors, rooms, beds)
+    // Since Room belongs to Floor and Floor belongs to Block, we can use the relationships
+    $block = $room->floor->block()->with('floors.rooms.beds')->first();
+
+    // Fetch checkout items for the block
+    $checkOutItems = CheckOutItem::where('room_id', $id)->get();
+
+    // Pass the room, block, and checkout items to the view
+    return view('admin.roomitem', compact('room', 'checkOutItems', 'block'));
+}
+
+
+
+
+
 
 
 
@@ -118,9 +141,9 @@ public function showBed($bedId)
 }
 
 
+
 public function saveCheckOutItems(Request $request)
 {
-    $items = $request->input('items');
     $requirements = $request->input('requirements');
     $blockId = $request->input('block_id');
 
@@ -129,28 +152,10 @@ public function saveCheckOutItems(Request $request)
         return response()->json(['success' => false, 'message' => 'Block ID is required.']);
     }
 
-    // Validate that at least one item and one requirement must exist
-    if (empty($items) || empty($requirements)) {
-        return response()->json(['success' => false, 'message' => 'At least one check-out item and one requirement must exist.']);
+    // Validate that at least one requirement must exist
+    if (empty($requirements)) {
+        return response()->json(['success' => false, 'message' => 'At least one requirement must exist.']);
     }
-
-    // Save or update check-out items
-    $existingItems = CheckOutItem::where('block_id', $blockId)->get()->keyBy('name');
-
-    foreach ($items as $item) {
-        CheckOutItem::updateOrCreate(
-            ['name' => $item['name'], 'block_id' => $blockId],
-            ['condition' => $item['condition']]
-        );
-
-        // Remove item from existing items array
-        $existingItems->forget($item['name']);
-    }
-
-    // Delete items that are not in the request
-    CheckOutItem::where('block_id', $blockId)
-        ->whereIn('name', $existingItems->keys())
-        ->delete();
 
     // Save or update requirements
     $existingRequirements = Requirement::where('block_id', $blockId)->get()->keyBy('name');
@@ -173,6 +178,63 @@ public function saveCheckOutItems(Request $request)
     return response()->json(['success' => true]);
 }
 
+
+
+
+
+public function saveCheckOutItemsroom(Request $request)
+{
+    // Log the entire request for debugging
+    Log::info('Save Check-Out Items Request:', $request->all());
+
+    $items = $request->input('items');
+    $blockId = $request->input('block_id');
+    $floorId = $request->input('floor_id'); // Floor ID
+    $roomId = $request->input('room_id'); // Room ID
+
+    // Check if block_id, floor_id, and room_id are provided
+    if (!$blockId || !$floorId || !$roomId) {
+        return response()->json(['success' => false, 'message' => 'Block ID, Floor ID, and Room ID are required.']);
+    }
+
+    // Validate that at least one item must exist
+    if (empty($items)) {
+        return response()->json(['success' => false, 'message' => 'At least one check-out item must exist.']);
+    }
+
+    // Save or update check-out items based on room_id
+    $existingItems = CheckOutItem::where('room_id', $roomId)->get()->keyBy('name');
+
+    foreach ($items as $item) {
+        CheckOutItem::updateOrCreate(
+            [
+                'name' => $item['name'],
+                'room_id' => $roomId, // Focus on room_id
+            ],
+            [
+                'condition' => $item['condition'],
+                'block_id' => $blockId,
+                'floor_id' => $floorId, // Save floor_id
+                'room_id' => $roomId    // Save room_id
+            ]
+        );
+
+        // Remove item from existing items array
+        $existingItems->forget($item['name']);
+    }
+
+    // Delete items that are not in the request for the given room_id
+    CheckOutItem::where('room_id', $roomId)
+        ->whereIn('name', $existingItems->keys())
+        ->delete();
+
+    return response()->json(['success' => true]);
+}
+
+
+
+
+
 public function confirmapplication(Request $request)
 {
     // Validate the request
@@ -188,7 +250,7 @@ public function confirmapplication(Request $request)
 
     // Retrieve requirements and check-out items for the given block
     $requirements = Requirement::where('block_id', $validated['block_id'])->get();
-    $checkOutItems = CheckOutItem::where('block_id', $validated['block_id'])->get();
+    $checkOutItems = CheckOutItem::where('room_id',$user->room_id)->get();
 
     // Check if a confirmation record already exists for the user
     $confirmation = RequirementItemConfirmation::where('user_id', $validated['user_id'])->first();

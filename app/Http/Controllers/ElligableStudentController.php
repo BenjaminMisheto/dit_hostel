@@ -58,7 +58,8 @@ public function checkin(Request $request)
 
         // Fetch eligible users with pagination
         $eligibleUsers = User::whereNotNull('payment_status')
-                     ->orderBy('id', 'desc') // Order by 'id' in descending order
+                    // ->where('checkin',1)
+                     ->orderBy('checkin', 'desc') // Order by 'id' in descending order
                      ->skip($skip)
                      ->take($end - $start + 1)
                      ->get();

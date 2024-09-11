@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -12,6 +13,8 @@ class CreateCheckOutItemsTable extends Migration
             $table->string('name');
             $table->string('condition'); // 'Good' or 'Bad'
             $table->foreignId('block_id')->constrained()->onDelete('cascade');
+            $table->foreignId('floor_id')->constrained()->onDelete('cascade'); // Added floor_id
+            $table->foreignId('room_id')->constrained()->onDelete('cascade');  // Added room_id
             $table->timestamps();
         });
     }

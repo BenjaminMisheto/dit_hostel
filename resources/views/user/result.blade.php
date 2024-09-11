@@ -634,7 +634,7 @@
 @else
 <div class="text-center mt-4">
     <div class="alert alert-success">
-        <strong>Note:</strong> Congratulations! You are now officially a member of {{$user->block->name}}. Enjoy your stay at the hostel, and please adhere to all regulations.
+        <strong>Note:</strong> Congratulations! You are now officially a member of {{$user->block->name}}, Room {{$user->room->room_number}} . Enjoy your stay at the hostel, and please adhere to all regulations.
     </div>
 </div>
 @endif
@@ -657,9 +657,14 @@
 
 
                                         @else
-                                            <div class="text-center mt-4">
-                                                <button id="confirm" class="btn btn-outline-primary">Confirm Given Items</button>
-                                            </div>
+
+<div class="text-center mt-4">
+    <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#confirmItemModal">
+        Confirm Given Item
+    </button>
+
+</div>
+
                                         @endif
                                     @endif
                                 </div>
@@ -673,7 +678,8 @@
     $(document).ready(function() {
 
         $('#confirm').click(function() {
-            if (confirm('Are you sure?')) {
+            hidemodal()
+
             $('#overlay').css('display', 'flex');
             $.ajax({
                 url: '/confirm-requirements-items',
@@ -686,7 +692,7 @@
                 success: function(response) {
                     $('#overlay').fadeOut();
                     showToast('#success-toast', response.message);
-                    result();
+
                 },
                 error: function(xhr) {
                     $('#overlay').fadeOut();
@@ -694,9 +700,10 @@
                     showToast('#error-toast', errorMessage);
                 }
             });
-        }
+
 
         });
+
 
         function showToast(toastId, message) {
             var $toast = $(toastId);
@@ -706,7 +713,18 @@
             });
             $toast.toast('show');
         }
+
+        function hidemodal() {
+        // Close the modal
+        $('#confirmItemModal').modal('hide'); // Use the correct ID of your modal
+        // Ensure that hostel() is called after the modal is closed
+        $('#confirmItemModal').on('hidden.bs.modal', function() {
+            result();
+        });
+    }
     });
+
+
 </script>
 
 
@@ -943,3 +961,23 @@
 
 
 </div>
+<div id="confirmItemModal" class="modal fade" role="dialog" aria-labelledby="confirmItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog rounded" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="text-center rounded">
+                    <i class="gd-alert icon-text icon-text-xxl d-block text-danger mb-3 mb-md-4"></i>
+                    <div class="h5 font-weight-semi-bold mb-2">Confirm Item Return</div>
+                    <p class="mb-3 mb-md-4">Once you <strong>confirm the received items</strong>, no further modifications will be allowed. Please ensure that each item is returned in the <strong>agreed-upon condition</strong>. <strong>Any damage or failure to return the items will result in a fine</strong>.</p>
+
+                    <div class="d-flex justify-content-between mb-4">
+                        <a class="btn btn-outline-success" href="#" id="confirm">Yes, Confirm</a>
+                        <a class="btn btn-outline-danger" href="#" data-dismiss="modal">Cancel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

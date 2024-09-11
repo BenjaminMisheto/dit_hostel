@@ -303,8 +303,8 @@ class AjaxController extends Controller
 
 public function updatePublishStatus(Request $request)
 {
-    // Try to find the Publish record by ID
-    $publish = Publish::find(1); // Adjust this ID as needed
+    // Try to find the Publish record by ID (adjust the ID as needed)
+    $publish = Publish::find(1); // You may adjust this ID based on your logic
 
     if (!$publish) {
         // If not found, create a new record
@@ -324,8 +324,8 @@ public function updatePublishStatus(Request $request)
         // Calculate the new expiration date by adding the days to the current time
         $newExpirationDate = Carbon::now()->addDays($daysToAdd);
 
-        // Update the expiration_date for all users
-        User::query()->update(['expiration_date' => $newExpirationDate]);
+        // Update the expiration_date for users where expiration_date is null
+        User::whereNull('expiration_date')->update(['expiration_date' => $newExpirationDate]);
     } else {
         return response()->json(['message' => 'Publish record not found.'], 404);
     }
@@ -884,6 +884,8 @@ $newCounter = $currentCounter + 1;
         'room_id' => null,
         'floor_id' => null,
         'bed_id' => null,
+        'checkin' => null,
+        'checkout' => null,
         'application' => 0,
         'status' => 'disapproved',
         'counter' => $newCounter

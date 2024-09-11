@@ -216,34 +216,38 @@
                disabled>
     </div>
 
-
-    <div class="col-md-12 mb-3">
-    <div class="form-group mt-2">
-        <label>Bed Status</label>
-        <div class="btn-group-toggle d-flex justify-content-between" data-toggle="buttons">
-            <label class="btn btn-outline-danger  mx-1 {{ $bed->status == 'under_maintenance' ? 'active' : '' }}" style="cursor: pointer;">
-                <input type="radio" name="bedStatus" value="under_maintenance" autocomplete="off"
-                    {{ $bed->status == 'under_maintenance' ? 'checked' : '' }} style="display: none;">Maintenance
-            </label>
-            <label class="btn btn-outline-warning mx-1 {{ $bed->status == 'reserve' ? 'active' : '' }}" style="cursor: pointer;">
-                <input type="radio" name="bedStatus" value="reserve" autocomplete="off"
-                    {{ $bed->status == 'reserve' ? 'checked' : '' }} style="display: none;"> Reserve
-            </label>
-            <label class="btn btn-outline-success  mx-1 {{ $bed->status == 'activate' ? 'active' : '' }}" style="cursor: pointer;">
-                <input type="radio" name="bedStatus" value="activate" autocomplete="off"
-                    {{ $bed->status == 'activate' ? 'checked' : '' }} style="display: none;"> Activate
-            </label>
+    <div class="col-md-12 mb-3 remove" style=" @if($bed->user) display: none; @endif">
+        <div class="form-group mt-2">
+            <label>Bed Status</label>
+            <div class="btn-group-toggle d-flex justify-content-between" data-toggle="buttons">
+                <label class="btn btn-outline-danger  mx-1 {{ $bed->status == 'under_maintenance' ? 'active' : '' }}" style="cursor: pointer;">
+                    <input type="radio" name="bedStatus" value="under_maintenance" autocomplete="off"
+                        {{ $bed->status == 'under_maintenance' ? 'checked' : '' }} style="display: none;">Maintenance
+                </label>
+                <label class="btn btn-outline-warning mx-1 {{ $bed->status == 'reserve' ? 'active' : '' }}" style="cursor: pointer;">
+                    <input type="radio" name="bedStatus" value="reserve" autocomplete="off"
+                        {{ $bed->status == 'reserve' ? 'checked' : '' }} style="display: none;"> Reserve
+                </label>
+                <label class="btn btn-outline-success  mx-1 {{ $bed->status == 'activate' ? 'active' : '' }}" style="cursor: pointer;">
+                    <input type="radio" name="bedStatus" value="activate" autocomplete="off"
+                        {{ $bed->status == 'activate' ? 'checked' : '' }} style="display: none;"> Activate
+                </label>
+            </div>
+            <small id="bedStatusError" class="form-text text-danger"></small>
         </div>
-        <small id="bedStatusError" class="form-text text-danger"></small>
     </div>
-</div>
+
+
+
 
 
                     </div>
 
                     <div class="col-md-6 mb-3">
-<!-- Search Input and Add Button -->
-<div class="form-group position-relative">
+
+
+                 <!-- Search Input and Add Button -->
+<div class="form-group position-relative remove" style=" @if($bed->user) display: none; @endif">
     <label for="searchStudent">Search for Eligible Students</label>
     <div class="input-group">
         <input type="text" class="form-control" id="searchStudent" placeholder="Enter student name or ID">
@@ -258,6 +262,8 @@
         <!-- Results will be populated here -->
     </div>
 </div>
+
+
 
 
                 <!-- Additional Non-Editable Details -->
@@ -654,6 +660,8 @@ $(document).ready(function() {
                     // Update the button to "Remove Student"
                     $('#addStudentButton').hide();
                     $('#removeStudentButton').show();
+                    $('.remove').hide();
+
                     $('#statusindicator').removeClass('alert-danger').addClass('alert-success');
                     $('#statusindicator').text('This room is occupied by ' + response.user.name);
                 } else {
@@ -699,8 +707,7 @@ $(document).ready(function() {
 </script>
 
 <script>
-    // remove-student.js
-$(document).ready(function() {
+    $(document).ready(function() {
     // Set up CSRF token for AJAX requests
     $.ajaxSetup({
         headers: {
@@ -728,26 +735,38 @@ $(document).ready(function() {
                 var errorToast = $('#error-toast');
 
                 if (response.success) {
-                  //  floorAction('bed', {{ $bed->id }});
                     successToast.find('.toast-body').text('Student removed successfully.');
                     successToast.toast('show');
+
                     // Clear all fields
                     $('#bedForm')[0].reset();
                     clearInputFields();
+
+                    $('.remove').show();
+
                     // Restore the button to "Add Student"
                     $('#removeStudentButton').hide();
                     $('#addStudentButton').show();
                     $('#statusindicator').removeClass('alert-success').addClass('alert-danger');
                     $('#statusindicator').text('No student assigned to this room.');
+
                 } else {
+                    // Display the error message returned by the server
                     errorToast.find('.toast-body').text('Removal failed: ' + response.message);
                     errorToast.toast('show');
                 }
+                $('#removeStudentButton').removeClass('disabled');
             },
             error: function(xhr) {
                 console.error('AJAX Error:', xhr);
+
                 var errorToast = $('#error-toast');
-                errorToast.find('.toast-body').text('An error occurred. Please try again.');
+                // Handle different error responses if needed
+                if (xhr.status === 400 || xhr.status === 404) {
+                    errorToast.find('.toast-body').text('Error: ' + xhr.responseJSON.message);
+                } else {
+                    errorToast.find('.toast-body').text('An unexpected error occurred. Please try again.');
+                }
                 errorToast.toast('show');
                 $('#removeStudentButton').removeClass('disabled');
                 $('#overlay').fadeOut();
@@ -756,7 +775,11 @@ $(document).ready(function() {
     });
 });
 
-</script><script>
+</script>
+
+
+
+<script>
     $(document).ready(function() {
         $('#delete_button').on('click', function(e) {
             e.preventDefault(); // Prevent default form submission

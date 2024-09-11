@@ -204,47 +204,55 @@ if ($row) {
 
 
 
-
-
-
 public function remove($bedId)
 {
-    // Log the bed ID for debugging purposes
     Log::info('Removing bed with ID: ' . $bedId);
 
-    // Find the bed by ID and ensure it exists
     $bed = Bed::find($bedId);
     if (!$bed || !$bed->user_id) {
         return response()->json(['success' => false, 'message' => 'Bed or assigned student not found.'], 404);
     }
 
-    // Retrieve the associated room, floor, and block
-    $room = $bed->room;
-    $floor = $room->floor;
-    $block = $floor->block;
-
-    // Ensure the block and floor exist
-    if (!$floor || !$block) {
-        return response()->json(['success' => false, 'message' => 'Block or floor not found.'], 404);
-    }
-
-    // Get the block ID and floor ID
-    $blockId = $block->id;
-    $floorId = $floor->id;
-
-    // Log the block and floor IDs for debugging purposes
-    Log::info("Block ID: $blockId, Floor ID: $floorId");
-
-    // Find the associated user and ensure they exist
     $user = User::find($bed->user_id);
     if (!$user) {
         return response()->json(['success' => false, 'message' => 'Student not found.'], 404);
     }
+    // Check if the student has already completed payment
+    if (!is_null($user->payment_status)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Student cannot be removed because the payment has already been completed.'
+        ], 400);
+    }
+
+
+    // Check if the user has a control number and the expiration date is not in the past
+    if (!is_null($user->Control_Number) && $user->expiration_date->isFuture()) {
+        $hoursRemaining = $user->expiration_date->diffInHours(now());
+        return response()->json([
+            'success' => false,
+            'message' => "Student cannot be removed because a control number has been generated. Please wait until the expiration time expires. Hours remaining: $hoursRemaining."
+        ], 400);
+    }
+
+
+
+    // Retrieve associated room, floor, and block
+    $room = $bed->room;
+    $floor = $room->floor;
+    $block = $floor->block;
+    if (!$floor || !$block) {
+        return response()->json(['success' => false, 'message' => 'Block or floor not found.'], 404);
+    }
+
+    $blockId = $block->id;
+    $floorId = $floor->id;
+
+    Log::info("Block ID: $blockId, Floor ID: $floorId");
 
     // Retrieve the user course
     $userCourse = $user->course;
 
-    // Perform the update if a row with the given criteria is found
     $row = SliderData::where('criteria', $userCourse)
         ->where('floor_id', $floorId)
         ->where('block_id', $blockId)
@@ -252,12 +260,10 @@ public function remove($bedId)
         ->first();
 
     if ($row) {
-        // Update the status of the row
         $row->update(['status' => 1]);
     }
 
     try {
-        // Update the bed's user_id to null
         $bed->update(['user_id' => null]);
 
         // Clear user fields

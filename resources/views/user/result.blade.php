@@ -194,6 +194,7 @@
 
 
 
+
                     @if ($user->payment_status == '')
 
                     <div class="alert alert-success ">
@@ -207,9 +208,16 @@
                     @else
 
                     @endif
+                    <div class="row ">
+
+<div class="col-md-4 text-center mb-4">
+    <img id="profileImage" class="profile-image img-fluid rounded-circle border border-light"
+         src="{{ $user->profile_photo_path ?? 'img/placeholder.jpg' }}" alt="Profile Image"
+         style="max-width: 220px; height: auto;">
+</div>
 
 
-
+<div class="col-md-8 mb-4">
                     <div class="row mb-3">
                         <div class="col font-weight-bold ">
                             Name:
@@ -412,6 +420,8 @@
 
                                 </div>
                             </div>
+                        </div>
+                    </div>
                             <div class="alert alert-info">
                                 <strong>Important Notice:</strong><br>
                                 <span>
@@ -979,5 +989,4 @@
         </div>
     </div>
 </div>
-
 

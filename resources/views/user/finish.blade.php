@@ -28,16 +28,12 @@ $expirationDate = Carbon::parse($user->expiration_date);
                     </div>
                     <div class="card-body pt-0">
 
-                        <!-- Alert for Important Notice -->
-                        <div class="alert alert-warning mb-4">
-                            <strong>Important Notice:</strong>
-                            <p class="mb-0">Before confirming your application, please verify all details carefully. Once confirmed, you will not be able to edit your application. If you wish to choose another hostel bed, feel free to select from the available options.</p>
-                            <p class="mb-0">Please note that the institution reserves the right to reassign your room if necessary. We appreciate your understanding.</p>
-                        </div>
+
 
 
 
                         <div class="row align-items-center">
+
                             <!-- Profile Image -->
                             <div class="col-md-4 text-center mb-4">
                                 <img id="profileImage" class="profile-image img-fluid rounded-circle border border-light"
@@ -46,7 +42,7 @@ $expirationDate = Carbon::parse($user->expiration_date);
                             </div>
 
                             <!-- User Information -->
-                            <div class="col-md-8">
+                            <div class="col-md-4">
                                 <div class="row mb-3">
                                     <div class="col  mb-2">
                                         Name
@@ -93,6 +89,24 @@ $expirationDate = Carbon::parse($user->expiration_date);
                                 </div>
 
                             </div>
+
+                            <div class="col-md-4">
+                                <div class="alert alert-warning mb-4">
+                                    <strong>Important Notice:</strong>
+                                    <p class="mb-0">Before confirming your application, please verify all details carefully. Once confirmed, you will not be able to edit your application. If you wish to choose another hostel bed, feel free to select from the available options.</p>
+                                    <p class="mb-0">Please note that the institution reserves the right to reassign your room if necessary. We appreciate your understanding.</p>
+                                </div>
+                            </div>
+
+
+
+
+
+
+                                   <!-- Alert for Important Notice -->
+
+
+
                         </div>
 
                         <!-- Alerts Based on Application Status -->

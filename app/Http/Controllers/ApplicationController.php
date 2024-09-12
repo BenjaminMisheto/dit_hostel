@@ -274,6 +274,7 @@ public function search(Request $request)
 
         // Update the user's status
         $user->status = $request->status;
+        $user->afterpublish = 0;
         $user->save();
 
         // Return success response
@@ -289,6 +290,7 @@ public function search(Request $request)
         ], 404);
     }
 }
+
 public function applyYes(Request $request)
 {
     $userIds = $request->input('user_ids');
@@ -323,6 +325,7 @@ public function applyYes(Request $request)
 
         // Update the user's status to 'approved'
         $user->status = 'approved';
+        $user->afterpublish = 0;
         $user->save();
     }
 
@@ -363,6 +366,7 @@ public function applyNo(Request $request)
 
         // Update the user's status to 'disapproved'
         $user->status = 'disapproved';
+        $user->afterpublish = 0;
         $user->save();
     }
 

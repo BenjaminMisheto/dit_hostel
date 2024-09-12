@@ -8,6 +8,7 @@
         $expirationDate = Carbon::parse($user->expiration_date);
     @endphp
 
+
 @if ($user->application != 1)
 
 <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -20,38 +21,10 @@
     @else
     @if ($expirationDate->isPast() and empty($user->payment_status))
 
-
-
-
-
-
-
-
-
-
     <script>
         $('#gd-hostel,#gd-finish').removeClass('gd-close text-danger ').addClass(' gd-check text-success');
 </script>
-    <div class="row">
-        <div class="col-md-12">
-            <!-- Card -->
-            <div class="card h-100">
-                <div class="card-header d-flex">
-                    <h5 class="h6 font-weight-semi-bold text-uppercase mb-0">
-                        Information
-                    </h5>
-                </div>
-                <div class="card-body pt-0">
-                    <div class="alert alert-danger">
-                        <span><small>Notice</small></span><br>
-                        <span><small>{{$user->name}} Your application has expired. Please reapply to continue with the process.</small></span><br>
-                        <button id="reapplyButton" class="btn btn-danger mt-3">Reapply</button>
-                    </div>
-                </div>
-            </div>
-            <!-- End Card -->
-        </div>
-    </div>
+
     <script>
         $('#gd-hostel,#gd-finish,#gd-result').removeClass('gd-check text-success').addClass(' gd-close text-danger');
 </script>
@@ -59,7 +32,28 @@
 
 
 
+<div class="d-flex justify-content-center align-items-center vh-50">
+    <div class="col-md-6">
+        <!-- Card -->
+        <div class="card h-100 alert alert-danger ">
+            <div class="card-header d-flex">
+                <h5 class="h6 font-weight-semi-bold text-uppercase mb-0">
+                    Information
+                </h5>
+            </div>
+            <div class="card-body pt-0">
+                <div class="text-center">
+                    <span><strong>Dear {{$user->name}},</strong></span><br>
+                    <hr>
+                    <span><small>Your application expired on {{$user->expiration_date}}. To secure a hostel, please reapply if you wish to proceed.</small></span><br>
 
+                    <button id="reapplyButton" class="btn btn-danger mt-3">Reapply</button>
+                </div>
+            </div>
+        </div>
+        <!-- End Card -->
+    </div>
+</div>
 
 
 
@@ -78,34 +72,41 @@
         $('#gd-hostel,#gd-finish').removeClass('gd-close text-danger ').addClass(' gd-check text-success');
 </script>
 
-    <div class="row">
 
-        <div class="col-md-12">
+
+
+
+
+
+    <div class="d-flex justify-content-center align-items-center vh-50">
+        <div class="col-md-6">
             <!-- Card -->
-            <div class="card h-100">
+            <div class="card h-100 alert alert-warning ">
                 <div class="card-header d-flex">
                     <h5 class="h6 font-weight-semi-bold text-uppercase mb-0">
                         Information
                     </h5>
                 </div>
                 <div class="card-body pt-0">
-
-                    <div class="alert alert-warning">
-                        <span><small>Notice</small></span><br>
+                    <div class="text-center">
+                        <span><strong>Dear {{$user->name}},</strong></span><br>
+                        <hr>
                         <span><small>Results have not been published yet. Please be patient as we continue
-                                processing your application.</small></span>
+                            processing your application.</small></span><br>
+
                     </div>
-
                 </div>
-
             </div>
             <!-- End Card -->
         </div>
     </div>
+
+
 
     @else
     @if ($user->status == 'disapproved')
-    @if ($user->counter == 0)
+
+    @if ($user->afterpublish == 1)
     <script>
         $('#gd-hostel,#gd-finish,#gd-result').removeClass('gd-close text-danger ').addClass(' gd-check text-success');
 </script>
@@ -120,58 +121,81 @@
                     </h5>
                 </div>
                 <div class="card-body pt-0">
-                    <div class="alert alert-danger">
+                    <div class="alert alert-warning">
                         <span><strong>Dear {{$user->name}},</strong></span><br>
-                        <span><small>We regret to inform you that your application has not been approved due to limited capacity and recent institutional changes.</small></span><br>
-                        <hr>
-                        <span>
-                            <small>
-                                Please be advised that the results have already been published. If you do not wish to reapply, no further action is required on your part.
-                            </small>
-                        </span>
-                        <br>
-
-                        <button id="reapplyButton" class="btn btn-danger mt-3">Reapply</button>
+                        <span><small>Thank you for your patience. Your application is being processed, and you will be notified once it has been reviewed.</small></span>
                     </div>
-
-
-
-
-
                 </div>
 
             </div>
             <!-- End Card -->
         </div>
     </div>
+
+
+
+
+
+
+
+
+
+
+<div class="d-flex justify-content-center align-items-center vh-50">
+    <div class="col-md-6">
+        <!-- Card -->
+        <div class="card h-100 alert alert-warning ">
+            <div class="card-header d-flex">
+                <h5 class="h6 font-weight-semi-bold text-uppercase mb-0">
+                    Information
+                </h5>
+            </div>
+            <div class="card-body pt-0">
+                <div class="text-center">
+                    <span><strong>Dear {{$user->name}},</strong></span><br>
+                    <hr>
+                    <span><small>Thank you for your patience. Your application is being processed, and you will be notified once it has been reviewed.</small></span><br>
+
+
+                </div>
+            </div>
+        </div>
+        <!-- End Card -->
+    </div>
+
+
+
+
+
+
+</div>
     @else
     <script>
         $('#gd-hostel,#gd-finish,#gd-result').removeClass('gd-close text-danger ').addClass(' gd-check text-success');
 </script>
-    <div class="row">
 
-        <div class="col-md-12">
-            <!-- Card -->
-            <div class="card h-100">
-                <div class="card-header d-flex">
-                    <h5 class="h6 font-weight-semi-bold text-uppercase mb-0">
-                        Information
-                    </h5>
-                </div>
-                <div class="card-body pt-0">
-                    <div class="alert alert-danger">
-                        <span><strong>Dear {{$user->name}},</strong></span><br>
-                        <hr>
-                        <span><small>As the results have already been published, if you already reapply, please contact the administration to request approval. </small></span><br>
-
-                        <button id="reapplyButton" class="btn btn-danger mt-3">Reapply</button>
-                    </div>
-                </div>
-
+<div class="d-flex justify-content-center align-items-center vh-50">
+    <div class="col-md-6">
+        <!-- Card -->
+        <div class="card h-100 alert alert-danger ">
+            <div class="card-header d-flex">
+                <h5 class="h6 font-weight-semi-bold text-uppercase mb-0">
+                    Information
+                </h5>
             </div>
-            <!-- End Card -->
+            <div class="card-body pt-0">
+                <div class="text-center">
+                    <span><strong>Dear {{$user->name}},</strong></span><br>
+                    <hr>
+                    <span><small>We regret to inform you that your application was not approved. If you wish to reapply, please click the button below.</small></span><br>
+                    <button id="reapplyButton" class="btn btn-danger mt-3">Reapply</button>
+                </div>
+            </div>
         </div>
+        <!-- End Card -->
     </div>
+</div>
+
     @endif
 
 

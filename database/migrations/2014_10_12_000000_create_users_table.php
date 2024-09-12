@@ -19,7 +19,8 @@ return new class extends Migration
     $table->integer('checkin')->default(0);
     $table->integer('checkout')->default(0);
     $table->boolean('confirmation')->default(0);
-    $table->boolean('application')->default(0);
+    $table->boolean('afterpublish')->nullable();
+    $table->boolean('application')->nullable();
     $table->string('status')->default('disapproved'); // Add status column with default value
     $table->bigInteger('payment_status')->nullable();
     $table->bigInteger('Control_Number')->nullable();
@@ -39,7 +40,7 @@ return new class extends Migration
     $table->rememberToken();
     $table->foreignId('current_team_id')->nullable();
     $table->string('profile_photo_path', 2048)->nullable();
-    $table->timestamp('expiration_date')->default(DB::raw('DATE_ADD(NOW(), INTERVAL 1 DAY)'))->nullable();
+    $table->timestamp('expiration_date')->nullable();
     $table->timestamps();
 });
 

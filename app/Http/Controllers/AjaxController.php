@@ -884,8 +884,8 @@ $newCounter = $currentCounter + 1;
         'room_id' => null,
         'floor_id' => null,
         'bed_id' => null,
-        'checkin' => null,
-        'checkout' => null,
+        'checkin' => 0,
+        'checkout' => 0,
         'application' => 0,
         'status' => 'disapproved',
         'counter' => $newCounter
@@ -929,6 +929,7 @@ public function confirmApplication(Request $request)
     $user->update([
         'application' => $request->application
     ]);
+
 
     // Update the specific bed with the user's user_id
     if ($user->bed_id) {
@@ -994,6 +995,15 @@ public function confirmApplication(Request $request)
 
     // Fetch the expiration days from the publishes table
     $publish = Publish::first(); // Adjust if needed to fetch the specific record
+
+
+    if ($publish ->first()->status == 1) {
+    $user->afterpublish = 1; // Assign the new value
+    $user->save();           // Save the updated user to the database
+}
+
+
+
     if ($publish) {
         // Convert the stored expiration_date to an integer representing the number of days
         $daysToAdd = (int) $publish->expiration_date;

@@ -27,11 +27,6 @@ $expirationDate = Carbon::parse($user->expiration_date);
                         <h5 class="font-weight-semi-bold text-uppercase mb-0">Information</h5>
                     </div>
                     <div class="card-body pt-0">
-
-
-
-
-
                         <div class="row align-items-center">
 
                             <!-- Profile Image -->
@@ -98,15 +93,7 @@ $expirationDate = Carbon::parse($user->expiration_date);
                                 </div>
                             </div>
 
-
-
-
-
-
                                    <!-- Alert for Important Notice -->
-
-
-
                         </div>
 
                         <!-- Alerts Based on Application Status -->

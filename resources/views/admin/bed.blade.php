@@ -205,15 +205,14 @@
                value="{{ $bed->user->Control_Number ?? 'Not Generated' }}" disabled>
     </div>
     <div class="col-md-12 mb-3">
-        <label for="Userpayment">Payment Status</label>
-        <input type="text"
-               class="form-control
-                      {{ $bed->user && \Carbon\Carbon::now()->greaterThan($bed->user->expiration_date) ? 'text-danger' :
-                      ($bed->user && $bed->user->payment_status === null ? 'text-warning' : 'text-success') }}"
-               id="Userpayment"
-               value="{{ $bed->user && \Carbon\Carbon::now()->greaterThan($bed->user->expiration_date) ? 'Expired' :
-                      ($bed->user->payment_status ?? 'Not paid') }}"
-               disabled>
+        <label for="Userpayment">Payment</label>
+        <input type="text" class="form-control" id="Userpayment"
+        value="{{ $bed->user->payment_status ?? 'Not paid' }}" disabled>
+
+
+
+
+
     </div>
 
     <div class="col-md-12 mb-3 remove" style=" @if($bed->user) display: none; @endif">

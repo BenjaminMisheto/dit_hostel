@@ -274,6 +274,8 @@ public function remove($bedId)
             'room_id' => null,
             'floor_id' => null,
             'bed_id' => null,
+            'checkin' => 0,
+            'checkout' => 0,
             'counter' => 0,
         ]);
 

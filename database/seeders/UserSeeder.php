@@ -49,7 +49,8 @@ class UserSeeder extends Seeder
                 'email' => $faker->unique()->safeEmail, // Ensure the email is unique
                 'password' => bcrypt('password'), // Or use a hash that you prefer
                 'profile_photo_path' => 'img/' . (($bed->id % 15) + 1) . '.jpg', // Cycle image index from 1 to 15
-                'expiration_date' => $faker->dateTimeBetween('now', '+1 year'),
+                 'expiration_date' => $faker->dateTimeBetween('now', '+1 minute'),
+
                 'created_at' => now(),
                 'updated_at' => now(),
                 'counter' => $faker->numberBetween(0, 10),

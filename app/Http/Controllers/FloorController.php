@@ -47,7 +47,6 @@ class FloorController extends Controller
 
 
 
-
     public function updateFloor(Request $request, $id)
 {
     // Log the incoming request data for debugging
@@ -90,8 +89,9 @@ class FloorController extends Controller
     // Handle removed rooms and their beds
     $removedRooms = $request->input('removed_rooms', []);
     if (!empty($removedRooms)) {
-        Room::whereIn('id', $removedRooms)->each(function($room) {
-            $room->beds()->delete();
+        Room::whereIn('id', $removedRooms)->each(function ($room) {
+            // Delete beds only if they are not assigned to any user
+            $room->beds()->whereNull('user_id')->delete();
             $room->delete();
         });
     }
@@ -137,6 +137,7 @@ class FloorController extends Controller
             }
         } elseif ($newBedCount < $currentBedCount) {
             $room->beds()
+                 ->whereNull('user_id') // Only delete beds that are not assigned to any user
                  ->orderByDesc('bed_number')
                  ->take($currentBedCount - $newBedCount)
                  ->delete();
@@ -147,7 +148,8 @@ class FloorController extends Controller
 
     // Remove rooms that are not in the request
     $floor->rooms()->whereNotIn('id', $existingRoomIds)->each(function($room) {
-        $room->beds()->delete();
+        // Delete beds only if they are not assigned to any user
+        $room->beds()->whereNull('user_id')->delete();
         $room->delete();
     });
 
@@ -156,6 +158,7 @@ class FloorController extends Controller
         'message' => 'Floor updated successfully.',
     ]);
 }
+
 
 
 

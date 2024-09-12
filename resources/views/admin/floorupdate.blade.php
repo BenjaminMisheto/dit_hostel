@@ -64,23 +64,42 @@
             </div>
 
             <h5 class="mb-3">Rooms and Beds</h5>
+
+
+
             <div id="roomsContainer" class="row">
                 @foreach($floor->rooms as $room)
+
+@php
+// Check if any bed in the room is assigned to a user
+$roomHasUsers = $room->beds->filter(function ($bed) {
+    return $bed->user !== null; // Check if the bed has a user assigned
+})->count() > 0;
+
+$assignedBedsCount = $room->beds->filter(function ($bed) {
+        return $bed->user !== null; // Check if the bed has a user assigned
+    })->count();
+@endphp
                 <div class="col-xl-6 mb-3 room-item" id="room-{{ $room->id }}">
+                    <label for="room-number-{{ $room->id }}" class="mr-2">Students {{$assignedBedsCount}}</label>
                     <div class="d-flex align-items-center">
                         <label for="room-number-{{ $room->id }}" class="mr-2">Name</label>
                         <input type="text" class="form-control col-3 mr-2" id="room-number-{{ $room->id }}"
-                            name="rooms[{{ $room->id }}][room_number]" value="{{ $room->room_number }}" min="1"
+                            name="rooms[{{ $room->id }}][room_number]" value="{{ $room->room_number }}"
                             placeholder="Room Number">
 
                         <label for="room-{{ $room->id }}" class="mr-2">Beds</label>
                         <input type="number" class="form-control col-3 mr-2" id="room-{{ $room->id }}"
-                            name="rooms[{{ $room->id }}][number_of_beds]" value="{{ $room->beds->count() }}" min="0"
+                            name="rooms[{{ $room->id }}][number_of_beds]" value="{{ $room->beds->count() }}" min="{{$assignedBedsCount}}"
                             placeholder="Beds">
 
-                        <small class="form-text text-muted ml-2">Current beds: {{ $room->beds->count() }}</small>
-                        <button type="button" class="alert alert-danger btn-sm ml-2" id="remove-{{ $room->id }}"><i
-                                class="gd-trash"></i></button>
+                            @if (!$roomHasUsers)
+                            <small class="form-text text-muted ml-2">Current beds: {{ $room->beds->count() }}</small>
+                            <button type="button" class="alert alert-danger btn-sm ml-2" id="remove-{{ $room->id }}"><i
+                                    class="gd-trash"></i></button>
+                            @endif
+
+
                     </div>
 
                     @php
@@ -106,12 +125,35 @@ $availableGenders = json_decode($floor->gender, true);
         @php
             $isActive = $currentRoomGender === $gender;
         @endphp
+
+
+        @if ($roomHasUsers)
+        {{-- <label class="btn btn-outline-primary gender-btn mx-1 {{ $isActive ? 'active' : '' }}"
+        data-room-id="{{ $room->id }}" data-gender="{{ $gender }}"
+        style="pointer-events: none; opacity: 0.6;">
+     {{ ucfirst($gender) }}
+     <input type="radio" name="rooms[{{ $room->id }}][gender]" value="{{ $gender }}" style="display: none;" {{ $isActive ? 'checked' : '' }} readonly disabled>
+
+ </label> --}}
+
+
+ <label class="btn btn-outline-primary gender-btn mx-1 {{ $isActive ? 'active' : '' }}"
+ data-room-id="{{ $room->id }}" data-gender="{{ $gender }}"
+ onclick="selectGender(this)">
+{{ ucfirst($gender) }}
+<input type="radio" name="rooms[{{ $room->id }}][gender]" value="{{ $gender }}" style="display: none;" {{ $isActive ? 'checked' : '' }}>
+</label>
+
+
+        @else
         <label class="btn btn-outline-primary gender-btn mx-1 {{ $isActive ? 'active' : '' }}"
-               data-room-id="{{ $room->id }}" data-gender="{{ $gender }}"
-               onclick="selectGender(this)">
-            {{ ucfirst($gender) }}
-            <input type="radio" name="rooms[{{ $room->id }}][gender]" value="{{ $gender }}" style="display: none;" {{ $isActive ? 'checked' : '' }}>
-        </label>
+        data-room-id="{{ $room->id }}" data-gender="{{ $gender }}"
+        onclick="selectGender(this)">
+     {{ ucfirst($gender) }}
+     <input type="radio" name="rooms[{{ $room->id }}][gender]" value="{{ $gender }}" style="display: none;" {{ $isActive ? 'checked' : '' }}>
+ </label>
+        @endif
+
     @endforeach
 </div>
 </div>
@@ -169,6 +211,8 @@ $availableGenders = json_decode($floor->gender, true);
                 <button type="button" id="addRoom" class="alert alert-success"> <i class="gd-plus "></i>
                     @csrf</button>
             </div>
+
+
 
             <!-- Eligible Gender -->
             <div class="form-group mb-4">

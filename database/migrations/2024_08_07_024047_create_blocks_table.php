@@ -13,6 +13,7 @@ class CreateBlocksTable extends Migration
     {
         Schema::create('blocks', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('semester_id')->nullable()->constrained('semesters')->onDelete('set null');
             $table->string('name');
             $table->longText('image_data')->default('img/placeholder.jpg');
             $table->string('manager');

@@ -1,3 +1,7 @@
+@php
+    use App\Models\Bed;
+@endphp
+
 <div class="content">
     <div class="py-4 px-3 px-md-4">
 
@@ -97,6 +101,13 @@ $assignedBedsCount = $room->beds->filter(function ($bed) {
                             <small class="form-text text-muted ml-2">Current beds: {{ $room->beds->count() }}</small>
                             <button type="button" class="alert alert-danger btn-sm ml-2" id="remove-{{ $room->id }}"><i
                                     class="gd-trash"></i></button>
+
+                                    @else
+                                    <small class="form-text text-muted ml-2">Current beds: {{ $room->beds->count() }}</small>
+                                    <button type="button" class="btn-sm ml-2" hidden></button>
+
+
+
                             @endif
 
 
@@ -122,27 +133,23 @@ $availableGenders = json_decode($floor->gender, true);
 <label>Specify Gender: </label>
 <div class="btn-group btn-group-toggle" role="group" aria-label="Gender Selection">
     @foreach($availableGenders as $gender)
+
         @php
             $isActive = $currentRoomGender === $gender;
         @endphp
 
 
         @if ($roomHasUsers)
-        {{-- <label class="btn btn-outline-primary gender-btn mx-1 {{ $isActive ? 'active' : '' }}"
+        <label class="btn btn-outline-primary gender-btn mx-1 {{ $isActive ? 'active' : '' }}"
         data-room-id="{{ $room->id }}" data-gender="{{ $gender }}"
         style="pointer-events: none; opacity: 0.6;">
      {{ ucfirst($gender) }}
      <input type="radio" name="rooms[{{ $room->id }}][gender]" value="{{ $gender }}" style="display: none;" {{ $isActive ? 'checked' : '' }} readonly disabled>
 
- </label> --}}
+ </label>
 
 
- <label class="btn btn-outline-primary gender-btn mx-1 {{ $isActive ? 'active' : '' }}"
- data-room-id="{{ $room->id }}" data-gender="{{ $gender }}"
- onclick="selectGender(this)">
-{{ ucfirst($gender) }}
-<input type="radio" name="rooms[{{ $room->id }}][gender]" value="{{ $gender }}" style="display: none;" {{ $isActive ? 'checked' : '' }}>
-</label>
+
 
 
         @else
@@ -186,20 +193,24 @@ $availableGenders = json_decode($floor->gender, true);
                         });
                     </script>
 
-                    <script>
-                        (function() {
-                            var roomId = "{{ $room->id }}";
+<script>
+    (function() {
+        var roomId = "{{ $room->id }}";
+        var removeButton = document.getElementById('remove-' + roomId);
 
-                            document.getElementById('remove-' + roomId).addEventListener('click', function() {
-                                var roomItem = document.getElementById('room-' + roomId);
-                                if (roomItem) {
-                                    roomItem.remove();
-                                    let roomCount = document.querySelectorAll('.room-item:visible').length;
-                                    document.getElementById('numberOfRooms').value = roomCount;
-                                }
-                            });
-                        })();
-                    </script>
+        if (removeButton) {
+            removeButton.addEventListener('click', function() {
+                var roomItem = document.getElementById('room-' + roomId);
+                if (roomItem) {
+                    roomItem.remove();
+                    let roomCount = document.querySelectorAll('.room-item:visible').length;
+                    document.getElementById('numberOfRooms').value = roomCount;
+                }
+            });
+        }
+    })();
+</script>
+
                     <hr>
                 </div>
                 @endforeach
@@ -214,28 +225,73 @@ $availableGenders = json_decode($floor->gender, true);
 
 
 
-            <!-- Eligible Gender -->
-            <div class="form-group mb-4">
-                <label>Eligible Gender</label>
-                <div class="btn-group-toggle d-flex justify-content-between" data-toggle="buttons">
-                    <label
-                        class="btn btn-outline-primary flex-fill mx-1 {{ in_array('male', json_decode($floor->gender, true)) ? 'active' : '' }}"
-                        style="cursor: pointer;">
-                        <input type="checkbox" name="gender[]" value="male"
-                            {{ in_array('male', json_decode($floor->gender, true)) ? 'checked' : '' }}
-                            style="display: none;"> Male
-                    </label>
-                    <label
-                        class="btn btn-outline-primary flex-fill mx-1 {{ in_array('female', json_decode($floor->gender, true)) ? 'active' : '' }}"
-                        style="cursor: pointer;">
-                        <input type="checkbox" name="gender[]" value="female"
-                            {{ in_array('female', json_decode($floor->gender, true)) ? 'checked' : '' }}
-                            style="display: none;"> Female
-                    </label>
-                </div>
-                <small id="genderError" class="form-text text-danger" style="display: none;"></small>
-            </div>
+@php
+    $floorId = $floor->id;
 
+$hasOccupiedBed = Bed::whereHas('room', function ($query) use ($floorId) {
+    $query->where('floor_id', $floorId);
+})->whereHas('user')->exists();
+
+if ($hasOccupiedBed) {
+    echo "At least one bed is currently occupied by a user. Consequently, gender selection has been disabled to prevent both male and female occupants from being assigned to the same room.";
+}
+
+@endphp
+
+
+@if ($hasOccupiedBed)
+<!-- Eligible Gender -->
+<div class="form-group mb-4">
+    <label>Eligible Gender</label>
+    <div class="btn-group-toggle d-flex justify-content-between" data-toggle="buttons">
+        <label
+            class="btn btn-outline-primary flex-fill mx-1 {{ in_array('male', json_decode($floor->gender, true)) ? 'active' : '' }}"
+            style="cursor: not-allowed; opacity: 0.6;" readonly>
+            <input type="checkbox" name="gender[]" value="male"
+                {{ in_array('male', json_decode($floor->gender, true)) ? 'checked' : '' }}
+                style="display: none;" disabled> Male
+            <input type="hidden" name="gender[]" value="male" {{ in_array('male', json_decode($floor->gender, true)) ? 'checked' : '' }}>
+        </label>
+        <label
+            class="btn btn-outline-primary flex-fill mx-1 {{ in_array('female', json_decode($floor->gender, true)) ? 'active' : '' }}"
+            style="cursor: not-allowed; opacity: 0.6;" readonly>
+            <input type="checkbox" name="gender[]" value="female"
+                {{ in_array('female', json_decode($floor->gender, true)) ? 'checked' : '' }}
+                style="display: none;" disabled> Female
+            <input type="hidden" name="gender[]" value="female" {{ in_array('female', json_decode($floor->gender, true)) ? 'checked' : '' }}>
+        </label>
+    </div>
+    <small id="genderError" class="form-text text-danger" style="display: none;"></small>
+</div>
+
+
+
+
+
+@else
+<!-- Eligible Gender -->
+<div class="form-group mb-4">
+    <label>Eligible Gender</label>
+    <div class="btn-group-toggle d-flex justify-content-between" data-toggle="buttons">
+        <label
+            class="btn btn-outline-primary flex-fill mx-1 {{ in_array('male', json_decode($floor->gender, true)) ? 'active' : '' }}"
+            style="cursor: pointer;">
+            <input type="checkbox" name="gender[]" value="male"
+                {{ in_array('male', json_decode($floor->gender, true)) ? 'checked' : '' }}
+                style="display: none;"> Male
+        </label>
+        <label
+            class="btn btn-outline-primary flex-fill mx-1 {{ in_array('female', json_decode($floor->gender, true)) ? 'active' : '' }}"
+            style="cursor: pointer;">
+            <input type="checkbox" name="gender[]" value="female"
+                {{ in_array('female', json_decode($floor->gender, true)) ? 'checked' : '' }}
+                style="display: none;"> Female
+        </label>
+    </div>
+    <small id="genderError" class="form-text text-danger" style="display: none;"></small>
+</div>
+
+@endif
 
 
         </form>
@@ -451,6 +507,9 @@ $('#addRoom').on('click', function() {
         if (!genderChecked) {
             isValid = false;
             $('#genderError').text('Please select at least one gender.').show();
+
+
+
             $('#error-toast .toast-body').text('Please select at least one gender.');
 
 

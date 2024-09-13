@@ -9,6 +9,7 @@ class CreateVisitorCountsTable extends Migration
     {
         Schema::create('visitor_counts', function (Blueprint $table) {
             $table->id();
+
             $table->unsignedInteger('total_visitors')->default(0);
             $table->unsignedInteger('new_visitors')->default(0);
             // Columns for each month's visitor data

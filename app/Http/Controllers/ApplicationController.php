@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Publish;
+use App\Models\Semester;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
+
 
 class ApplicationController extends Controller
 {
@@ -372,4 +375,43 @@ public function applyNo(Request $request)
 
     return response()->json(['success' => true, 'message' => 'Applied No to selected users.']);
 }
+
+
+
+public function showSemester()
+{
+    // Retrieve the current semester format from the database
+    $semester = Semester::first(); // Assuming you have a single record or adjust as needed
+
+    // Set a default format if none exists
+    $semesterFormat = $semester ? $semester->name : 'year_range'; // Adjust default format if needed
+
+    // Pass the format to the view
+    return view('admin.semester', compact('semesterFormat'));
+}
+
+
+
+    public function updateSemesterFormat(Request $request)
+{
+    // Validate incoming request
+    $request->validate([
+        'name' => 'required|string',
+        // No need for start_date and end_date validation
+    ]);
+
+    // Get the selected format and map it to a name
+    $name = $request->input('name');
+
+
+    // Create or update the semester with the determined name
+    Semester::updateOrCreate(
+        ['id' => 1], // Assuming you have a single record or adjust as needed
+        ['name' => $name]
+    );
+
+    return response()->json(['message' => 'Semester format updated successfully']);
+}
+
+
 }

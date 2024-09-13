@@ -32,4 +32,10 @@ class Publish extends Model
         'status' => 'boolean',
 
     ];
+
+        // Relationship with Semester
+        public function semester()
+    {
+        return $this->belongsTo(Semester::class);
+    }
 }

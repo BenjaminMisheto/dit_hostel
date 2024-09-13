@@ -34,7 +34,7 @@
     </li>
     <li class="nav-item">
         <a class="nav-link d-flex align-items-center py-2 px-3 p-xl-4" href="#tabs1-tab3" role="tab" aria-selected="false"
-           data-toggle="tab">Statistics Reports
+           data-toggle="tab">Maintanace Reports
         </a>
     </li>
 </ul>
@@ -208,6 +208,8 @@
             </div>
         </div>
 
+
+
         <!-- Placeholder for PDF viewer and report buttons -->
         <div class="text-center mt-4">
             <span class="btn shadow-sm border" id="printReportNew" style="cursor: pointer"><i class="gd-loop"></i></span>
@@ -247,7 +249,72 @@
 
     </div>
     <div class="tab-pane fade" id="tabs1-tab3" role="tabpanel">
-        <!-- Content for Statistics Reports -->
+        <div class="container-fluid mt-5">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="form-floating">
+                        <label for="blockFilter">Block Filter</label>
+                        <select id="blockFilter" class="form-select wide" aria-label="Select Block">
+                            <option value="" selected>Select a block</option>
+                            @foreach($blocks as $block)
+                                <option value="{{ $block->id }}">{{ $block->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="form-floating">
+                        <label for="floorFilter">Floor Filter</label>
+                        <select id="floorFilter" class="form-select wide" aria-label="Select Floor" disabled>
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="form-floating">
+                        <label for="roomFilter">Room Filter</label>
+                        <select id="roomFilter" class="form-select wide" aria-label="Select Room" disabled>
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Placeholder for PDF viewer and report buttons -->
+<div class="text-center mt-4">
+    <span class="btn shadow-sm border" id="printReportBtn" style="cursor: pointer"><i class="gd-loop"></i></span>
+</div>
+
+<div class="d-flex justify-content-around mt-4" style="display: none;" id="pdfButtonsContainer">
+    <!-- Export as Excel button -->
+    <button id="exportExcelBtn" class="btn btn-outline-success shadow-sm" style="display: none;">
+        <span>Export as Excel</span>
+    </button>
+
+    <!-- Download PDF button -->
+    <button id="downloadPDFBtn" class="btn btn-outline-warning shadow-sm" style="display: none;">
+        <span>Download PDF</span>
+    </button>
+
+    <!-- Print PDF button -->
+    <button id="printPDFBtn" class="btn btn-outline-info shadow-sm" style="display: none;">
+        <span>Print PDF</span>
+    </button>
+</div>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div id="pdfViewerContainer" class="d-flex flex-column justify-content-center align-items-center"></div>
+        </div>
+    </div>
+</div>
+
+
     </div>
 </div>
 
@@ -814,7 +881,7 @@ function restoreButtonText(buttonId, originalText) {
 
         $('#genderSelectNew').html('<option value="">Select Gender</option>').prop('disabled', true);
         $('#courseSelectNew').html('<option value="">Select Course</option>').prop('disabled', true);
-        $('#checkinCheckoutSelectNew').html('<option value="">Select status</option><option value="checkin">Check-in</option><option value="checkout">Check-out</option>').prop('disabled', true);
+        $('#checkinCheckoutSelectNew').html('<option value="">Select status</option><option value="checkin">Check-in</option><option value="checkout">Check-out</option><option value="checkout-bad">Check-out-bad</option><option value="checkout-good">Check-out-good</option>').prop('disabled', true);
 
         if (hostelId) {
             $('#checkinCheckoutSelectNew').prop('disabled', false);
@@ -1023,3 +1090,325 @@ function restoreButtonText(buttonId, originalText) {
 </script>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+    $(document).ready(function () {
+
+        // Function to change button text to "Generating..."
+        function setButtonText(buttonId, text) {
+            var button = document.getElementById(buttonId);
+            if (button) {
+                $('#' + buttonId).text(text); // Use the variable buttonId to create the jQuery selector
+            }
+        }
+
+        function restoreButtonText(buttonId, originalText) {
+            var button = document.getElementById(buttonId);
+            if (button) {
+                // Set a 5-second delay before changing the button text
+                setTimeout(function() {
+                    $('#' + buttonId).text(originalText);
+                }, 5000); // 5000 milliseconds = 5 seconds
+            }
+        }
+
+        // Toast notification function
+        function showToast(message, isError = false) {
+            var toast = isError ? '#error-toast' : '#success-toast';
+            $(toast).find('.toast-body').text(message);
+            $(toast).toast('show');
+        }
+
+        // When a block is selected
+        $('#blockFilter').on('change', function () {
+            var blockId = $(this).val();
+            console.log("Selected block ID: ", blockId);
+
+            // Clear and disable Floor and Room dropdowns initially
+            $('#floorFilter').html('<option value="">Select a floor</option>').prop('disabled', true);
+            $('#roomFilter').html('<option value="">Select a room</option>').prop('disabled', true);
+
+            if (blockId) {
+                console.log("Fetching floors for block ID: ", blockId);
+
+                // Fetch floors for the selected block via AJAX
+                $.ajax({
+                    url: '/get-floors/' + blockId,
+                    type: 'GET',
+                    success: function (data) {
+                        console.log("Floors received: ", data);
+
+                        if (data && data.floors && data.floors.length > 0) {
+                            $('#floorFilter').prop('disabled', false);
+                            $('#floorFilter').append('<option value="all">All Floors</option>');
+                            $.each(data.floors, function (key, floor) {
+                                $('#floorFilter').append('<option value="' + floor.id + '">' + floor.floor_number + '</option>');
+                            });
+
+                            // Update niceSelect
+                            $('#floorFilter').niceSelect('update');
+                        } else {
+                            console.log("No floors found for this block.");
+                            showToast("No floors found for this block.", true);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("Error retrieving floors:", xhr, status, error);
+                        showToast('Error retrieving floors.', true);
+                    }
+                });
+            }
+        });
+
+        // When a floor is selected
+        $('#floorFilter').on('change', function () {
+            var floorId = $(this).val();
+            var blockId = $('#blockFilter').val();
+            console.log("Selected floor ID: ", floorId);
+
+            // Clear and disable the Room dropdown initially
+            $('#roomFilter').html('<option value="">Select a room</option>').prop('disabled', true);
+
+            if (floorId === 'all') {
+                console.log("Fetching all rooms for block ID: ", blockId);
+
+                // Fetch all rooms for all floors in the selected block via AJAX
+                $.ajax({
+                    url: '/get-rooms-for-block/' + blockId,
+                    type: 'GET',
+                    success: function (data) {
+                        console.log("Rooms for all floors received: ", data);
+
+                        if (data && data.rooms && data.rooms.length > 0) {
+                            $('#roomFilter').prop('disabled', false);
+                            $('#roomFilter').append('<option value="all">All Rooms</option>');
+                            $.each(data.rooms, function (key, room) {
+                                $('#roomFilter').append('<option value="' + room.id + '">' + room.room_number + '</option>');
+                            });
+
+                            // Update niceSelect
+                            $('#roomFilter').niceSelect('update');
+                        } else {
+                            console.log("No rooms found for this block.");
+                            showToast("No rooms found for this block.", true);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("Error retrieving rooms:", xhr, status, error);
+                        showToast('Error retrieving rooms.', true);
+                    }
+                });
+            } else if (floorId) {
+                console.log("Fetching rooms for floor ID: ", floorId);
+
+                // Fetch rooms for the selected floor via AJAX
+                $.ajax({
+                    url: '/get-rooms/' + floorId,
+                    type: 'GET',
+                    success: function (data) {
+                        console.log("Rooms received: ", data);
+
+                        if (data && data.rooms && data.rooms.length > 0) {
+                            $('#roomFilter').prop('disabled', false);
+                            $('#roomFilter').append('<option value="all">All Rooms</option>');
+                            $.each(data.rooms, function (key, room) {
+                                $('#roomFilter').append('<option value="' + room.id + '">' + room.room_number + '</option>');
+                            });
+
+                            // Update niceSelect
+                            $('#roomFilter').niceSelect('update');
+                        } else {
+                            console.log("No rooms found for this floor.");
+                            showToast("No rooms found for this floor.", true);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("Error retrieving rooms:", xhr, status, error);
+                        showToast('Error retrieving rooms.', true);
+                    }
+                });
+            }
+        });
+
+        // Handle report generation based on all filters
+        $('#printReportBtn').on('click', function () {
+            var blockId = $('#blockFilter').val();
+            var floorId = $('#floorFilter').val();
+            var roomId = $('#roomFilter').val();
+
+            if (blockId && floorId && roomId) {
+                var url = '/generate-report-print-maintanace?block_id=' + blockId + '&floor_id=' + floorId + '&room_id=' + roomId;
+
+                $('#overlay').css('display', 'flex');
+
+                loadPDF(url).then(() => {
+                    $('#overlay').fadeOut();
+                }).catch((error) => {
+                    console.error("Error loading PDF:", error);
+                    showToast('Error loading the PDF.', true);
+                    $('#overlay').fadeOut();
+                });
+            } else {
+                showToast('Please select all filters before generating the report.', true);
+            }
+        });
+
+        // Function to load PDF
+        function loadPDF(url) {
+            return new Promise((resolve, reject) => {
+                var container = document.getElementById('pdfViewerContainer');
+                container.innerHTML = '';
+
+                var loadingTask = pdfjsLib.getDocument(url);
+                loadingTask.promise.then(function (pdf) {
+                    var totalPages = pdf.numPages;
+                    var pagesPromises = [];
+
+                    for (var pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
+                        pagesPromises.push(
+                            pdf.getPage(pageNumber).then(function (page) {
+                                var pageDiv = document.createElement('div');
+                                pageDiv.classList.add('pdf-page');
+
+                                var canvas = document.createElement('canvas');
+                                canvas.classList.add('pdf-canvas');
+                                var context = canvas.getContext('2d');
+                                var viewport = page.getViewport({ scale: 1.5 });
+
+                                canvas.height = viewport.height;
+                                canvas.width = viewport.width;
+                                pageDiv.appendChild(canvas);
+                                container.appendChild(pageDiv);
+
+                                var renderContext = {
+                                    canvasContext: context,
+                                    viewport: viewport
+                                };
+
+                                return page.render(renderContext).promise;
+                            })
+                        );
+                    }
+
+                    Promise.all(pagesPromises).then(function () {
+                        console.log('PDF rendered successfully.');
+
+                        document.getElementById('exportExcelBtn').style.display = 'inline-block';
+                        document.getElementById('downloadPDFBtn').style.display = 'inline-block';
+                        document.getElementById('printPDFBtn').style.display = 'inline-block';
+
+                        resolve();
+                    }).catch(function (error) {
+                        console.error('Error rendering pages:', error);
+                        reject(error);
+                    });
+                }).catch(function (error) {
+                    console.error('Error loading PDF document:', error);
+                    reject(error);
+                });
+            });
+        }
+
+        var printButton = document.getElementById('printPDFBtn');
+        var downloadButton = document.getElementById('downloadPDFBtn');
+        var exportExcelButton = document.getElementById('exportExcelBtn');
+
+        if (printButton) {
+            printButton.addEventListener('click', function () {
+                setButtonText('printPDFBtn', 'Printing...');
+
+                var blockId = $('#blockFilter').val();
+                var floorId = $('#floorFilter').val();
+                var roomId = $('#roomFilter').val();
+
+                if (blockId && floorId && roomId) {
+                    // URL to generate the PDF report
+                    var url = '/generate-report-print-maintanace_print?block_id=' + blockId + '&floor_id=' + floorId + '&room_id=' + roomId;
+
+                    // Open the PDF in a new tab
+                    var printWindow = window.open(url, '_blank');
+
+                    // Wait for the new tab to load the PDF before triggering print
+                    printWindow.onload = function () {
+                        printWindow.focus();  // Ensure the new tab is focused
+                        printWindow.print();  // Trigger the print dialog
+                    };
+
+                    restoreButtonText('printPDFBtn', 'Print PDF');
+                } else {
+                    alert('Please select all filters before generating the report.');
+                    restoreButtonText('printPDFBtn', 'Print PDF');
+                }
+            });
+        }
+
+
+
+        if (downloadButton) {
+            downloadButton.addEventListener('click', function () {
+                setButtonText('downloadPDFBtn', 'Downloading...');
+
+                var blockId = $('#blockFilter').val();
+                var floorId = $('#floorFilter').val();
+                var roomId = $('#roomFilter').val();
+
+                if (blockId && floorId && roomId) {
+                    // URL to generate and download the PDF report
+                    var url = '/generate-report-print-maintanace?block_id=' + blockId + '&floor_id=' + floorId + '&room_id=' + roomId;
+
+                    window.location.href = url;
+                    restoreButtonText('downloadPDFBtn', 'Download PDF');
+                } else {
+                    alert('Please select all filters before generating the report.');
+                    restoreButtonText('downloadPDFBtn', 'Download PDF');
+                }
+            });
+        }
+
+
+
+
+
+        if (exportExcelButton) {
+            exportExcelButton.addEventListener('click', function () {
+                setButtonText('exportExcelBtn', 'Generating...');
+
+                var blockId = $('#blockFilter').val();
+                var floorId = $('#floorFilter').val();
+                var roomId = $('#roomFilter').val();
+
+                if (blockId && floorId && roomId) {
+                    // URL to generate and export the Excel report
+                    var url = '/generate-report-print-maintanace_print_exel?block_id=' + blockId + '&floor_id=' + floorId + '&room_id=' + roomId;
+                    window.location.href = url;
+
+
+
+                        restoreButtonText('exportExcelBtn', 'Export Excel');
+                } else {
+                    alert('Please select all filters before generating the report.');
+                    restoreButtonText('exportExcelBtn', 'Export Excel');
+                }
+            });
+        }
+    });
+</script>

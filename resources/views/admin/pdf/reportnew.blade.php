@@ -112,7 +112,7 @@
 
 
     <!-- Index Section -->
-    <div class="index-section">
+    {{-- <div class="index-section">
         <h2>Details</h2>
         <ul>
             <li><p><strong>Block Name:</strong> {{ $block->name ?? 'Not Available' }}</p></li>
@@ -120,11 +120,11 @@
             <li><p><strong>Block Location:</strong> {{ $block->location ?? 'Not Available' }}</p></li>
             <li><p><strong>Date:</strong> {{ $date }}</p></li>
         </ul>
-    </div>
+    </div> --}}
 
     <!-- Report Section -->
     <div id="report" class="table-container">
-        <h2>Application</h2>
+        <h2>{{$checkinCheckout}} list</h2>
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
@@ -160,7 +160,7 @@
                                         <table class="table table-bordered table-striped">
                                             <thead>
                                                 <tr>
-                                                    <th>Item</th>
+                                                    <th>Items</th>
                                                     <th>Condition</th>
                                                 </tr>
                                             </thead>
@@ -195,7 +195,7 @@
                                     <table class="table table-bordered table-striped">
                                         <thead>
                                             <tr>
-                                                <th>Item</th>
+                                                <th>Items</th>
                                                 <th>Condition</th>
                                             </tr>
                                         </thead>

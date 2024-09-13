@@ -15,6 +15,7 @@ class CreateRequirementItemConfirmationsTable extends Migration
     {
         Schema::create('requirement_item_confirmations', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('semester_id')->nullable()->constrained('semesters')->onDelete('set null');
             $table->unsignedBigInteger('user_id');
             $table->json('items_to_bring_names')->nullable();
             $table->json('checkout_items_names')->nullable();

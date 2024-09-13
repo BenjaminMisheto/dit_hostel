@@ -34,14 +34,33 @@ use App\Models\User;
                     <input type="hidden" id="floorId" value="{{ $room->floor_id }}">
                     <input type="hidden" id="roomId" value="{{ $room->id }}">
                     @if($room->users->isEmpty())
-                        <p>No students assigned to this room.</p>
+
+<div class="d-flex justify-content-center align-items-center vh-50">
+    <div class="col-md-6">
+        <!-- Card -->
+        <div class="card h-100 alert alert-danger ">
+
+            <div class="card-body pt-0">
+                <div class="text-center">
+
+                    <p>No students assigned to this room.</p>
+                </div>
+            </div>
+        </div>
+        <!-- End Card -->
+    </div>
+</div>
+
+
+
+
                     @else
                         <div class="row">
                             @foreach($room->users as $student)
                                 <div class="col-md-4 mb-4">
                                     <div class="profile-card p-4 border rounded">
                                         <div class="text-center mb-2">
-                                            <img class="profile-image img-fluid rounded-circle border border-light"
+                                            <img class="profile-image img-fluid rounded-circle border "
                                                 src="{{ $student->profile_photo_path ?? 'img/placeholder.jpg' }}"
                                                 alt="Profile Image" style="max-width: 120px;">
                                         </div>
@@ -54,7 +73,7 @@ use App\Models\User;
                                             <input type="text"
                                             class="form-control {{ $student->checkin == 2 ? 'text-success' : 'text-danger' }}"
                                             disabled
-                                            value="{{ $student->checkin == 2 ? 'Official Student' : 'Not assigned' }}">
+                                            value="{{ $student->checkin == 2 ? 'Official Student' : 'Not Official' }}">
 
                                             <button class="btn btn-sm shadow-sm mt-3"
                                             onclick="floorAction('bed', {{ $student->bed->id }})">
@@ -76,8 +95,8 @@ use App\Models\User;
 
                     <!-- Check-Out Items Management -->
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <div class="container-fluid">
+                        <div class="col-md-12 mb-3">
+                            <div class="container">
                                 <h5 class="mb-4">Manage Check-Out Items</h5>
                                 <input type="hidden" id="blockId" value="{{ $block->id }}">
                                 <div id="itemsContainer" class="row">

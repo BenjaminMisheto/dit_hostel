@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
         // Fetch all beds and their related data (room, floor, block)
         $beds = Bed::with(['room.floor.block'])
             ->inRandomOrder()
-            // ->limit(200)
+             ->limit(50)
             ->get();
 
         // Populate the user table with users who have already applied for beds
@@ -49,7 +49,8 @@ class UserSeeder extends Seeder
                 'email' => $faker->unique()->safeEmail, // Ensure the email is unique
                 'password' => bcrypt('password'), // Or use a hash that you prefer
                 'profile_photo_path' => 'img/' . (($bed->id % 15) + 1) . '.jpg', // Cycle image index from 1 to 15
-                 'expiration_date' => $faker->dateTimeBetween('now', '+1 minute'),
+                'expiration_date' => $faker->boolean ? $faker->dateTimeBetween('now', 'now') : $faker->dateTimeBetween('now', '+1 month'),
+
 
                 'created_at' => now(),
                 'updated_at' => now(),

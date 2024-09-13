@@ -34,5 +34,10 @@ public function sliderData()
 {
     return $this->hasMany(SliderData::class);
 }
+    // Relationship with Semester
+    public function semester()
+    {
+        return $this->belongsTo(Semester::class);
+    }
 
 }

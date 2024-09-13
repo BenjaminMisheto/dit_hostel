@@ -38,9 +38,9 @@
             @if($blocks->isEmpty())
             <div class="col-12">
                 <!-- Card -->
-                <div class="card">
+                <div class="card alert alert-warning">
                     <div class="card-body">
-                        <div class="text-center alert alert-warning">
+                        <div class="text-center ">
                             <small class="card-title">No block available</small>
                         </div>
                     </div>

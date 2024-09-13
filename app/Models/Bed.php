@@ -40,4 +40,9 @@ class Bed extends Model
     {
         return $this->hasOne(User::class, 'bed_id');
     }
+        // Relationship with Semester
+        public function semester()
+    {
+        return $this->belongsTo(Semester::class);
+    }
 }

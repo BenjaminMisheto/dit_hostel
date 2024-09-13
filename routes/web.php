@@ -279,6 +279,14 @@ Route::get('/get-payment-options/{roomId}', [AjaxController::class, 'getPaymentO
     Route::get('/generate-report-print-new', [ReportController::class, 'exportPDFPrintnew']);
 
 
+
+    Route::get('/generate-report-print-maintanace', [ReportController::class, 'exportPDFPrintnewmaintanace']);
+    Route::get('/generate-report-print-maintanace_print', [ReportController::class, 'exportPDFPrintnewmaintanaceprint']);
+    Route::get('/generate-report-print-maintanace_print_exel', [ReportController::class, 'exportPDFPrintnewmaintanaceprintexel']);
+
+
+
+
     Route::get('/students/search', [StudentfindController::class, 'search']);
 
     Route::post('/update-bed/{id}', [BedController::class, 'updateBed']);
@@ -311,10 +319,9 @@ route::post('/save-check-out-items', [RoomController::class, 'saveCheckOutItems'
 route::post('/save-check-out-items-room', [RoomController::class, 'saveCheckOutItemsroom'])->name('aveCheckOutItemsroom');
 
 
+Route::get('admin.semester', [ApplicationController::class, 'showSemester'])->name('admin.semester');
 
-
-
-
+route::post('/admin/update-semester-format', [ApplicationController::class, 'updateSemesterFormat'])->name('admin.updateSemesterFormat');
 });
 
 Route::post('/admin.logout', function () {

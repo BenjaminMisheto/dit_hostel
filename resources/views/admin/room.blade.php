@@ -821,8 +821,8 @@ use App\Models\User;
 
 
                         <!-- Manage Requirements Section -->
-                        <div class="col-md-6 mb-3">
-                            <div class="container-fluid">
+                        <div class="col-md-12 mb-3">
+                            <div class="container">
                                 <h5 class="mb-4">Manage Requirements</h5>
                                 <input type="hidden" id="blockId" value="{{ $block->id }}">
 

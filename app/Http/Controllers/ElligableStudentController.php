@@ -272,7 +272,8 @@ public function searchCheckout(Request $request)
                         <th>Room</th>
                         <th>Bed</th>
                         <th>Payment</th>
-                        <th>Out</th>
+                        <th>Status</th>
+                        <th>Action</th>
                     </tr>
                   </thead>';
         $html .= '<tbody>';
@@ -287,14 +288,23 @@ public function searchCheckout(Request $request)
            . '<td>' . (optional($student->bed->floor)->floor_number ?? 'N/A') . '</td>'
            . '<td>' . (optional($student->bed->room)->room_number ?? 'N/A') . '</td>'
            . '<td>' . (optional($student->bed)->bed_number ?? 'N/A') . '</td>'
-           . '<td>' . (!empty($student->payment_status) ? 'Paid' : 'Not Paid') . '</td>'
-           . '<td>'
+           . '<td>' . (!empty($student->payment_status) ? 'Paid' : 'Not Paid') . '</td>';
+
+    // Handling checkout status
+    if ($student->checkout === 1) {
+        $html .= '<td><span class="text-success">Check-Out</span></td>';
+    } else {
+        $html .= '<td><span class="text-danger">Waiting</span></td>';
+    }
+
+    $html .= '<td>'
            . '<button class="btn btn-sm shadow-sm" onclick="checkoutAction(' . $student->bed->id . ')">'
            . '<i class="gd-arrow-top-right"></i>'
            . '</button>'
            . '</td>'
            . '</tr>';
 }
+
 
 
 

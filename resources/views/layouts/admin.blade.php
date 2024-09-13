@@ -377,6 +377,27 @@
                             <span class="side-nav-fadeout-on-closed media-body text-dark">Settings</span>
                         </a>
                     </li>
+
+                    <li class="side-nav-menu-item" id="nav_semester">
+                        <a class="side-nav-menu-link media align-items-center" href="#" onclick="semester()">
+                            <span class="side-nav-menu-icon d-flex mr-3">
+                                <i class="gd-calendar"></i> <!-- Changed icon to a calendar or similar for semester -->
+                            </span>
+                            <span class="side-nav-fadeout-on-closed media-body text-dark">Semester</span>
+                        </a>
+                    </li>
+
+
+
+
+
+
+
+
+
+
+
+
                     <!-- End Settings -->
 
                     <!-- Static -->
@@ -435,6 +456,7 @@ function checkin(start = 1, end = 10){
         "#nav_setting",
         "#nav_report",
         "#nav_checkout",
+        '#nav_semester',
 
     ];
 
@@ -502,6 +524,7 @@ $('.pagination a').on('click', function(event) {
         "#nav_setting",
         "#nav_report",
         "#nav_checkin",
+        '#nav_semester',
 
     ];
 
@@ -564,6 +587,44 @@ $('.pagination a').on('click', function(event) {
 
 
 
+function semester(){
+                const selectors = [
+                    "#nav_hostel",
+        "#nav_aplication",
+        "#nav_elligable",
+        "#nav_result",
+        "#nav_control",
+        "#nav_profile",
+        "#nav_setting",
+        "#nav_checkout",
+        "#nav_checkin",
+        '#nav_report',
+
+
+    ];
+
+    selectors.forEach(function(selector) {
+        $(selector).removeClass("active");
+    });
+    $("#nav_semester").addClass("active");
+                $("#dash").html(
+                    '<div class="spinner-container">' +
+                    '<div class="black show d-flex align-items-center justify-content-center">' +
+                    '<div class="spinner-border lik" style="width: 3rem; height: 3rem;" role="status">' +
+                    '<span class="sr-only">Loading...</span>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>'
+                );
+
+                $("#dash").load("{{ route('admin.semester') }}", (response, status, xhr) => {
+                    if (status === "error") {
+                        const msg = `Sorry, but there was an error: ${xhr.status} ${xhr.statusText}`;
+                        $("#error").html(msg);
+                    }
+                });
+            }
+
 
 
 
@@ -589,6 +650,7 @@ function report(){
         "#nav_setting",
         "#nav_checkout",
         "#nav_checkin",
+        '#nav_semester',
 
     ];
 
@@ -630,6 +692,7 @@ function report(){
         "#nav_report",
         "#nav_checkout",
         "#nav_checkin",
+        '#nav_semester',
     ];
 
     selectors.forEach(function(selector) {
@@ -666,6 +729,7 @@ function report(){
         "#nav_report",
         "#nav_checkout",
         "#nav_checkin",
+        '#nav_semester',
     ];
 
     selectors.forEach(function(selector) {
@@ -702,6 +766,7 @@ function hostel() {
         "#nav_report",
         "#nav_checkout",
         "#nav_checkin",
+        '#nav_semester',
     ];
 
     selectors.forEach(function(selector) {
@@ -737,6 +802,7 @@ function aplication(start = 1, end = 100) {
         "#nav_report",
         "#nav_checkout",
         "#nav_checkin",
+        '#nav_semester',
     ];
 
     selectors.forEach(function(selector) {
@@ -805,6 +871,7 @@ function room(blockId) {
         "#nav_report",
         "#nav_checkout",
         "#nav_checkin",
+        '#nav_semester',
     ];
 
     selectors.forEach(function(selector) {
@@ -848,6 +915,7 @@ function roomitem(RoomId) {
         "#nav_report",
         "#nav_checkout",
         "#nav_checkin",
+        '#nav_semester',
     ];
 
     selectors.forEach(function(selector) {
@@ -892,6 +960,7 @@ function floorAction(action, floorId) {
         "#nav_report",
         "#nav_checkout",
         "#nav_checkin",
+        '#nav_semester',
     ];
 
     selectors.forEach(function(selector) {
@@ -948,6 +1017,7 @@ const selectors = [
     "#nav_report",
     "#nav_checkout",
     "#nav_checkin",
+    '#nav_semester',
 ];
 
 selectors.forEach(function(selector) {
@@ -1017,6 +1087,7 @@ function control() {
         "#nav_report",
         "#nav_checkout",
         "#nav_checkin",
+        '#nav_semester',
     ];
 
     selectors.forEach(function(selector) {
@@ -1057,6 +1128,7 @@ function control() {
         "#nav_report",
         "#nav_checkout",
         "#nav_checkin",
+        '#nav_semester',
     ];
 
     selectors.forEach(function(selector) {

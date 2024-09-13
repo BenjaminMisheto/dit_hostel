@@ -35,4 +35,9 @@ class CheckOutItem extends Model
     {
         return $this->belongsTo(Room::class);
     }
+        // Relationship with Semester
+        public function semester()
+    {
+        return $this->belongsTo(Semester::class);
+    }
 }

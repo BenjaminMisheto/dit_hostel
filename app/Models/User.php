@@ -90,6 +90,12 @@ public function RequirementItemConfirmation()
     return $this->hasOne(RequirementItemConfirmation::class);
 }
 
+    // Relationship with Semester
+    public function semester()
+    {
+        return $this->belongsTo(Semester::class);
+    }
+
 
 
 }

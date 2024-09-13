@@ -31,4 +31,9 @@ class Room extends Model
     {
         return $this->hasMany(User::class);
     }
+        // Relationship with Semester
+        public function semester()
+    {
+        return $this->belongsTo(Semester::class);
+    }
 }

@@ -10,6 +10,7 @@ class CreateViewCountsTable extends Migration
     {
         Schema::create('view_counts', function (Blueprint $table) {
             $table->id();
+
             $table->unsignedInteger('total_views')->default(0);
             $table->unsignedInteger('monthly_views')->default(0);
             $table->unsignedInteger('views_january')->default(0);

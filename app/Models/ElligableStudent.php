@@ -19,4 +19,10 @@ class ElligableStudent extends Model
         'nationality',
         'course',
     ];
+
+        // Relationship with Semester
+        public function semester()
+    {
+        return $this->belongsTo(Semester::class);
+    }
 }

@@ -4,45 +4,59 @@
             <h3 class="mb-0">Semester Settings</h3>
         </div>
 
-        <!-- Semester Format Selection -->
-        <div class="p-4 container">
-            <form id="semesterFormatForm" class="row g-3">
-                <div class="form-group col-md-12">
-                    <label for="semesterFormat" class="form-label">Select Semester Format</label>
-                    <select id="semesterFormat" class="form-select wide" name="format">
-                        <option value="" disabled selected>Select a format</option>
-                        <option value="academic_year_2023_2024" {{ $semesterFormat == 'academic_year_2023_2024' ? 'selected' : '' }}>
-                            2023/2024
-                        </option>
-                        <option value="semester_1_2024_2025" {{ $semesterFormat == 'semester_1_2024_2025' ? 'selected' : '' }}>
-                            Semester 1 2024/2025
-                        </option>
-                        <option value="academic_year_semester_1_2024" {{ $semesterFormat == 'academic_year_semester_1_2024' ? 'selected' : '' }}>
-                            Academic Year 2024 - Semester 1
-                        </option>
-                        <!-- Add more formats as needed -->
-                    </select>
-                </div>
-
-                <div class="form-group col-md-12" id="semesterStartGroup" style="display: none;">
-                    <label for="semesterStart" class="form-label">Select Starting Semester</label>
-                    <select id="semesterStart" class="form-select wide" name="start">
-                        <!-- Options will be dynamically added here -->
-                    </select>
-
-                    <div class="mt-5" id="manualEntryGroup" style="display: none;">
-                        <label for="manualEntry" class="form-label">Or Enter Manually</label>
-                        <input type="text" id="manualEntry" class="form-control" name="manual_entry" placeholder="Enter starting semester">
+        <!-- Check if there are existing semesters -->
+        @if($semesters->isNotEmpty())
+            <!-- Display existing semesters as a list -->
+            <div class="p-4 container">
+                <h4>Existing Semesters</h4>
+                <ul class="list-group">
+                    @foreach($semesters as $semester)
+                        <li class="list-group-item">{{ $semester->name }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @else
+            <!-- Display Semester Format Selection Form -->
+            <div class="p-4 container">
+                <form id="semesterFormatForm" class="row g-3">
+                    <div class="form-group col-md-12">
+                        <label for="semesterFormat" class="form-label">Select Semester Format</label>
+                        <select id="semesterFormat" class="form-select wide" name="format">
+                            <option value="" disabled selected>Select a format</option>
+                            <option value="academic_year_2023_2024" {{ $semesterFormat == 'academic_year_2023_2024' ? 'selected' : '' }}>
+                                2023/2024
+                            </option>
+                            <option value="semester_1_2024_2025" {{ $semesterFormat == 'semester_1_2024_2025' ? 'selected' : '' }}>
+                                Semester 1 2024/2025
+                            </option>
+                            <option value="academic_year_semester_1_2024" {{ $semesterFormat == 'academic_year_semester_1_2024' ? 'selected' : '' }}>
+                                Academic Year 2024 - Semester 1
+                            </option>
+                            <!-- Add more formats as needed -->
+                        </select>
                     </div>
-                </div>
 
-                <div class="col-md-12" id="submitButtonGroup" style="display: none;">
-                    <button type="submit" class="btn btn-outline-primary">Start Semester</button>
-                </div>
-            </form>
-        </div>
+                    <div class="form-group col-md-12" id="semesterStartGroup" style="display: none;">
+                        <label for="semesterStart" class="form-label">Select Starting Semester</label>
+                        <select id="semesterStart" class="form-select wide" name="start">
+                            <!-- Options will be dynamically added here -->
+                        </select>
+
+                        <div class="mt-5" id="manualEntryGroup" style="display: none;">
+                            <label for="manualEntry" class="form-label">Or Enter Manually</label>
+                            <input type="text" id="manualEntry" class="form-control" name="manual_entry" placeholder="Enter starting semester">
+                        </div>
+                    </div>
+
+                    <div class="col-md-12" id="submitButtonGroup" style="display: none;">
+                        <button type="submit" class="btn btn-outline-primary">Start Semester</button>
+                    </div>
+                </form>
+            </div>
+        @endif
     </div>
 </div>
+
 <script>
     $(document).ready(function() {
         // Initialize Nice Select

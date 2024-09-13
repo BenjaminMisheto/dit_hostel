@@ -380,14 +380,13 @@ public function applyNo(Request $request)
 
 public function showSemester()
 {
-    // Retrieve the current semester format from the database
-    $semester = Semester::first(); // Assuming you have a single record or adjust as needed
+    // Retrieve the current format from the cache or database
+    $semesterFormat = Cache::get('semester_format', 'year_range'); // Default format
 
-    // Set a default format if none exists
-    $semesterFormat = $semester ? $semester->name : 'year_range'; // Adjust default format if needed
+    // Retrieve existing semesters from the database
+    $semesters = Semester::all();
 
-    // Pass the format to the view
-    return view('admin.semester', compact('semesterFormat'));
+    return view('admin.semester', compact('semesterFormat', 'semesters'));
 }
 
 

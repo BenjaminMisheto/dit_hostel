@@ -1,1016 +1,1332 @@
-<style>
-    .pdf-page {
-    margin-bottom: 20px; /* Space between pages */
-    border: 1px solid #ccc; /* Optional: Border to make pages more distinct */
-    padding: 10px; /* Optional: Padding to create a paper-like effect */
-    background-color: #fff; /* Optional: White background for pages */
-    width: 100%; /* Make the canvas take the full width of its container */
-    overflow: hidden; /* Hide overflow to prevent scrollbars */
+<?php
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Log; // Import Log facade
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Block;
+use App\Models\Floor;
+use App\Models\Room;
+use App\Models\Bed;
+use App\Models\Publish;
+use App\Models\SliderData;
+use Illuminate\Support\Facades\DB;
+use App\Models\CheckOutItem;
+use App\Models\Requirement;
+use App\Models\AdminCheckout;
+use App\Models\semester;
+
+use App\Models\RequirementItemConfirmation;
+use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf; // Ensure you have Barryvdh\DomPDF installed
+
+
+class AjaxController extends Controller
+{
+    public function saveData(Request $request)
+    {
+        try {
+            // Validate the request data
+            $validatedData = $request->validate([
+                'registration_number' => 'required|string',
+                'student_name' => 'required|string',
+                'payment_status' => 'required|string',
+            ]);
+
+            // Check if the user is authenticated
+            if (!auth()->check()) {
+                return response()->json(['message' => 'User is not authenticated'], 401);
+            }
+
+            // Update the record for the authenticated user
+            $affectedRows = User::where('id', auth()->id())
+                ->update([
+                    'registration_number' => $validatedData['registration_number'],
+                    'payment_status' => $validatedData['payment_status'],
+                ]);
+
+            // Return the affected rows count and the updated record
+            return response()->json(['message' => 'Data saved successfully']);
+
+        } catch (QueryException $e) {
+            // Log the error message and return a 500 status code
+            Log::error('QueryException occurred while saving data: ' . $e->getMessage());
+            return response()->json(['message' => 'An error occurred while saving data'], 500);
+        } catch (\Exception $e) {
+            // Log the error message and return a 500 status code
+            Log::error('Exception occurred while saving data: ' . $e->getMessage());
+            return response()->json(['message' => 'An error occurred while saving data'], 500);
+        }
+    }
+
+    public function hostel_sent(Request $request)
+    {
+        try {
+            // Validate the request data
+            $validatedData = $request->validate([
+                'data' => 'required|integer',
+            ]);
+
+            // Check if the user is authenticated
+            if (!auth()->check()) {
+                return response()->json(['message' => 'User is not authenticated'], 401);
+            }
+
+            // Update the record for the authenticated user
+            $affectedRows = User::where('id', auth()->id())
+                ->update([
+                    'hostel' => $validatedData['data'],
+                ]);
+
+            // Return the affected rows count and the updated record
+            return response()->json(['message' => 'Data saved successfully']);
+
+        } catch (QueryException $e) {
+            // Log the error message and return a 500 status code
+            Log::error('QueryException occurred while saving data: ' . $e->getMessage());
+            return response()->json(['message' => 'An error occurred while saving data'], 500);
+        } catch (\Exception $e) {
+            // Log the error message and return a 500 status code
+            Log::error('Exception occurred while saving data: ' . $e->getMessage());
+            return response()->json(['message' => 'An error occurred while saving data'], 500);
+        }
+    }
+
+    public function room_select(Request $request)
+    {
+        try {
+            // Validate the request data
+            $validatedData = $request->validate([
+                'data' => 'required|string',
+            ]);
+
+            // Check if the user is authenticated
+            if (!auth()->check()) {
+                return response()->json(['message' => 'User is not authenticated'], 401);
+            }
+
+            // Update the record for the authenticated user
+            $affectedRows = User::where('id', auth()->id())
+                ->update([
+                    'room' => $validatedData['data'],
+                ]);
+
+            // Return the affected rows count and the updated record
+            return response()->json(['message' => 'Data saved successfully']);
+
+        } catch (QueryException $e) {
+            // Log the error message and return a 500 status code
+            Log::error('QueryException occurred while saving data: ' . $e->getMessage());
+            return response()->json(['message' => 'An error occurred while saving data'], 500);
+        } catch (\Exception $e) {
+            // Log the error message and return a 500 status code
+            Log::error('Exception occurred while saving data: ' . $e->getMessage());
+            return response()->json(['message' => 'An error occurred while saving data'], 500);
+        }
+    }
+
+
+
+        public function admin_login(Request $request)
+    {
+
+
+        // Validate the input data
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        // Check if the input data fails validation
+        if ($validator->fails()) {
+            return redirect()->route('admin')
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        Auth::guard('web')->logout();
+
+    // Attempt admin login
+    if (Auth::guard('admin')->attempt($request->only('email', 'password'), $request->has('remember'))) {
+
+    $semester = Semester::where('is_closed', '!=', 1)
+                    ->latest() // Order by the most recent
+                    ->first(); // Get the first result
+
+        // Store the semester name in the session
+       session(['semester' => $semester->name ?? '']);
+       session(['semester_id' => $semester->id ?? '']);
+
+        return redirect()->route('admin.dashboard');
+    }
+
+
+    return redirect()->route('admin')
+    ->withErrors(['error' => 'These credentials do not match our records.'])
+    ->withInput($request->only('email', 'remember'));
+
+    }
+
+
+
+
+
+    public function hostel_create(Request $request)
+{
+    // Validate the incoming request
+    $validated = $request->validate([
+        'blockName' => 'required|string',
+        'blocklocation' => 'required|string',
+        'blockManager' => 'required|string',
+        'numFloors' => 'required|integer|min:1',
+        'blockPrice' => 'required|numeric',
+        'eligibility' => 'required|array',
+        'floors' => 'required|array',
+        'floors.*.number_of_rooms' => 'required|integer|min:1',
+        'floors.*.rooms' => 'required|array',
+        'floors.*.rooms.*.bedCount' => 'required|integer|min:1',
+        'floors.*.gender' => 'nullable|array',
+        'floors.*.eligibility' => 'nullable|array',
+        'image' => 'nullable|string' // Validate that image is a base64 string
+    ]);
+
+    // Check if the user is authenticated
+    if (!auth('admin')->check()) {
+        return response()->json(['message' => 'User is not authenticated'], 401);
+    }
+
+    try {
+        // Create the block
+        $block = Block::create([
+            'name' => $request->blockName,
+            'location' => $request->blocklocation,
+            'manager' => $request->blockManager,
+            'number_of_floors' => $request->numFloors,
+            'price' => $request->blockPrice,
+            'semester_id'=> session('semester_id'),
+
+
+
+
+        ]);
+
+        // Handle image upload if present and valid
+        if ($request->has('image') && !empty($request->input('image'))) {
+            $imageData = $request->input('image');
+            // Validate image data format
+            if (preg_match('/^data:image\/(png|jpg|jpeg);base64,/', $imageData)) {
+                // Remove the data URL scheme part
+                $imageData = substr($imageData, strpos($imageData, ',') + 1);
+                $imageData = base64_decode($imageData);
+                if ($imageData !== false) {
+                    // Store the base64 string in the database
+                    $block->image_data = $request->input('image');
+                    $block->save();
+                }
+            }
+        }
+
+        // Retrieve the maximum existing floor number in the block
+        $maxFloorNumber = $block->floors()->max('floor_number') ?: 0;
+        $nextFloorNumber = $maxFloorNumber + 1;
+
+        // Initialize room counter
+        $roomCounter = 1;
+
+        // Create and save floors associated with the block
+        foreach ($request->floors as $floorData) {
+            // Encode gender and eligibility as JSON if present
+            $gender = isset($floorData['gender']) ? json_encode($floorData['gender']) : null;
+            $eligibility = isset($floorData['eligibility']) ? json_encode($floorData['eligibility']) : null;
+
+            // Create a new floor with a sequential floor number
+            $floor = new Floor([
+                'floor_number' => $nextFloorNumber, // Assign the next sequential floor number
+                'number_of_rooms' => $floorData['number_of_rooms'],
+                'gender' => $gender,
+                'eligibility' => $eligibility,
+                'semester_id'=> session('semester_id'),
+            ]);
+
+            $block->floors()->save($floor);
+
+            // Increment the next floor number for the next floor
+            $nextFloorNumber++;
+
+            // Process rooms for the current floor
+            foreach ($floorData['rooms'] as $roomData) {
+                // Check if gender is set and is an array
+                $genderArray = $floorData['gender'] ?? []; // Default to an empty array if not set
+
+                // Check if the array contains more than one element
+                if (count($genderArray) > 1) {
+                    $genderString = null;
+                } else {
+                    // Convert the array to a string if it contains only one element
+                    $genderString = implode(', ', $genderArray);
+                }
+
+                // Create a room for the current floor
+                $room = new Room([
+                    'room_number' => $roomCounter,
+                    'gender' => $genderString, // Use the processed gender string
+                    'semester_id'=> session('semester_id'),
+                ]);
+
+                // Save the room to the current floor
+                $floor->rooms()->save($room);
+
+                // Create beds for this room
+                for ($i = 1; $i <= $roomData['bedCount']; $i++) {
+                    Bed::create([
+                        'room_id' => $room->id,
+                        'bed_number' => $i,
+                        'semester_id'=> session('semester_id'),
+                    ]);
+                }
+
+                $roomCounter++; // Increment room number
+            }
+        }
+
+        // Return a success response
+        return response()->json([
+            'success' => true,
+            'message' => 'Block, floor, room, and bed details saved successfully!',
+            'block' => $block,
+            'floors' => $block->floors,
+        ]);
+
+    } catch (\Exception $e) {
+        // Log the error details to the Laravel log file
+        \Log::error('Error occurred while saving block, floor, room, and bed details:', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+
+        // Return an error response
+        return response()->json([
+            'success' => false,
+            'message' => 'An error occurred while saving the block, floor, room, and bed details. Please try again.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
 }
 
-.pdf-canvas {
-    width: 100% !important; /* Force the canvas to fit the width of its container */
+
+
+
+
+public function updatePublishStatus(Request $request)
+{
+    // Try to find the Publish record by ID (adjust the ID as needed)
+    $publish = Publish::find(1); // You may adjust this ID based on your logic
+
+    if (!$publish) {
+        // If not found, create a new record
+        $publish = new Publish();
+    }
+
+    // Update the status
+    $publish->status = $request->input('status');
+    $publish->save();
+
+    // Fetch the expiration days from the publishes table
+    $publish = Publish::first(); // Adjust if needed to fetch the specific record
+    if ($publish) {
+        // Convert the stored expiration_date to an integer representing the number of days
+        $daysToAdd = (int) $publish->expiration_date;
+
+        // Calculate the new expiration date by adding the days to the current time
+        $newExpirationDate = Carbon::now()->addDays($daysToAdd);
+
+        // Update the expiration_date for users where expiration_date is null
+        User::whereNull('expiration_date')->update(['expiration_date' => $newExpirationDate]);
+    } else {
+        return response()->json(['message' => 'Publish record not found.'], 404);
+    }
+
+    return response()->json(['success' => true, 'message' => 'Publish status and user expiration dates updated successfully.']);
 }
-</style>
 
-<script>      $('select').niceSelect();</script>
-<div class="content">
-    <div class="py-4 px-3 px-md-4">
-        <div class="mb-3 mb-md-4 d-flex justify-content-between align-items-center">
-            <h3 class="mb-0">Reports</h3>
-        </div>
 
 
-<ul class="nav nav-v2 nav-primary nav-justified d-block d-xl-flex container" role="tablist">
-    <li class="nav-item">
-        <a class="nav-link d-flex align-items-center py-2 px-3 p-xl-4 active" href="#tabs1-tab1" role="tab" aria-selected="true"
-           data-toggle="tab">Block Reports
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link d-flex align-items-center py-2 px-3 p-xl-4" href="#tabs1-tab2" role="tab" aria-selected="false"
-           data-toggle="tab">Iterms Reports
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link d-flex align-items-center py-2 px-3 p-xl-4" href="#tabs1-tab3" role="tab" aria-selected="false"
-           data-toggle="tab">Statistics Reports
-        </a>
-    </li>
-</ul>
+    public function getProfile()
+    {
 
-<div id="tabsContent1" class="card-body tab-content p-0">
-    <div class="tab-pane fade show active" id="tabs1-tab1" role="tabpanel">
 
-        <div class="container-fluid mt-5">
-            <div class="row">
-                <div class="col-md-2 mb-3">
-                    <div class="form-floating">
-                        <label for="hostelSelect">Block Filter</label>
-                        <select id="hostelSelect" class="form-select wide" aria-label="Select Hostel">
-                            <option value="" selected>Select a hostel</option>
-                            @foreach($blocks as $block)
-                                <option value="{{ $block->id }}">{{ $block->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
+        // Assuming you want to get the logged-in user's profile
+        $user = Auth::user();
 
-                <div class="col-md-2 mb-3">
-                    <div class="form-floating">
-                        <label for="floorSelect">Floor Filter</label>
-                        <select id="floorSelect" class="form-select wide" aria-label="Select Floor" disabled>
-                            <!-- Options will be populated dynamically -->
-                        </select>
-                    </div>
-                </div>
-
-                <div class="col-md-2 mb-3">
-                    <div class="form-floating">
-                        <label for="roomSelect">Room Filter</label>
-                        <select id="roomSelect" class="form-select wide" aria-label="Select Room" disabled>
-                            <!-- Options will be populated dynamically -->
-                        </select>
-                    </div>
-                </div>
-
-                <div class="col-md-2 mb-3">
-                    <div class="form-floating">
-                        <label for="genderSelect">Gender Filter</label>
-                        <select id="genderSelect" class="form-select wide" aria-label="Select Gender"disabled>
-
-                        </select>
-                    </div>
-                </div>
-
-                <div class="col-md-2 mb-3">
-                    <div class="form-floating">
-                        <label for="paymentSelect">Payment Filter</label>
-                        <select id="paymentSelect" class="form-select wide" aria-label="Select Payment"disabled>
-
-                        </select>
-                    </div>
-                </div>
-
-                <div class="col-md-2 mb-3">
-                    <div class="form-floating">
-                        <label for="courseSelect">Course Filter</label>
-                        <select id="courseSelect" class="form-select wide" aria-label="Select Course"disabled >
-
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-
-
-
-
-
-<!-- Placeholder for PDF viewer style="display:none;" -->
-<div class="text-center mt-4">
-    <span class="btn shadow-sm border" id="printReport" style="cursor: pointer"><i class="gd-loop "></i></span>
-
-</div>
-
-<div class="d-flex justify-content-around mt-4" style="display: none;" id="pdfButtons">
-    <!-- Export as Excel button -->
-    <button id="exportExcel" class="btn btn-outline-success shadow-sm" style="display: none;">
-        {{-- <i class="gd-file text-white"></i> --}}
-        <span class="">Export as Excel</span>
-    </button>
-
-    <!-- Download PDF button -->
-    <button id="downloadPDF" class="btn btn-outline-warning shadow-sm" style="display: none;">
-        {{-- <i class="gd-download text-white"></i> --}}
-        <span >Download PDF</span>
-    </button>
-
-    <!-- Print PDF button -->
-    <button id="printPDF" class="btn btn-outline-info shadow-sm" style="display: none;">
-        {{-- <i class="gd-printer text-white"></i> --}}
-        <span class="">Print PDF</span>
-    </button>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-        <div class="container mt-4">
-            <div class="row justify-content-center">
-
-                <div class="col-md-8">
-                    <div id="pdfCanvasContainer" class="d-flex flex-column justify-content-center align-items-center"></div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-    <div class="tab-pane fade" id="tabs1-tab2" role="tabpanel">
-
-
-
-
-        <div class="container-fluid mt-5">
-            <div class="row">
-                <!-- Block Filter -->
-                <div class="col-md-3 mb-3">
-                    <div class="form-floating">
-                        <label for="blockSelectNew">Block Filter</label>
-                        <select id="blockSelectNew" class="form-select wide" aria-label="Select Block">
-                            <option value="" selected>Select a block</option>
-                            @foreach($blocks as $block)
-                                <option value="{{ $block->id }}">{{ $block->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Check-in/Check-out Filter -->
-                <div class="col-md-3 mb-3">
-                    <div class="form-floating">
-                        <label for="checkinCheckoutSelectNew">Check-in/Check-out Filter</label>
-                        <select id="checkinCheckoutSelectNew" class="form-select wide" aria-label="Select Status" disabled>
-
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Gender Filter -->
-                <div class="col-md-3 mb-3">
-                    <div class="form-floating">
-                        <label for="genderSelectNew">Gender Filter</label>
-                        <select id="genderSelectNew" class="form-select wide" aria-label="Select Gender" disabled>
-
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Course Filter -->
-                <div class="col-md-3 mb-3">
-                    <div class="form-floating">
-                        <label for="courseSelectNew">Course Filter</label>
-                        <select id="courseSelectNew" class="form-select wide" aria-label="Select Course" disabled>
-
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Placeholder for PDF viewer and report buttons -->
-        <div class="text-center mt-4">
-            <span class="btn shadow-sm border" id="printReportNew" style="cursor: pointer"><i class="gd-loop"></i></span>
-        </div>
-
-        <div class="d-flex justify-content-around mt-4" style="display: none;" id="pdfButtonsNew">
-            <!-- Export as Excel button -->
-            <button id="exportExcelNew" class="btn btn-outline-success shadow-sm" style="display: none;">
-                <span>Export as Excel</span>
-            </button>
-
-            <!-- Download PDF button -->
-            <button id="downloadPDFNew" class="btn btn-outline-warning shadow-sm" style="display: none;">
-                <span>Download PDF</span>
-            </button>
-
-            <!-- Print PDF button -->
-            <button id="printPDFNew" class="btn btn-outline-info shadow-sm" style="display: none;">
-                <span>Print PDF</span>
-            </button>
-        </div>
-
-        <div class="container mt-4">
-            <div class="row justify-content-center">
-                <div class="col-md-8">
-                    <div id="pdfCanvasContainerNew" class="d-flex flex-column justify-content-center align-items-center"></div>
-                </div>
-            </div>
-        </div>
-
-
-
-
-
-
-
-
-    </div>
-    <div class="tab-pane fade" id="tabs1-tab3" role="tabpanel">
-        <!-- Content for Statistics Reports -->
-    </div>
-</div>
-
-
-
-
-
-    </div>
-</div>
-
-
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.15.349/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.15.349/pdf.worker.min.js"></script>
-
-
-
-
-<script>
-    $(document).ready(function () {
-
-        // Function to change button text to "Generating..."
-        function setButtonText(buttonId, text) {
-            var button = document.getElementById(buttonId);
-            if (button) {
-                button.querySelector('span').textContent = text;
-            }
+        // Check if the user exists
+        if ($user) {
+            // Pass the user data to the view
+            return view('user.profile', ['user' => $user]);
         }
 
-        // Function to restore original button text
-        function restoreButtonText(buttonId, originalText) {
-            var button = document.getElementById(buttonId);
-            if (button) {
-                button.querySelector('span').textContent = originalText;
-            }
-        }
-
-        // Toast notification function
-        function showToast(message, isError = false) {
-            var toast = isError ? '#error-toast' : '#success-toast';
-            $(toast).find('.toast-body').text(message);
-            $(toast).toast('show');
-        }
-
-        // When a hostel is selected
-        $('#hostelSelect').on('change', function () {
-            var hostelId = $(this).val();
-            console.log("Selected hostel ID: ", hostelId);
-
-            // Clear and disable Floor, Room, Gender, Payment, and Course dropdowns initially
-            $('#floorSelect').html('<option value="">Select a floor</option>').prop('disabled', true);
-            $('#roomSelect').html('<option value="">Select a room</option>').prop('disabled', true);
-            $('#genderSelect').html('<option value="">Select Gender</option>').prop('disabled', true);
-            $('#paymentSelect').html('<option value="">Select Payment</option>').prop('disabled', true);
-            $('#courseSelect').html('<option value="">Select Course</option>').prop('disabled', true);
-
-            if (hostelId) {
-                console.log("Fetching floors for hostel ID: ", hostelId);
-
-                // Fetch floors for the selected hostel via AJAX
-                $.ajax({
-                    url: '/get-floors/' + hostelId,
-                    type: 'GET',
-                    success: function (data) {
-                        console.log("Floors received: ", data);
-
-                        if (data && data.floors && data.floors.length > 0) {
-                            $('#floorSelect').prop('disabled', false);
-                            $('#floorSelect').append('<option value="all">All Floors</option>');
-                            $.each(data.floors, function (key, floor) {
-                                $('#floorSelect').append('<option value="' + floor.id + '">' + floor.floor_number + '</option>');
-                            });
-
-                            // Update niceSelect
-                            $('#floorSelect').niceSelect('update');
-                        } else {
-                            console.log("No floors found for this hostel.");
-                            showToast("No floors found for this hostel.", true);
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        console.log("Error retrieving floors:", xhr, status, error);
-                        showToast('Error retrieving floors.', true);
-                    }
-                });
-            }
-        });
-
-        // When a floor is selected
-        $('#floorSelect').on('change', function () {
-            var floorId = $(this).val();
-            var hostelId = $('#hostelSelect').val();
-            console.log("Selected floor ID: ", floorId);
-
-            // Clear and disable the Room dropdown initially
-            $('#roomSelect').html('<option value="">Select a room</option>').prop('disabled', true);
-
-            if (floorId === 'all') {
-                console.log("Fetching all rooms for hostel ID: ", hostelId);
-
-                // Fetch all rooms for all floors in the selected hostel via AJAX
-                $.ajax({
-                    url: '/get-rooms-for-block/' + hostelId,
-                    type: 'GET',
-                    success: function (data) {
-                        console.log("Rooms for all floors received: ", data);
-
-                        if (data && data.rooms && data.rooms.length > 0) {
-                            $('#roomSelect').prop('disabled', false);
-                            $('#roomSelect').append('<option value="all">All Rooms</option>');
-                            $.each(data.rooms, function (key, room) {
-                                $('#roomSelect').append('<option value="' + room.id + '">' + room.room_number  + '</option>');
-                            });
-
-                            // Update niceSelect
-                            $('#roomSelect').niceSelect('update');
-                        } else {
-                            console.log("No rooms found for this block.");
-                            showToast("No rooms found for this block.", true);
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        console.log("Error retrieving rooms:", xhr, status, error);
-                        showToast('Error retrieving rooms.', true);
-                    }
-                });
-            } else if (floorId) {
-                console.log("Fetching rooms for floor ID: ", floorId);
-
-                // Fetch rooms for the selected floor via AJAX
-                $.ajax({
-                    url: '/get-rooms/' + floorId,
-                    type: 'GET',
-                    success: function (data) {
-                        console.log("Rooms received: ", data);
-
-                        if (data && data.rooms && data.rooms.length > 0) {
-                            $('#roomSelect').prop('disabled', false);
-                            $('#roomSelect').append('<option value="all">All Rooms</option>');
-                            $.each(data.rooms, function (key, room) {
-                                $('#roomSelect').append('<option value="' + room.id + '">' + room.room_number + '</option>');
-                            });
-
-                            // Update niceSelect
-                            $('#roomSelect').niceSelect('update');
-                        } else {
-                            console.log("No rooms found for this floor.");
-                            showToast("No rooms found for this floor.", true);
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        console.log("Error retrieving rooms:", xhr, status, error);
-                        showToast('Error retrieving rooms.', true);
-                    }
-                });
-            }
-        });
-
-        // When a room is selected
-        $('#roomSelect').on('change', function () {
-            var roomId = $(this).val();
-            console.log("Selected room ID: ", roomId);
-
-            // Clear and disable Gender, Payment, and Course dropdowns initially
-            $('#genderSelect').html('<option value="">Select Gender</option>').prop('disabled', true);
-            $('#paymentSelect').html('<option value="">Select Payment</option>').prop('disabled', true);
-            $('#courseSelect').html('<option value="">Select Course</option>').prop('disabled', true);
-
-            if (roomId) {
-                console.log("Fetching gender options for room ID: ", roomId);
-
-                // Fetch gender options based on the selected room via AJAX
-                $.ajax({
-                    url: '/get-gender-options/' + roomId,
-                    type: 'GET',
-                    success: function (data) {
-                        console.log("Gender options received: ", data);
-
-                        if (data && data.genders && data.genders.length > 0) {
-                            var genderOptions = '<option value="">Select Gender</option>' +
-                                                '<option value="all">All Gender</option>';
-
-                            $.each(data.genders, function (key, gender) {
-                                genderOptions += '<option value="' + gender + '">' + gender + '</option>';
-                            });
-
-                            $('#genderSelect').prop('disabled', false);
-                            $('#genderSelect').html(genderOptions); // Set options with "All Gender" at the top
-
-                            // Update niceSelect
-                            $('#genderSelect').niceSelect('update');
-                        } else {
-                            console.log("No gender options found for this room.");
-                            showToast("No gender options found for this room.", true);
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        console.log("Error retrieving gender options:", xhr, status, error);
-                        showToast('Error retrieving gender options.', true);
-                    }
-                });
-            }
-        });
-
-
-        // When gender is selected
-$('#genderSelect').on('change', function () {
-    var gender = $(this).val();
-    var roomId = $('#roomSelect').val();
-    console.log("Selected gender: ", gender);
-
-    // Clear and disable Payment and Course dropdowns initially
-    $('#paymentSelect').html('<option value="">Select Payment</option>').prop('disabled', true);
-    $('#courseSelect').html('<option value="">Select Course</option>').prop('disabled', true);
-
-    if (gender) {
-        console.log("Fetching payment options based on gender: ", gender);
-
-        // Fetch payment options based on the selected gender via AJAX
-        $.ajax({
-            url: '/get-payment-options/' + gender,
-            type: 'GET',
-            success: function (data) {
-                console.log("Payment options received: ", data);
-
-                if (data && data.payments && data.payments.length > 0) {
-                    var paymentOptions = '<option value="">Select Payment</option>' +
-                                         '<option value="all">Both</option>';
-                    $.each(data.payments, function (key, payment) {
-                        paymentOptions += '<option value="' + payment + '">' + payment + '</option>';
-                    });
-
-                    $('#paymentSelect').prop('disabled', false);
-                    $('#paymentSelect').html(paymentOptions); // Set options with "Both" at the top
-
-                    // Update niceSelect
-                    $('#paymentSelect').niceSelect('update');
-                } else {
-                    console.log("No payment options found for this gender.");
-                }
-            },
-            error: function (xhr, status, error) {
-                console.log("Error retrieving payment options:", xhr, status, error);
-
-
-                showToast("Error retrieving payment options.", true);
-
-            }
-        });
+        // If user is not found, you can redirect or show an error
+        return redirect()->route('home')->with('error', 'User not found.');
     }
-});
-// When payment is selected
-$('#paymentSelect').on('change', function () {
-    var payment = $(this).val();
-    console.log("Selected payment: ", payment);
 
-    // Clear and disable Course dropdown initially
-    $('#courseSelect').html('<option value="">Select Course</option>').prop('disabled', true);
 
-    if (payment) {
-        console.log("Fetching course options based on payment: ", payment);
+    public function getdash()
+    {
+        // Assuming you want to get the logged-in user's profile
+        $user = Auth::user();
 
-        // Fetch course options based on the selected payment via AJAX
-        $.ajax({
-            url: '/get-course-options/' + payment,
-            type: 'GET',
-            success: function (data) {
-                console.log("Course options received: ", data);
+        $publishes = Publish::all();
 
-                if (data && data.courses && data.courses.length > 0) {
-                    var courseOptions = '<option value="">Select Course</option>' +
-                                        '<option value="all">All Courses</option>';
-                    $.each(data.courses, function (key, course) {
-                        courseOptions += '<option value="' + course + '">' + course + '</option>';
-                    });
 
-                    $('#courseSelect').prop('disabled', false);
-                    $('#courseSelect').html(courseOptions); // Set options with "All Courses" at the top
+        // Check if the user exists
+        if ($user) {
+            // Pass the user data to the view
+            return view('dashboard', compact('user', 'publishes'));
+        }
 
-                    // Update niceSelect
-                    $('#courseSelect').niceSelect('update');
-                } else {
-                    console.log("No course options found for this payment.");
+        // If user is not found, you can redirect or show an error
+        return redirect()->route('home')->with('error', 'User not found.');
+    }
+
+
+
+    public function gethostel()
+{
+    // Fetch the current authenticated user
+    $user = auth()->user();
+
+    // Fetch blocks with their related floors, ordered by 'created_at' in descending order
+    $blocks = Block::with('floors')
+        ->where('status', '1')
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    // Convert user gender to lowercase for case-insensitive comparison
+    $userGenderLower = strtolower($user->gender);
+
+    // Initialize array to collect gender data for each block
+    $blockGenders = [];
+
+    // Filter blocks to include only those where at least one floor's gender matches the user's gender
+    $blocks = $blocks->filter(function ($block) use ($userGenderLower, &$blockGenders) {
+        $matchesUserGender = $block->floors->contains(function ($floor) use ($userGenderLower) {
+            // Decode the gender JSON field
+            $genderArray = json_decode($floor->gender, true);
+
+            // Ensure genderArray is an array and perform case-insensitive comparison
+            if (is_array($genderArray)) {
+                $genderArrayLower = array_map('strtolower', $genderArray);
+                return in_array($userGenderLower, $genderArrayLower);
+            }
+
+            return false;
+        });
+
+        // Aggregate gender data for the block
+        if ($matchesUserGender) {
+            $blockGenders[$block->id] = [];
+            foreach ($block->floors as $floor) {
+                $genders = json_decode($floor->gender, true);
+                if (is_array($genders)) {
+                    $blockGenders[$block->id] = array_unique(array_merge($blockGenders[$block->id], array_map('strtolower', $genders)));
                 }
-            },
-            error: function (xhr, status, error) {
-                console.log("Error retrieving course options:", xhr, status, error);
-                showToast("Error retrieving course options.", true);
+            }
+        }
+
+        return $matchesUserGender;
+    });
+
+    // Fetch the publish settings from the database
+    $publishSettings = Publish::first();
+
+    // Retrieve publish settings with default values
+    $openDate = $publishSettings ? $publishSettings->open_date : null;
+    $deadlineDate = $publishSettings ? $publishSettings->deadline : null;
+
+    // Pass the filtered blocks, user data, publish settings, and block genders to the view
+    return view('user.hostel', compact('blocks', 'user', 'openDate', 'deadlineDate', 'blockGenders'));
+}
+
+
+
+
+public function loadRoom($blockId)
+{
+    $block = $this->fetchBlockWithDetails($blockId);
+    $user = auth()->user();
+    $publishSettings = $this->getPublishSettings();
+
+    // Initialize reasons as an empty array
+    $reasons = [];
+
+    $filteredFloors = $this->filterFloorsByUser($block->floors, $user, $reasons);
+
+    if ($publishSettings['algorithm']) {
+        $filteredFloors = $this->applyAlgorithmCriteria($filteredFloors, $blockId, $user, $reasons);
+    }
+
+    $filteredFloors = $this->filterRoomsAndBeds($filteredFloors, $publishSettings, $reasons);
+
+    $this->logIfEmpty($filteredFloors, $publishSettings, $reasons);
+
+    // Ensure $reasons is an array before applying array_values
+    $reasons = is_array($reasons) ? array_values($reasons) : [];
+
+    return view('user.room', compact('block', 'filteredFloors', 'user', 'reasons'));
+}
+
+
+
+
+
+private function fetchBlockWithDetails($blockId)
+{
+    // Retrieve the block with its associated floors, rooms, and beds
+    return Block::with('floors.rooms.beds')->find($blockId);
+}
+
+private function getPublishSettings()
+{
+    // Fetch the publish settings, such as algorithm, reserved beds, and maintenance beds
+    $publish = Publish::first();
+    return [
+        'algorithm' => $publish ? $publish->algorithm : false,
+        'reservedBedEnabled' => $publish ? $publish->reserved_bed : false,
+        'maintenanceBedEnabled' => $publish ? $publish->maintenance_bed : false,
+    ];
+}
+
+private function filterFloorsByUser($floors, $user, &$reasons)
+{
+    // Initialize arrays to keep track of which floors do not match
+    $genderMismatchFloors = [];
+    $courseMismatchFloors = [];
+
+    // Track the number of mismatched floors
+    $totalFloors = $floors->count();
+    $mismatchedGenderCount = 0;
+    $mismatchedCourseCount = 0;
+
+    // Log initial state
+    \Log::info('Initial floors and user details', [
+        'total_floors' => $totalFloors,
+        'user_gender' => $user->gender,
+        'user_course' => $user->course
+    ]);
+
+    $filteredFloors = $floors->filter(function($floor) use ($user, &$genderMismatchFloors, &$courseMismatchFloors, &$mismatchedGenderCount, &$mismatchedCourseCount) {
+        // Decode floor gender if it is stored as a JSON string
+        $floorGender = is_string($floor->gender) ? json_decode($floor->gender, true) : $floor->gender;
+        $userGender = $user->gender;
+
+        // Check gender criteria
+        $genderMatch = $this->matchCriteria($userGender, $floorGender);
+        if (!$genderMatch) {
+            $genderMismatchFloors[] = [
+                'floor_id' => $floor->id,
+                'user_gender' => $userGender,
+                'floor_gender' => $floorGender
+            ];
+            $mismatchedGenderCount++;
+        }
+
+        // Check course criteria
+        $courseMatch = $this->matchCriteria($user->course, $floor->eligibility);
+        if (!$courseMatch) {
+            $courseMismatchFloors[] = [
+                'floor_id' => $floor->id,
+                'user_course' => $user->course,
+                'floor_eligibility' => $floor->eligibility
+            ];
+            $mismatchedCourseCount++;
+        }
+
+        // Return true if both criteria are matched
+        return $genderMatch && $courseMatch;
+    });
+
+    // Log detailed information for mismatches
+    \Log::info('Gender mismatch details', [
+        'mismatched_floors' => $genderMismatchFloors
+    ]);
+
+    \Log::info('Course mismatch details', [
+        'mismatched_floors' => $courseMismatchFloors
+    ]);
+
+    // Determine which reason to set based on mismatched floors
+    if ($filteredFloors->isEmpty()) {
+        // Only show the gender mismatch message if all floors have a gender mismatch
+        if ($mismatchedGenderCount === $totalFloors) {
+            $reasons['gender'] = 'Your gender does not match the eligibility criteria for these floors.';
+        }
+
+        // Only show the course mismatch message if all floors have a course mismatch
+        if ($mismatchedCourseCount === $totalFloors) {
+            $reasons['course'] = 'Your course does not match the eligibility criteria for these floors.';
+        }
+
+        // Show a combined message if all floors have both gender and course mismatches
+        if ($mismatchedGenderCount === $totalFloors && $mismatchedCourseCount > 0) {
+            $reasons['gender'] = 'Your gender does not match the eligibility criteria for these floors.';
+        }
+
+        if ($mismatchedCourseCount === $totalFloors && $mismatchedGenderCount > 0) {
+            $reasons['course'] = 'Your course does not match the eligibility criteria for these floors.';
+        }
+        else {
+            $reasons['course'] = 'Available floors are allocated to other courses which do not match your criteria.';
+
+        }
+    }
+
+
+    // Log filtered floors after applying user criteria
+    \Log::info('Filtered floors after user criteria check', [
+        'filtered_floors' => $filteredFloors->pluck('id')->toArray()
+    ]);
+
+    return $filteredFloors;
+}
+
+
+
+
+
+
+
+
+private function applyAlgorithmCriteria($floors, $blockId, $user, &$reasons)
+{
+    $criteriaCoursesByFloor = $this->fetchAlgorithmCriteriaCourses($blockId, $floors->pluck('id'));
+    $userCourseLower = strtolower($user->course);
+
+    return $floors->filter(function($floor) use ($criteriaCoursesByFloor, $userCourseLower, &$reasons) {
+        $floorId = $floor->id;
+        $criteriaCourses = $criteriaCoursesByFloor[$floorId] ?? [];
+
+        if (!in_array($userCourseLower, $criteriaCourses)) {
+            $reasons['algorithm'] = 'The algorithm settings are restricting the available floors based on criteria.';
+            return false; // Exclude the floor if the user's course doesn't match the criteria
+        }
+
+        return true; // The floor passes all checks
+    });
+}
+
+
+
+private function fetchAlgorithmCriteriaCourses($blockId, $floorIds)
+{
+    // Retrieve the algorithm criteria courses for the specified block and floors
+    $criteriaRecords = SliderData::where('block_id', $blockId)
+        ->whereIn('floor_id', $floorIds)
+        ->where('status', 1)
+        ->get();
+
+    // Initialize an empty array to store the courses by floor
+    $criteriaCoursesByFloor = [];
+
+    // Group criteria by floor and transform them to lowercase
+    foreach ($floorIds as $floorId) {
+        $criteriaCoursesByFloor[$floorId] = $criteriaRecords->where('floor_id', $floorId)
+            ->pluck('criteria')->flatten()->unique()->map('strtolower')->toArray();
+
+        // Log the criteria courses for the current floor
+       // \Log::info("Algorithm Criteria Courses for Floor ID {$floorId}:", $criteriaCoursesByFloor[$floorId]);
+    }
+
+    return $criteriaCoursesByFloor;
+}
+
+
+
+
+private function filterRoomsAndBeds($floors, $settings, &$reasons)
+{
+    // Filter rooms and beds within each floor based on availability and settings
+    return $floors->filter(function($floor) use ($settings, &$reasons) {
+        // Filter rooms within the floor
+        $floor->rooms = $floor->rooms->filter(function($room) use ($settings) {
+            // Filter beds within the room
+            $room->beds = $room->beds->filter(function($bed) use ($settings) {
+                return $this->isBedAvailable($bed, $settings);
+            });
+
+            return $room->beds->isNotEmpty();
+        });
+
+        // If no rooms are available, add a reason
+        if ($floor->rooms->isEmpty()) {
+            $reasons['rooms'] = 'There are no available rooms in this floor that meet the criteria.';
+        }
+
+        return $floor->rooms->isNotEmpty();
+    });
+}
+
+
+
+private function isBedAvailable($bed, $settings)
+{
+    // Check if the bed is available based on its status and the publish settings
+    if ($bed->status === 'activate') {
+        return true;
+    }
+    if ($settings['reservedBedEnabled'] && $bed->status === 'reserve') {
+        return true;
+    }
+    if ($settings['maintenanceBedEnabled'] && $bed->status === 'under_maintenance') {
+        return true;
+    }
+    return false;
+}
+
+private function logIfEmpty($floors, $settings, &$reasons)
+{
+    // Log and handle cases where no floors are available based on the settings
+    if ($floors->isEmpty()) {
+        if ($settings['algorithm']) {
+            $reasons['algorithm'] = 'The algorithm settings are restricting the available floors based on criteria.';
+        }
+        // if (!$settings['reservedBedEnabled']) {
+        //     $reasons['reserved_beds'] = 'Reserved beds are currently not available for selection.';
+        // }
+        // if (!$settings['maintenanceBedEnabled']) {
+        //     $reasons['maintenance_beds'] = 'Beds under maintenance are currently not available for selection.';
+        // }
+    }
+
+  //  \Log::error('Algorithm Setting: ' . ($settings['algorithm'] ? 'enabled' : 'disabled'));
+}
+private function matchCriteria($userAttribute, $criteria)
+{
+    // Convert the user attribute to lowercase
+    $userAttributeLower = strtolower($userAttribute);
+
+    // Decode JSON string if necessary
+    $criteriaArray = is_array($criteria) ? $criteria : json_decode($criteria, true);
+
+    // Ensure the criteria array is not null
+    if (is_null($criteriaArray)) {
+        return false;
+    }
+
+    // Convert criteria values to lowercase
+    $criteriaArrayLower = array_map('strtolower', $criteriaArray);
+
+    // Check if userAttribute is in the criteriaArray
+    return in_array($userAttributeLower, $criteriaArrayLower, true);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public function updateBedSelection(Request $request)
+{
+    // Validate the incoming data
+    $validatedData = $request->validate([
+        'bed_id' => 'required|integer',
+        'room_id' => 'required|integer',
+        'floor_id' => 'required|integer',
+        'block_id' => 'required|integer',
+    ]);
+
+    // Get the currently authenticated user
+    $user = auth()->user();
+
+    try {
+        // Find the selected bed, room, floor, and block
+        $bed = Bed::find($validatedData['bed_id']);
+        $room = Room::find($validatedData['room_id']);
+        $floor = Floor::find($validatedData['floor_id']);
+        $block = Block::find($validatedData['block_id']);
+
+        // Check if the entities exist and are in a valid state
+        if (!$bed || !$room || !$floor || !$block) {
+            return response()->json(['error' => 'Invalid selection.'], 400);
+        }
+
+        // Get the user currently assigned to the bed
+        $bedUser = $bed->user;
+
+        // Check if the bed is occupied and if the assigned user's expiration date has not expired
+        if ($bed->status === 'under_maintenance' || $bed->status === 'reserve' || ($bedUser && Carbon::now()->lessThan($bedUser->expiration_date))) {
+            return response()->json(['error' => 'Selected bed is not available.'], 400);
+        }
+
+        // Validate that the room, floor, and block are associated correctly
+        if ($room->floor_id !== $floor->id || $floor->block_id !== $block->id) {
+            return response()->json(['error' => 'Selection does not match the room, floor, and block association.'], 400);
+        }
+
+        // Update the user with the selected bed details
+        $user->update([
+            'bed_id' => $validatedData['bed_id'],
+            'room_id' => $validatedData['room_id'],
+            'floor_id' => $validatedData['floor_id'],
+            'block_id' => $validatedData['block_id'],
+        ]);
+
+        return response()->json(['message' => 'Bed selection updated successfully.']);
+    } catch (\Exception $e) {
+        // Log the error message for debugging
+        \Log::error('Error updating bed selection: ' . $e->getMessage());
+
+        return response()->json(['error' => 'An error occurred while updating your selection. Please try again.'], 500);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public function getUserInfo()
+{
+
+
+
+
+    // Retrieve the authenticated user
+    $user = auth()->user();
+
+    // Return the view with user information
+    return view('user.finish', ['user' => $user]);
+}
+public function getUserInfoResult(Request $request)
+{
+    // Retrieve the authenticated user
+    $user = auth()->user();
+
+    // Retrieve the selected block ID from the user
+    $selectedBlockId = $user->block_id;
+    $selectedRoomId= $user->room_id;
+
+    // Convert expiration_date to ISO 8601 format
+    $expirationDate = Carbon::parse($user->expiration_date)->toIso8601String();
+    $formattedExpirationDate = Carbon::parse($user->expiration_date)->format('F j, Y');
+
+    // Retrieve all records from the publishes table
+    $publishes = Publish::all();
+
+    // Retrieve requirements and check-out items for the selected block
+    $requirements = Requirement::where('block_id', $selectedBlockId)->get();
+    $checkOutItems = CheckOutItem::where('room_id', $selectedRoomId)->get();
+
+    $checkOutItemsadmin = AdminCheckout::where('user_id', $user->id)->get();
+
+    // Check if a confirmation record already exists for the user and block
+    $confirmation = RequirementItemConfirmation::where('user_id', $user->id)->first();
+
+    // Pass the user, publishes, expirationDate, formattedExpirationDate, requirements, checkOutItems, and confirmation to the view
+    return view('user.result', compact('user', 'publishes', 'expirationDate', 'formattedExpirationDate', 'requirements', 'checkOutItems', 'confirmation','checkOutItemsadmin'));
+}
+
+
+
+
+public function updateExpirationapp(Request $request)
+{
+    // Validate the request
+    $request->validate([
+        'user_id' => 'required|integer|exists:users,id',
+    ]);
+
+    \Log::error("uvbjlkbliufebvlfblui");
+
+    // Find the user and update the fields
+    $user = User::find($request->user_id);
+
+    if (!$user) {
+        return response()->json(['success' => false, 'message' => 'User not found.'], 404);
+    }
+
+    // Get the bed associated with the user
+    $bed = $user->bed; // Assuming the relationship is defined in the User model as 'bed'
+
+    // Initialize the floor and block ID variables
+    $floorId = null;
+    $blockId = null;
+
+    if ($bed) {
+        // Get the room associated with the bed
+        $room = $bed->room;
+
+        if ($room) {
+            // Get the floor associated with the room
+            $floor = $room->floor;
+
+            if ($floor) {
+                $floorId = $floor->id;
+                $blockId = $floor->block->id; // Assuming the block is associated with the floor
+            }
+        }
+
+        // Update the bed to set user_id to null
+        $bed->user_id = null;
+        $bed->save();
+    }
+
+    // Retrieve the current value of the counter
+    $currentCounter = $user->counter;
+
+// Increment the counter value
+$newCounter = $currentCounter + 1;
+
+    // Update user fields
+    $user->update([
+        'expiration_date' => null,
+        'payment_status' => null,
+        'Control_Number' => null,
+        'block_id' => null,
+        'room_id' => null,
+        'floor_id' => null,
+        'bed_id' => null,
+        'checkin' => 0,
+        'checkout' => 0,
+        'application' => 0,
+        'status' => 'disapproved',
+        'counter' => $newCounter
+    ]);
+
+    $userCourse = $user->course;
+
+    // Perform the update if a row with the given criteria is found
+    $row = SliderData::where('criteria', $userCourse)
+        ->where('floor_id', $floorId)
+        ->where('block_id', $blockId)
+        ->where('status', '!=', 1)
+        ->first();
+
+    if ($row) {
+        // Update the status of the row
+        $row->update(['status' => 1]);
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Your application has been successfully reset. You may now reapply.'
+    ]);
+}
+
+
+
+
+
+public function confirmApplication(Request $request)
+{
+    // Validate that the application value is provided and is an integer
+    $request->validate([
+        'application' => 'required|integer'
+    ]);
+
+    // Get the authenticated user
+    $user = auth()->user();
+
+    // Update the user's application status
+    $user->update([
+        'application' => $request->application
+    ]);
+
+
+    // Update the specific bed with the user's user_id
+    if ($user->bed_id) {
+        // Find the bed
+        $bed = Bed::find($user->bed_id);
+
+        if ($bed) {
+            // Check if the bed already has a user associated with it
+            if ($bed->user_id) {
+                // Load the current user associated with the bed
+                $existingUser = User::find($bed->user_id);
+
+                if ($existingUser) {
+    // Update the existing user's bed-related columns and reset application status
+    $existingUser->update([
+        'application' => 0,
+        'status' => 'disapproved',
+        'block_id' => null,
+        'room_id' => null,
+        'floor_id' => null,
+        'bed_id' => null,
+        'counter' => 0,
+        'expiration_date' => Carbon::now()->addDays(365) // Adds 365 days to the current date
+    ]);
+}
 
             }
-        });
-    }
-});
 
-        // Handle report generation based on all filters
-        $('#printReport').on('click', function () {
-            var hostelId = $('#hostelSelect').val();
-            var floorId = $('#floorSelect').val();
-            var roomId = $('#roomSelect').val();
-            var gender = $('#genderSelect').val();
-            var payment = $('#paymentSelect').val();
-            var course = $('#courseSelect').val();
+            // Now, update the bed's user_id with the current user's ID
+            $bed->update(['user_id' => $user->id]);
 
-            if (hostelId && floorId && roomId && gender && payment && course) {
-                var url = '/generate-report?hostel_id=' + hostelId + '&floor_id=' + floorId + '&room_id=' + roomId + '&gender=' + gender + '&payment=' + payment + '&course=' + course;
+            // Retrieve the associated room, floor, and block
+            $room = $bed->room;
+            $floor = $room->floor;
+            $block = $floor->block;
 
-                $('#overlay').css('display', 'flex');
+            // Ensure the floor and block exist
+            if ($floor && $block) {
+                $floorId = $floor->id;
+                $blockId = $block->id;
 
-                loadPDF(url).then(() => {
-                    $('#overlay').fadeOut();
-                }).catch((error) => {
-                    console.error("Error loading PDF:", error);
-                    showToast('Error loading the PDF.', true);
-                    $('#overlay').fadeOut();
-                });
+                // Log the floor ID and block ID for debugging
+                Log::info("Floor ID: $floorId, Block ID: $blockId");
+
+                // Perform the update on the SliderData
+                $row = SliderData::where('criteria', $user->course)
+                    ->where('status', '!=', 0)
+                    ->where('floor_id', $floorId)
+                    ->where('block_id', $blockId)
+                    ->first();
+
+                if ($row) {
+                    // Update the status of the row
+                    $row->update(['status' => 0]);
+                }
             } else {
-                showToast('Please select all filters before generating the report.', true);
+                return response()->json(['message' => 'Floor or Block not found.'], 404);
             }
-        });
-
-        // Function to load PDF
-
-        function loadPDF(url) {
-            return new Promise((resolve, reject) => {
-                var container = document.getElementById('pdfCanvasContainer');
-                container.innerHTML = '';
-
-                var loadingTask = pdfjsLib.getDocument(url);
-                loadingTask.promise.then(function (pdf) {
-                    var totalPages = pdf.numPages;
-                    var pagesPromises = [];
-
-                    for (var pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
-                        pagesPromises.push(
-                            pdf.getPage(pageNumber).then(function (page) {
-                                var pageDiv = document.createElement('div');
-                                pageDiv.classList.add('pdf-page');
-
-                                var canvas = document.createElement('canvas');
-                                canvas.classList.add('pdf-canvas');
-                                var context = canvas.getContext('2d');
-                                var viewport = page.getViewport({ scale: 1.5 });
-
-                                canvas.height = viewport.height;
-                                canvas.width = viewport.width;
-                                pageDiv.appendChild(canvas);
-                                container.appendChild(pageDiv);
-
-                                var renderContext = {
-                                    canvasContext: context,
-                                    viewport: viewport
-                                };
-
-                                return page.render(renderContext).promise;
-                            })
-                        );
-                    }
-
-                    Promise.all(pagesPromises).then(function () {
-                        console.log('PDF rendered successfully.');
-
-                        document.getElementById('exportExcel').style.display = 'inline-block';
-                        document.getElementById('downloadPDF').style.display = 'inline-block';
-                        document.getElementById('printPDF').style.display = 'inline-block';
-
-                        resolve();
-                    }).catch(function (error) {
-                        console.error('Error rendering pages:', error);
-                        reject(error);
-                    });
-                }).catch(function (error) {
-                    console.error('Error loading PDF document:', error);
-                    reject(error);
-                });
-            });
-        }
-
-        var printButton = document.getElementById('printPDF');
-        var downloadButton = document.getElementById('downloadPDF');
-        var exportExcelButton = document.getElementById('exportExcel');
-
-        if (printButton) {
-            printButton.addEventListener('click', function () {
-                setButtonText('printPDF', 'Generating...');
-
-                var hostelId = $('#hostelSelect').val();
-                var floorId = $('#floorSelect').val();
-                var roomId = $('#roomSelect').val();
-                var gender = $('#genderSelect').val();
-                var payment = $('#paymentSelect').val();
-                var course = $('#courseSelect').val();
-
-                if (hostelId && floorId && roomId && gender && payment && course) {
-                    // URL to generate the PDF report
-                    var url = '/generate-report-print?hostel_id=' + hostelId + '&floor_id=' + floorId + '&room_id=' + roomId + '&gender=' + gender + '&payment=' + payment + '&course=' + course;
-
-                    // Open the PDF in a new tab
-                    var printWindow = window.open(url, '_blank');
-
-                    // Wait for the new tab to load the PDF before triggering print
-                    printWindow.onload = function () {
-                        printWindow.focus();  // Ensure the new tab is focused
-                        printWindow.print();  // Trigger the print dialog
-                    };
-
-                    restoreButtonText('printPDF', 'Print PDF');
-                } else {
-                    alert('Please select all filters before generating the report.');
-                    restoreButtonText('printPDF', 'Print PDF');
-                }
-            });
-        }
-
-        if (downloadButton) {
-            downloadButton.addEventListener('click', function () {
-                setButtonText('downloadPDF', 'Generating...');
-                var url = '/generate-report?hostel_id=' + $('#hostelSelect').val() + '&floor_id=' + $('#floorSelect').val() + '&room_id=' + $('#roomSelect').val() + '&gender=' + $('#genderSelect').val() + '&payment=' + $('#paymentSelect').val() + '&course=' + $('#courseSelect').val();
-                window.location.href = url;
-                restoreButtonText('downloadPDF', 'Download PDF');
-            });
-        }
-
-        if (exportExcelButton) {
-            exportExcelButton.addEventListener('click', function () {
-                setButtonText('exportExcel', 'Generating...');
-                var url = '/generate-excel-report?hostel_id=' + $('#hostelSelect').val() + '&floor_id=' + $('#floorSelect').val() + '&room_id=' + $('#roomSelect').val() + '&gender=' + $('#genderSelect').val() + '&payment=' + $('#paymentSelect').val() + '&course=' + $('#courseSelect').val();
-                window.location.href = url;
-                restoreButtonText('exportExcel', 'Export as Excel');
-            });
-        }
-
-
-
-
-
-
-
-
-    });
-</script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<script>$(document).ready(function () {
-    // Function to change button text to "Generating..."
-    function setButtonText(buttonId, text) {
-        var button = document.getElementById(buttonId);
-        if (button) {
-            button.querySelector('span').textContent = text;
-        }
-    }
-
-    // Function to restore original button text
-    function restoreButtonText(buttonId, originalText) {
-        var button = document.getElementById(buttonId);
-        if (button) {
-            button.querySelector('span').textContent = originalText;
-        }
-    }
-
-    function updateNiceSelect(selector) {
-        if ($.fn.niceSelect) {
-            $(selector).niceSelect('update');
-        }
-    }
-
-    // Function to display toast messages
-    function showToast(toastId, message) {
-        var $toast = $(toastId);
-        $toast.find('.toast-body').text(message);
-        $toast.toast({
-            delay: 3000
-        }); // Set the delay for the toast to hide automatically
-        $toast.toast('show');
-    }
-
-    // When a block is selected
-    $('#blockSelectNew').on('change', function () {
-        var hostelId = $(this).val();
-        console.log("Selected hostel ID: ", hostelId);
-
-        $('#genderSelectNew').html('<option value="">Select Gender</option>').prop('disabled', true);
-        $('#courseSelectNew').html('<option value="">Select Course</option>').prop('disabled', true);
-        $('#checkinCheckoutSelectNew').html('<option value="">Select status</option><option value="checkin">Check-in</option><option value="checkout">Check-out</option>').prop('disabled', true);
-
-        if (hostelId) {
-            $('#checkinCheckoutSelectNew').prop('disabled', false);
-            updateNiceSelect('#checkinCheckoutSelectNew');
-        }
-    });
-
-    // When Check-in/Check-out option is selected
-    $('#checkinCheckoutSelectNew').on('change', function () {
-        var checkinCheckout = $(this).val();
-        console.log("Selected Check-in/Check-out status: ", checkinCheckout);
-
-        $('#genderSelectNew').html('<option value="">Select Gender</option>').prop('disabled', true);
-        $('#courseSelectNew').html('<option value="">Select Course</option>').prop('disabled', true);
-        updateNiceSelect('#genderSelectNew');
-
-        if (checkinCheckout) {
-            console.log("Fetching gender options based on selected check-in/check-out status.");
-            $.ajax({
-                url: '/get-gender-options/' + checkinCheckout,
-                type: 'GET',
-                success: function (data) {
-                    console.log("Gender options received: ", data);
-                    if (data && data.genders && data.genders.length > 0) {
-                        var genderOptions = '<option value="">Select Gender</option>' +
-                                            '<option value="all">All Gender</option>';
-                        $.each(data.genders, function (key, gender) {
-                            genderOptions += '<option value="' + gender + '">' + gender + '</option>';
-                        });
-                        $('#genderSelectNew').prop('disabled', false).html(genderOptions);
-                        updateNiceSelect('#genderSelectNew');
-                    } else {
-                        showToast('#error-toast', 'No gender options found.');
-                    }
-                },
-                error: function (xhr, status, error) {
-                    showToast('#error-toast', 'Error retrieving gender options.');
-                    console.error("Error retrieving gender options:", xhr, status, error);
-                }
-            });
-        }
-    });
-
-    // When Gender is selected
-    $('#genderSelectNew').on('change', function () {
-        var gender = $(this).val();
-        console.log("Selected gender: ", gender);
-
-        $('#courseSelectNew').html('<option value="">Select Course</option>').prop('disabled', true);
-        updateNiceSelect('#courseSelectNew');
-
-        if (gender) {
-            console.log("Fetching course options based on gender: ", gender);
-            $.ajax({
-                url: '/get-course-options/' + gender,
-                type: 'GET',
-                success: function (data) {
-                    console.log("Course options received: ", data);
-                    if (data && data.courses && data.courses.length > 0) {
-                        var courseOptions = '<option value="">Select Course</option>' +
-                                            '<option value="all">All Courses</option>';
-                        $.each(data.courses, function (key, course) {
-                            courseOptions += '<option value="' + course + '">' + course + '</option>';
-                        });
-                        $('#courseSelectNew').prop('disabled', false).html(courseOptions);
-                        updateNiceSelect('#courseSelectNew');
-                    } else {
-                        showToast('#error-toast', 'No course options found.');
-                    }
-                },
-                error: function (xhr, status, error) {
-                    showToast('#error-toast', 'Error retrieving course options.');
-                    console.error("Error retrieving course options:", xhr, status, error);
-                }
-            });
-        }
-    });
-
-    // Handle report generation based on all filters
-    $('#printReportNew').on('click', function () {
-        var hostelId = $('#blockSelectNew').val();
-        var gender = $('#genderSelectNew').val();
-        var course = $('#courseSelectNew').val();
-        var checkinCheckout = $('#checkinCheckoutSelectNew').val();
-
-        if (hostelId && gender && course && checkinCheckout) {
-            var url = '/generate-report-print-new?hostel_id=' + hostelId + '&gender=' + gender + '&course=' + course + '&checkin_checkout=' + checkinCheckout;
-
-            $('#overlay').css('display', 'flex');
-
-            loadPDF(url).then(() => {
-                $('#overlay').fadeOut();
-            }).catch((error) => {
-                showToast('#error-toast', 'Error loading the PDF.');
-                console.error("Error loading PDF:", error);
-                $('#overlay').fadeOut();
-            });
         } else {
-            showToast('#error-toast', 'Please select all filters before generating the report.');
+            return response()->json(['message' => 'Bed not found.'], 404);
         }
-    });
-
-    // Load PDF and handle overlay
-    function loadPDF(url) {
-        return new Promise((resolve, reject) => {
-            var container = document.getElementById('pdfCanvasContainerNew');
-            container.innerHTML = '';
-
-            var loadingTask = pdfjsLib.getDocument(url);
-            loadingTask.promise.then(function (pdf) {
-                var totalPages = pdf.numPages;
-                var pagesPromises = [];
-
-                for (var pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
-                    pagesPromises.push(
-                        pdf.getPage(pageNumber).then(function (page) {
-                            var pageDiv = document.createElement('div');
-                            pageDiv.classList.add('pdf-page');
-
-                            var canvas = document.createElement('canvas');
-                            canvas.classList.add('pdf-canvas');
-                            var context = canvas.getContext('2d');
-                            var viewport = page.getViewport({ scale: 1.5 });
-
-                            canvas.height = viewport.height;
-                            canvas.width = viewport.width;
-                            pageDiv.appendChild(canvas);
-                            container.appendChild(pageDiv);
-
-                            var renderContext = {
-                                canvasContext: context,
-                                viewport: viewport
-                            };
-
-                            return page.render(renderContext).promise;
-                        })
-                    );
-                }
-
-                Promise.all(pagesPromises).then(function () {
-                    console.log('PDF rendered successfully.');
-                    $('#exportExcelNew').show();
-                    $('#downloadPDFNew').show();
-                    $('#printPDFNew').show();
-                    resolve();
-                }).catch(function (error) {
-                    console.error('Error rendering pages:', error);
-                    reject(error);
-                });
-            }).catch(function (error) {
-                console.error('Error loading PDF document:', error);
-                reject(error);
-            });
-        });
     }
 
-    var printButton = document.getElementById('printPDFNew');
-    var downloadButton = document.getElementById('downloadPDFNew');
-    var exportExcelButton = document.getElementById('exportExcelNew');
+    // Fetch the expiration days from the publishes table
+    $publish = Publish::first(); // Adjust if needed to fetch the specific record
 
-    if (printButton) {
-        printButton.addEventListener('click', function () {
-            setButtonText('printPDFNew', 'Generating...');
 
-            var hostelId = $('#blockSelectNew').val();
-            var gender = $('#genderSelectNew').val();
-            var course = $('#courseSelectNew').val();
-            var checkinCheckout = $('#checkinCheckoutSelectNew').val();
+    if ($publish ->first()->status == 1) {
+    $user->afterpublish = 1; // Assign the new value
+    $user->save();           // Save the updated user to the database
+}
 
-            if (hostelId && gender && course && checkinCheckout) {
-                var url = '/generate-report-print-check?hostel_id=' + hostelId + '&gender=' + gender + '&course=' + course + '&checkin_checkout=' + checkinCheckout;
 
-                var printWindow = window.open(url, '_blank');
-                printWindow.onload = function () {
-                    printWindow.focus();
-                    printWindow.print();
-                };
 
-                restoreButtonText('printPDFNew', 'Print PDF');
-            } else {
-                showToast('#error-toast', 'Please select all filters before generating the report.');
-                restoreButtonText('printPDFNew', 'Print PDF');
-            }
-        });
+    if ($publish) {
+        // Convert the stored expiration_date to an integer representing the number of days
+        $daysToAdd = (int) $publish->expiration_date;
+
+        // Calculate the new expiration date by adding the days to the current time
+        $newExpirationDate = Carbon::now()->addDays($daysToAdd);
+
+        // Set the user's expiration_date to the calculated date
+        $user->expiration_date = $newExpirationDate;
+        $user->save();
+    } else {
+        return response()->json(['message' => 'Publish record not found.'], 404);
     }
 
-    if (downloadButton) {
-        downloadButton.addEventListener('click', function () {
-            setButtonText('downloadPDFNew', 'Generating...');
-            var url = '/generate-report-print-new?hostel_id=' + $('#blockSelectNew').val() + '&gender=' + $('#genderSelectNew').val() + '&course=' + $('#courseSelectNew').val() + '&checkin_checkout=' + $('#checkinCheckoutSelectNew').val();
-            window.location.href = url;
-            restoreButtonText('downloadPDFNew', 'Download PDF');
-        });
+    return response()->json(['message' => 'Application confirmed successfully.']);
+}
+
+
+
+
+
+
+public function setting()
+{
+    // Fetch settings from the database
+    $settings = Publish::first();
+
+    // Retrieve the stored expiration_days, defaulting to 1 if not set
+    $expirationDays = $settings && $settings->expiration_date ? $settings->expiration_date : 1;
+
+    // Retrieve the deadline, open date, and report date, defaulting to null if not set
+    $deadlineDate = $settings ? $settings->deadline : null;
+    $openDate = $settings ? $settings->open_date : null;
+    $reportDate = $settings ? $settings->report_date : null; // Added report_date
+
+    // Pass settings data, expirationDays, deadlineDate, openDate, and reportDate to the view
+    return view('admin.setting', compact('settings', 'expirationDays', 'deadlineDate', 'openDate', 'reportDate'));
+}
+
+
+
+
+
+
+    public function updateSetting(Request $request)
+{
+    $request->validate([
+        'setting' => 'required|string',
+        'status' => 'required|boolean',
+    ]);
+
+    $settingName = $request->input('setting');
+    $status = $request->input('status');
+
+    // Check which setting is being updated and update the appropriate column
+    $columnName = '';
+
+    switch ($settingName) {
+        case 'algorithm':
+            $columnName = 'algorithm';
+            break;
+        case 'reserved_bed':
+            $columnName = 'reserved_bed';
+            break;
+        case 'maintenance_bed':
+            $columnName = 'maintenance_bed';
+            break;
+        default:
+            return response()->json(['message' => 'Invalid setting'], 400);
     }
 
-    if (exportExcelButton) {
-        exportExcelButton.addEventListener('click', function () {
-            setButtonText('exportExcelNew', 'Exporting...');
-            var url = '/generate-report-excel-new?hostel_id=' + $('#blockSelectNew').val() + '&gender=' + $('#genderSelectNew').val() + '&course=' + $('#courseSelectNew').val() + '&checkin_checkout=' + $('#checkinCheckoutSelectNew').val();
-            window.location.href = url;
-            restoreButtonText('exportExcelNew', 'Export Excel');
-        });
+    // Update the setting in the `publishes` table
+    $updated = DB::table('publishes')->update([$columnName => $status]);
+
+    if ($updated) {
+        return response()->json(['message' => ucfirst($settingName) . ' setting updated successfully']);
+    } else {
+        return response()->json(['message' => 'Failed to update ' . $settingName . ' setting'], 500);
     }
-});
+}
 
-</script>
+public function updateExpirationDate(Request $request)
+{
+    // Validate the request to ensure 'days' is a positive integer
+    $request->validate([
+        'days' => 'required|integer|min:1', // Ensure it's a positive integer
+    ]);
+
+    // Retrieve or create the record in the 'publishes' table
+    $settings = Publish::first();
+
+    if (!$settings) {
+        // Create a new record if none exists
+        $settings = new Publish();
+    }
+
+    // Directly store the number of days in the 'expiration_date' field
+    $settings->expiration_date = $request->days;
+    $settings->save();
+
+    // Return a success response
+    return response()->json(['message' => 'Number of days updated successfully.']);
+}
 
 
+
+
+
+public function updateDates(Request $request)
+{
+    // Validate the request
+    $request->validate([
+        'report_date' => 'required|date', // Added report date validation
+        'deadline' => 'required|date',
+        'open_date' => 'required|date',
+    ]);
+
+    // Fetch settings from the database
+    $settings = Publish::first();
+
+    if ($settings) {
+        // Update the settings
+        $settings->report_date = $request->report_date; // Added report date update
+        $settings->deadline = $request->deadline;
+        $settings->open_date = $request->open_date;
+        $settings->save();
+
+        // Return success response
+        return response()->json(['success' => true, 'message' => 'Dates updated successfully']);
+    } else {
+        // Return error response if settings not found
+        return response()->json(['success' => false, 'message' => 'Settings not found'], 404);
+    }
+}
+
+
+
+
+
+
+
+public function updatePaymentStatus(Request $request)
+{
+    $user = User::find($request->user_id);
+    if ($user) {
+        $user->payment_status = $request->payment_status;
+        $user->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    return response()->json(['success' => false], 400);
+}
+public function updateControlNumber(Request $request)
+    {
+        // Validate the incoming request
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'control_number' => 'required|string',
+        ]);
+
+        // Find the user by ID
+        $user = User::find($request->user_id);
+
+        if ($user) {
+            // Update the control number
+            $user->control_number = $request->control_number;
+            $user->save();
+
+            return response()->json(['message' => 'Control number updated successfully'], 200);
+        }
+
+        return response()->json(['message' => 'User not found'], 404);
+    }
+
+
+
+    public function getExpirationDate()
+    {
+        // Fetch the authenticated user
+        $user = auth()->user();
+
+        // Convert the expiration_date to ISO 8601 format
+        $expirationDate = Carbon::parse($user->expiration_date)->toIso8601String();
+
+        // Return the expiration date as JSON
+        return response()->json([
+            'expirationDate' => $expirationDate
+        ]);
+    }
+
+    public function report()
+{
+    // Fetch all blocks with their related floors and rooms
+    $blocks = Block::with('floors.rooms')->get();
+
+    // Return the view and pass the blocks data
+    return view('admin.report', compact('blocks'));
+}
+
+    // Fetch floors based on hostelId
+    public function getFloors($hostelId)
+    {
+        $floors = Floor::where('block_id', $hostelId)->get();
+        return response()->json(['floors' => $floors]);
+    }
+
+
+
+    // Fetch rooms based on floorId
+    public function getRooms($floorId)
+    {
+        $rooms = Room::where('floor_id', $floorId)->get();
+        return response()->json(['rooms' => $rooms]);
+    }
+
+
+
+    public function getRoomsForBlock($blockId)
+{
+    // Fetch all floors for the selected block
+    $floors = Floor::where('block_id', $blockId)->pluck('id');
+
+    // Fetch all rooms for these floors
+    $rooms = Room::whereIn('floor_id', $floors)->get();
+
+    // Return rooms as JSON
+    return response()->json(['rooms' => $rooms]);
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+    // Fetch payment options based on room ID
+    public function getPaymentOptions($roomId)
+    {
+        // Example logic to get payment options based on room ID
+        $room = Room::find($roomId);
+        $payments = []; // Fetch payment options logic
+
+        // Example static payment options, replace with dynamic data as needed
+        $payments = ['paid', 'not_paid'];
+
+        return response()->json([
+            'payments' => $payments
+        ]);
+    }
+
+
+
+
+
+    // Fetch course options based on room ID
+    public function getCourseOptions($roomId)
+    {
+        // Example logic to get course options based on room ID
+        $room = Room::find($roomId);
+        $courses = []; // Fetch course options logic
+
+        // Example static course options, replace with dynamic data as needed
+        $courses = ['D1', 'D2', 'D3', 'B1', 'B2', 'B3', 'B4'];
+
+        return response()->json([
+            'courses' => $courses
+        ]);
+    }
+
+
+
+// Fetch gender options based on room ID
+public function getGenderOptions($roomId)
+{
+    // Fetch the room based on room ID and semester_id
+    $room = Room::where('id', $roomId)
+                ->where('semester_id', session('semester_id'))
+                ->first();
+
+    // Initialize genders array
+    $genders = [];
+
+    // If room is found, set gender options
+    if ($room) {
+        // Example static gender options, replace with dynamic data as needed
+        // You could fetch gender data based on the room's properties if needed
+        $genders = ['male', 'female'];
+    }
+
+    return response()->json([
+        'genders' => $genders
+    ]);
+}
+
+}

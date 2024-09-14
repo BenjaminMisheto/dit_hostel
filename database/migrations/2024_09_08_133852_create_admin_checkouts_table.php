@@ -11,7 +11,6 @@ class CreateAdminCheckoutsTable extends Migration
     {
         Schema::create('admin_checkouts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('semester_id')->nullable()->constrained('semesters')->onDelete('set null');
             $table->unsignedBigInteger('user_id'); // Add user_id field
             $table->string('name');
             $table->string('condition');

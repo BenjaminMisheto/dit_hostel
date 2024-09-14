@@ -13,6 +13,7 @@ class AdminCheckout extends Model
         'user_id',
         'name',
         'condition',
+        'semester_id',
     ];
 
     public function user()

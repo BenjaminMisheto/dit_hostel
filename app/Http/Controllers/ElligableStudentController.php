@@ -42,6 +42,8 @@ class ElligableStudentController extends Controller
         ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
     );
 
+
+
     // Return the paginated list of eligible students as a view
     return view('admin.elligable', compact('paginatedStudents'));
 }
@@ -56,13 +58,16 @@ public function checkin(Request $request)
         // Calculate the number of records to skip
         $skip = $start - 1;
 
-        // Fetch eligible users with pagination
-        $eligibleUsers = User::whereNotNull('payment_status')
-                    // ->where('checkin',1)
-                     ->orderBy('checkin', 'desc') // Order by 'id' in descending order
-                     ->skip($skip)
-                     ->take($end - $start + 1)
-                     ->get();
+   // Fetch eligible users with pagination
+$eligibleUsers = User::whereNotNull('payment_status')
+    ->whereHas('bed.room.floor.block', function($query) {
+        $query->where('semester_id', session('semester_id'));
+    })
+    ->orderBy('checkin', 'desc') // Order by 'checkin' in descending order
+    ->skip($skip)
+    ->take($end - $start + 1)
+    ->get();
+
 
 
 
@@ -70,7 +75,12 @@ public function checkin(Request $request)
         // Create a paginator instance with the skipped records
         $currentPage = ceil($start / 10); // Current page based on start record
         $perPage = 10; // Number of items per page
-        $totalRecords = User::whereNotNull('payment_status')->count(); // Total number of records
+        $totalRecords = User::whereNotNull('payment_status')
+    ->whereHas('bed.room.floor.block', function($query) {
+        $query->where('semester_id', session('semester_id'));
+    })
+    ->count(); // Total number of records
+
 
         $paginatedUsers = new \Illuminate\Pagination\LengthAwarePaginator(
             $eligibleUsers,
@@ -79,6 +89,8 @@ public function checkin(Request $request)
             $currentPage,
             ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
         );
+
+
 
         return view('admin.checkin', compact('paginatedUsers'));
     }
@@ -95,19 +107,29 @@ public function checkout(Request $request)
         // Calculate the number of records to skip
         $skip = $start - 1;
 
-        // Fetch eligible users with pagination
-        $eligibleUsers = User::whereNotNull('payment_status')
-                    ->orderBy('id', 'desc') // Order by 'id' in descending order
-                     ->where('checkin', 2)
-                     ->skip($skip)
-                     ->take($end - $start + 1)
-                     ->get();
+ // Fetch eligible users with pagination
+$eligibleUsers = User::whereNotNull('payment_status')
+    ->whereHas('bed.room.floor.block', function($query) {
+        $query->where('semester_id', session('semester_id'));
+    })
+    ->where('checkin', 2)
+    ->orderBy('id', 'desc') // Order by 'id' in descending order
+    ->skip($skip)
+    ->take($end - $start + 1)
+    ->get();
+
 
 
         // Create a paginator instance with the skipped records
         $currentPage = ceil($start / 10); // Current page based on start record
         $perPage = 10; // Number of items per page
-        $totalRecords = User::whereNotNull('payment_status')->where('checkin', 1)->count();  // Total number of records
+        $totalRecords = User::whereNotNull('payment_status')
+    ->where('checkin', 1)
+    ->whereHas('bed.room.floor.block', function($query) {
+        $query->where('semester_id', session('semester_id'));
+    })
+    ->count(); // Total number of records
+
 
         $paginatedUsers = new \Illuminate\Pagination\LengthAwarePaginator(
             $eligibleUsers,
@@ -116,6 +138,8 @@ public function checkout(Request $request)
             $currentPage,
             ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
         );
+
+
     // Return the paginated list of eligible students as a view
     return view('admin.checkout', compact('paginatedUsers'));
 
@@ -339,8 +363,11 @@ public function out($bedId)
         $confirmationItems = $confirmation ? json_decode($confirmation->checkout_items_names, true) : [];
     }
 
+
+
     // Pass the data to the view
     return view('admin.out', [
+
         'bed' => $bed,
         'user' => $user,
         'confirmationItems' => $confirmationItems,

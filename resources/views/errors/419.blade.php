@@ -1,18 +1,14 @@
 @extends('layouts.guest')
 @section('content')
-<div class="content d-flex align-items-center justify-content-center vh-100">
-    <div class="container-fluid">
-        <div class="row justify-content-center">
-            <div class="col-12 col-md-6 text-center">
-                <div class="card p-5">
-                    <div class="card-body">
-                        <h6 class="display-4">The Page Has Expired</h6>
-                        <p class="lead">Please refresh the page or try again later.</p>
-                        <a href="{{ route('expire') }}" class="btn btn-primary mt-4">Go to Home</a>
-                    </div>
-                </div>
-            </div>
+
+<div class="container full-height d-flex align-items-center justify-content-center" style="height: 70vh;">
+    <div class="" style="width: 18rem;">
+        <div class="card-body text-center">
+            <i class="gd-alert text-danger" style="font-size: 3rem;"></i><br>
+            <small class="card-title">Page Expire</small><br>
+            <a href="{{ route('expire') }}" class="btn btn-outline-primary mt-4">Go to Home</a>
         </div>
     </div>
 </div>
+
 @endsection

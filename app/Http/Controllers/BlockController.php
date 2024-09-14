@@ -4,13 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Block;
 use Illuminate\Http\Request;
+use App\Models\semester;
 
 class BlockController extends Controller
 {
     public function index()
 {
-    // Fetch blocks with their related floors, ordered by 'created_at' in descending order
-    $blocks = Block::with('floors')->orderBy('created_at', 'desc')->get();
+    // Fetch blocks with their related floors, filtered by the current semester and ordered by 'created_at' in descending order
+    $blocks = Block::with('floors')
+                   ->where('semester_id', session('semester_id'))
+                   ->orderBy('created_at', 'desc')
+                   ->get();
 
     // Initialize an array to hold gender data for each block
     $blockGenders = [];
@@ -31,6 +35,7 @@ class BlockController extends Controller
     // Pass the blocks and blockGenders data to the view
     return view('admin.hostel', compact('blocks', 'blockGenders'));
 }
+
 
 
 

@@ -20,6 +20,7 @@ class SliderData extends Model
         'value',
         'bed_id',
         'status',
+        'semester_id',
     ];
 
     // Define the relationships if necessary

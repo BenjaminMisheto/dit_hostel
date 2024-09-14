@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\CheckOutItem;
 use App\Models\Requirement;
 use App\Models\AdminCheckout;
+use App\Models\Semester;
 
 use App\Models\RequirementItemConfirmation;
 use Carbon\Carbon;
@@ -150,6 +151,16 @@ class AjaxController extends Controller
 
     // Attempt admin login
     if (Auth::guard('admin')->attempt($request->only('email', 'password'), $request->has('remember'))) {
+
+        $semester = Semester::where('is_closed', '!=', 1)
+                    ->latest() // Order by the most recent
+                    ->first(); // Get the first result
+
+
+                        // Store the semester name in the session
+       session(['semester' => $semester->name ?? '']);
+       session(['semester_id' => $semester->id ?? '']);
+
         return redirect()->route('admin.dashboard');
     }
 
@@ -193,6 +204,7 @@ class AjaxController extends Controller
             'manager' => $request->blockManager,
             'number_of_floors' => $request->numFloors,
             'price' => $request->blockPrice,
+            'semester_id' => session('semester_id'),
         ]);
 
         // Handle image upload if present and valid
@@ -325,7 +337,13 @@ public function updatePublishStatus(Request $request)
         $newExpirationDate = Carbon::now()->addDays($daysToAdd);
 
         // Update the expiration_date for users where expiration_date is null
-        User::whereNull('expiration_date')->update(['expiration_date' => $newExpirationDate]);
+    // Update expiration_date for users where expiration_date is NULL
+User::whereNull('expiration_date')
+    ->whereHas('bed.room.floor.block', function($query) {
+        $query->where('semester_id', session('semester_id'));
+    })
+    ->update(['expiration_date' => $newExpirationDate]);
+
     } else {
         return response()->json(['message' => 'Publish record not found.'], 404);
     }

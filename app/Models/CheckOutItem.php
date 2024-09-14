@@ -15,7 +15,8 @@ class CheckOutItem extends Model
         'condition',
         'block_id',
         'floor_id', // Added floor_id
-        'room_id'   // Added room_id
+        'room_id',   // Added room_id
+        'semester_id',
     ];
 
     // Define the relationship to the Block model

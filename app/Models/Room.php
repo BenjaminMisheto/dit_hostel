@@ -12,6 +12,7 @@ class Room extends Model
         'room_number',
         'floor_id',
         'gender',
+        'semester_id',
     ];
 
     // Define the relationship to the Bed model

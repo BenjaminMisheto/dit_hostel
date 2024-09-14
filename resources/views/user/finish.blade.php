@@ -13,9 +13,20 @@ $expirationDate = Carbon::parse($user->expiration_date);
         @endphp
 
         @if ($isEmpty)
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <strong>Important!</strong> Please ensure that your application is confirmed before proceeding.
+        <div class="container full-height d-flex align-items-center justify-content-center" style="height: 70vh;">
+            <div class="" style="width: 18rem;">
+                <div class="card-body text-center">
+                    <i class="gd-alert text-danger" style="font-size: 3rem;"></i><br>
+                    <small class="card-title">No Please ensure that your application is confirmed before proceeding.</small>
+                </div>
             </div>
+        </div>
+
+
+
+
+
+
             <script>
                 $('#gd-hostel,#gd-finish,#gd-result').removeClass('gd-check text-success').addClass(' gd-close text-danger');
         </script>

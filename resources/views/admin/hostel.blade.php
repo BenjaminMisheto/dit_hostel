@@ -4,6 +4,8 @@
     <div class="py-4 px-3 px-md-4">
         <div class="mb-3 mb-md-4 d-flex justify-content-between">
             <div class="h3 mb-0">Hostel</div>
+            <p>{{ session('semester') ?? 'No semester found' }}</p>
+
         </div>
         {{-- @if($blocks->isNotEmpty())
         @if($discrepanciesFound)
@@ -17,6 +19,10 @@
 
         </div>
     @endif --}}
+
+
+        @if(session('semester'))
+
         <div class="row">
             <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
                 <!-- Widget -->
@@ -33,19 +39,34 @@
             </div>
 
         </div>
+        @else
 
         <div class="row">
-            @if($blocks->isEmpty())
-            <div class="col-12">
-                <!-- Card -->
-                <div class="card alert alert-warning">
-                    <div class="card-body">
-                        <div class="text-center ">
-                            <small class="card-title">No block available</small>
-                        </div>
+            <div class="col-md-6 col-xl-4 mb-3 mb-xl-4">
+                <div class="card flex-row align-items-center p-3 p-md-4"
+                    style="  cursor: pointer; ">
+                <div>
+                        <h6 class="mb-4">Configure the semester by clicking the button below:</h6>
+                        <button class="btn btn-outline-secondary" onclick="semester()">Configure Semester</button>
                     </div>
                 </div>
             </div>
+        </div>
+        @endif
+
+
+
+        <div class="row">
+            @if($blocks->isEmpty())
+            <div class="container full-height d-flex align-items-center justify-content-center" style="height: 50vh;">
+                <div class="" style="width: 18rem;">
+                    <div class="card-body text-center">
+                        <i class="gd-alert text-danger" style="font-size: 3rem;"></i><br>
+                        <small class="card-title">No data available</small>
+                    </div>
+                </div>
+            </div>
+
             @else
 
 

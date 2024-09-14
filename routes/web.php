@@ -321,8 +321,23 @@ route::post('/save-check-out-items-room', [RoomController::class, 'saveCheckOutI
 
 Route::get('admin.semester', [ApplicationController::class, 'showSemester'])->name('admin.semester');
 
-route::post('/admin/update-semester-format', [ApplicationController::class, 'updateSemesterFormat'])->name('admin.updateSemesterFormat');
+
+
+
+
+
+// Route to close a semester
+Route::post('/semesters/{id}/close', [ApplicationController::class, 'closeSemester'])->name('semesters.close');
+
+// Route to create a new semester
+Route::post('/create-new-semester', [ApplicationController::class, 'createNewSemester'])->name('semesters.create');
+
+// Route to update semester format
+Route::post('/update-semester-format', [ApplicationController::class, 'updateSemesterFormat'])->name('admin.updateSemesterFormat');
+
+
 });
+
 
 Route::post('/admin.logout', function () {
     Auth::guard('admin')->logout();

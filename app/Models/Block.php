@@ -15,6 +15,7 @@ class Block extends Model
         'price',
         'location',
         'image_data',
+        'semester_id',
     ];
 
     // Define the relationship to the Floor model

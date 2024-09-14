@@ -7,6 +7,7 @@ use App\Models\Block;
 use App\Models\Floor;
 use App\Models\Room;
 use App\Models\Bed;
+use App\Models\Semester;
 
 class BlockSeeder extends Seeder
 {
@@ -21,8 +22,15 @@ class BlockSeeder extends Seeder
         $imageNumbers = range($imageStart, $imageEnd);
         shuffle($imageNumbers);
 
+        // Fetch all semesters
+        $semesters = Semester::all(); // Fetch all semesters from the SemesterSeeder
+
+        if ($semesters->isEmpty()) {
+            throw new \Exception('No semesters found. Please run the SemesterSeeder first.');
+        }
+
         // Create blocks
-        for ($b = 1; $b <= 7; $b++) { // Adjust the number of blocks as needed
+        for ($b = 1; $b <= 20; $b++) { // Adjust the number of blocks as needed
             // Check if there are enough images
             if (empty($imageNumbers)) {
                 throw new \Exception('Not enough unique images available for blocks.');
@@ -32,6 +40,9 @@ class BlockSeeder extends Seeder
             $imageNumber = array_pop($imageNumbers);
             $imageFile = $imagePath . $imageNumber . '.jpg';
 
+            // Randomly assign a semester to the block
+            $randomSemester = $semesters->random();
+
             $block = Block::create([
                 'name' => 'Block ' . $b,
                 'manager' => 'Manager ' . $b,
@@ -39,7 +50,8 @@ class BlockSeeder extends Seeder
                 'number_of_floors' => rand(7, 10), // Random number of floors
                 'price' => rand(500, 1500),
                 'image_data' => $imageFile, // Add image data
-                'status'=>1,
+                'status' => 1,
+                'semester_id' => $randomSemester->id, // Assign random semester ID to the block
             ]);
 
             // Create floors for each block

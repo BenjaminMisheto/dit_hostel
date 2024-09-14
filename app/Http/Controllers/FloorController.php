@@ -14,6 +14,7 @@ class FloorController extends Controller
 {
     public function add($id)
     {
+
         // Logic for adding a floor
         return view('admin.flooradd', ['id' => $id]);
     }
@@ -31,6 +32,7 @@ class FloorController extends Controller
     // Assuming eligibility is stored as JSON
     $eligibilityOptions = json_decode($floor->eligibility, true);
 
+
     // Pass the block ID to the view along with the floor and eligibility options
     return view('admin.floorupdate', compact('floor', 'eligibilityOptions', 'blockId'));
 }
@@ -40,6 +42,8 @@ class FloorController extends Controller
     {
         // Fetch the floor by ID
         $floor = Floor::findOrFail($id);
+
+
 
         // Pass the floor data to the view
         return view('admin.floordelete', compact('floor'));

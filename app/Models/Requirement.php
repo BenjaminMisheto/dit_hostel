@@ -12,6 +12,7 @@ class Requirement extends Model
     protected $fillable = [
         'name',
         'quantity',
+        'semester_id',
         'block_id',
     ];
 

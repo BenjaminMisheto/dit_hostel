@@ -78,9 +78,16 @@ th.desc::after {
 
 
         @if($paginatedUsers->isEmpty())
-        <div class="alert alert-warning text-center" role="alert">
-            <p>No Result found</p>
+
+        <div class="container full-height d-flex align-items-center justify-content-center" style="height: 70vh;">
+            <div class="" style="width: 18rem;">
+                <div class="card-body text-center">
+                    <i class="gd-alert text-danger" style="font-size: 3rem;"></i><br>
+                    <small class="card-title">No data available</small>
+                </div>
+            </div>
         </div>
+
         @else
         <div class="table-responsive">
             <table class="table table-striped">

@@ -15,7 +15,6 @@ class CreateBedsTable extends Migration
         // Create the beds table
         Schema::create('beds', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('semester_id')->nullable()->constrained('semesters')->onDelete('set null');
             $table->unsignedBigInteger('room_id');
             $table->string('bed_number');
             $table->string('status')->default('activate'); // Adding the status field

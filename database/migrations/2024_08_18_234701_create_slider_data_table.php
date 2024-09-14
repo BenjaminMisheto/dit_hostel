@@ -15,7 +15,6 @@ class CreateSliderDataTable extends Migration
     {
         Schema::create('slider_data', function (Blueprint $table) {
     $table->id();
-    $table->foreignId('semester_id')->nullable()->constrained('semesters')->onDelete('set null');
     $table->foreignId('block_id')->constrained('blocks')->onDelete('cascade');
     $table->foreignId('floor_id')->constrained('floors')->onDelete('cascade');
     $table->foreignId('bed_id')->constrained('beds')->onDelete('cascade');

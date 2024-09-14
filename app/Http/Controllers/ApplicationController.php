@@ -26,16 +26,27 @@ class ApplicationController extends Controller
     // Define the number of items per page
     $perPage = max(1, $end - $start + 1);
 
-    // Fetch users with related bed, room, floor, and block details
-    $users = User::with('bed.room.floor.block')
-                ->where('application', 1)
-                ->orderBy('id', 'desc')
-                ->skip($skip)
-                ->take($perPage)
-                ->get();
 
-    // Get the total number of records matching the query
-    $totalRecords = User::where('application', 1)->count();
+// Fetch users with related bed, room, floor, and block details
+$users = User::with('bed.room.floor.block')
+    ->where('application', 1)
+    ->whereHas('bed.room.floor.block', function($query) {
+        $query->where('semester_id', session('semester_id'));
+    })
+    ->orderBy('id', 'desc')
+    ->skip($skip)
+    ->take($perPage)
+    ->get();
+
+
+
+// Count the total records with the given conditions
+$totalRecords = User::where('application', 1)
+    ->whereHas('bed.room.floor.block', function($query) {
+        $query->where('semester_id', session('semester_id'));
+    })
+    ->count();
+
 
     // Calculate the current page based on the start value
     $currentPage = (int) ceil($start / $perPage);
@@ -51,12 +62,16 @@ class ApplicationController extends Controller
 
     // Fetch total user count for each block
     $blockUserCounts = User::with('bed.room.floor.block')
-        ->where('application', 1)
-        ->get()
-        ->groupBy('bed.room.floor.block.id')
-        ->map(function($group) {
-            return $group->count(); // Count of users in each block
-        });
+    ->where('application', 1)
+    ->whereHas('bed.room.floor.block', function($query) {
+        $query->where('semester_id', session('semester_id'));
+    })
+    ->get()
+    ->groupBy('bed.room.floor.block.id')
+    ->map(function($group) {
+        return $group->count(); // Count of users in each block
+    });
+
 
     // Group users by block, filter out users with incomplete relationships, and count users per block
     $blocks = $users->filter(function($user) {
@@ -75,26 +90,34 @@ class ApplicationController extends Controller
     // Fetch the latest publish status
     $publishStatus = Publish::latest()->value('status') ?? false;
 
+
+
     return view('admin.application', [
+
         'blocks' => $blocks,
         'publishStatus' => $publishStatus,
         'paginatedStudents' => $paginatedStudents,
     ]);
 }
 
+
 public function search(Request $request)
 {
     $query = $request->input('query', '');
 
-    // Fetch users matching the search query with related details
-    $users = User::with('bed.room.floor.block')
-                ->where('application', 1)
-                ->where(function($q) use ($query) {
-                    $q->where('name', 'like', "%{$query}%")
-                      ->orWhere('registration_number', 'like', "%{$query}%");
-                })
-                ->orderBy('id', 'desc')
-                ->get();
+// Fetch users matching the search query with related details
+$users = User::with('bed.room.floor.block')
+    ->where('application', 1)
+    ->whereHas('bed.room.floor.block', function($query) {
+        $query->where('semester_id', session('semester_id'));
+    })
+    ->where(function($q) use ($query) {
+        $q->where('name', 'like', "%{$query}%")
+          ->orWhere('registration_number', 'like', "%{$query}%");
+    })
+    ->orderBy('id', 'desc')
+    ->get();
+
 
     if ($users->isEmpty()) {
         // Return a "No applications found" message with an action button
@@ -376,41 +399,129 @@ public function applyNo(Request $request)
     return response()->json(['success' => true, 'message' => 'Applied No to selected users.']);
 }
 
-
-
 public function showSemester()
 {
     // Retrieve the current format from the cache or database
     $semesterFormat = Cache::get('semester_format', 'year_range'); // Default format
 
-    // Retrieve existing semesters from the database
-    $semesters = Semester::all();
+    // Retrieve all semesters from the database
+    $allSemesters = Semester::all();
 
-    return view('admin.semester', compact('semesterFormat', 'semesters'));
+    // Get the last 5 semesters for display
+    $semesters = $allSemesters->sortByDesc('id')->take(10);
+
+    // Check if all semesters are closed
+    $allClosed = $allSemesters->every(fn($s) => $s->is_closed);
+
+    return view('admin.semester', compact('semesterFormat', 'semesters', 'allClosed'));
+}
+
+
+public function closeSemester($id)
+{
+    // Find the semester by ID
+    $semester = Semester::find($id);
+
+    // Check if the semester exists
+    if (!$semester) {
+        return response()->json(['message' => 'Semester not found.'], 404);
+    }
+
+    // Mark the semester as closed
+    $semester->is_closed = true;
+    $semester->save();
+
+
+    session()->forget(['semester_id', 'semester']);
+
+
+    return response()->json(['message' => 'Semester closed successfully.']);
+}
+
+public function createNewSemester()
+{
+    // Fetch the latest closed semester
+    $latestSemester = Semester::where('is_closed', true)->latest()->first();
+
+    // Generate the next semester name
+    if ($latestSemester) {
+        $name = $this->generateNextSemesterName($latestSemester->name);
+    } else {
+        // If no closed semesters exist, create a default starting name
+        $name = 'Semester 1 ' . (date('Y') + 1) . '/' . (date('Y') + 2);
+    }
+
+    // Create and save the new semester
+    $semester = new Semester();
+    $semester->name = $name;
+
+    $semester->is_closed = false;
+
+    $semester->save();
+
+    $semester = Semester::where('is_closed', '!=', 1)
+                    ->latest() // Order by the most recent
+                    ->first(); // Get the first result
+
+        // Store the semester name in the session
+       session(['semester' => $semester->name ?? '']);
+       session(['semester_id' => $semester->id ?? '']);
+
+    return response()->json(['success' => true, 'message' => 'New semester created successfully.']);
 }
 
 
 
-    public function updateSemesterFormat(Request $request)
+
+private function generateNextSemesterName($currentSemesterName)
 {
-    // Validate incoming request
+    // Extract semester parts using regex
+    preg_match('/Semester (\d) (\d{4})\/(\d{4})/', $currentSemesterName, $matches);
+    $semesterNumber = $matches[1];
+    $currentYear = $matches[2];
+    $nextYear = $matches[3];
+
+    // Logic to increment semester and year
+    if ($semesterNumber == 1) {
+        $semesterNumber = 2;
+    } else {
+        $semesterNumber = 1;
+        $currentYear++;
+        $nextYear++;
+    }
+
+    return "Semester $semesterNumber $currentYear/$nextYear";
+}
+
+public function updateSemesterFormat(Request $request)
+{
+    // Validate the request input
     $request->validate([
-        'name' => 'required|string',
-        // No need for start_date and end_date validation
+        'name' => 'required|string|max:255',
     ]);
 
-    // Get the selected format and map it to a name
-    $name = $request->input('name');
+    // Create a new semester with the provided format
+    $semesterName = $request->input('name');
 
 
-    // Create or update the semester with the determined name
-    Semester::updateOrCreate(
-        ['id' => 1], // Assuming you have a single record or adjust as needed
-        ['name' => $name]
-    );
 
-    return response()->json(['message' => 'Semester format updated successfully']);
+
+
+    $semester = new Semester();
+    $semester->name = $semesterName;
+    $semester->is_closed = false;
+    $semester->save();
+
+
+
+    $semester = Semester::where('is_closed', '!=', 1)
+                    ->latest() // Order by the most recent
+                    ->first(); // Get the first result
+
+        // Store the semester name in the session
+       session(['semester' => $semester->name ?? '']);
+       session(['semester_id' => $semester->id ?? '']);
+
+    return response()->json(['message' => 'Semester format updated successfully.']);
 }
-
-
 }

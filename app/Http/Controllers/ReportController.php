@@ -144,8 +144,6 @@ public function exportPDF(Request $request)
 
 
 
-
-
 public function exportPDFPrint(Request $request)
 {
     $hostelId = $request->query('hostel_id');

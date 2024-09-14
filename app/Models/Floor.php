@@ -13,6 +13,7 @@ class Floor extends Model
         'number_of_rooms',
         'gender',
         'eligibility',
+        'semester_id',
         'block_id',
     ];
     protected $casts = [

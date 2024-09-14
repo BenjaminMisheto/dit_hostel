@@ -13,6 +13,7 @@ class Semester extends Model
         'name', // e.g., '2023/2024'
         'start_date',
         'end_date',
+        'semester_id',
     ];
 
 

@@ -9,7 +9,6 @@ class CreateRoomsTable extends Migration
     {
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('semester_id')->nullable()->constrained('semesters')->onDelete('set null');
             $table->unsignedBigInteger('floor_id');
             $table->string('room_number');
             $table->string('gender')->nullable();

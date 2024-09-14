@@ -18,6 +18,7 @@ class ElligableStudent extends Model
         'gender',
         'nationality',
         'course',
+
     ];
 
         // Relationship with Semester

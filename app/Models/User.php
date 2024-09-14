@@ -38,6 +38,7 @@ class User extends Authenticatable
         'counter',
         'checkin',
         'checkout',
+        'semester_id',
     ];
 
     protected $hidden = [

@@ -15,7 +15,10 @@ class ControlController extends Controller
     public function control()
 {
     // Fetch blocks with floors, rooms, beds, and status
-    $blocks = Block::with(['floors.rooms.beds'])->get();
+    $blocks = Block::with(['floors.rooms.beds'])
+    ->where('semester_id', session('semester_id'))
+    ->get();
+
 
     // Function to generate a random light color for gradients
     function randomLightColor() {
@@ -118,8 +121,11 @@ class ControlController extends Controller
         return !empty($discrepancy['discrepancies']);
     });
 
+
+
     // Return the view with combined data, discrepancies status, and block statuses
     return view('admin.control', [
+
         'blocks' => $blockData,
         'discrepancies' => $discrepancies,
         'discrepanciesFound' => $discrepancies->isNotEmpty(),

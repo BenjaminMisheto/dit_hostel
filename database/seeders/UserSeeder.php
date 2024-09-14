@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
         // Fetch all beds and their related data (room, floor, block)
         $beds = Bed::with(['room.floor.block'])
             ->inRandomOrder()
-             ->limit(50)
+            //  ->limit(50)
             ->get();
 
         // Populate the user table with users who have already applied for beds
@@ -27,6 +27,7 @@ class UserSeeder extends Seeder
 
             $user = User::create([
                 'name' => $faker->name,
+
                 'registration_number' => $faker->unique()->numerify('#########'), // Generates a 9-digit number
                 'confirmation' => 1,
                 'application' => 1,

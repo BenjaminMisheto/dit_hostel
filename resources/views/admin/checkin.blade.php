@@ -57,6 +57,7 @@ th.desc::after {
     <div class="py-4 px-3 px-md-4">
         <div class="mb-3 mb-md-4 d-flex justify-content-between align-items-center">
             <div class="h3 mb-0">Check-In</div>
+            <p>{{$semester->name ?? 'No semester found'}}</p>
 
         </div>
         <div class="form-group position-relative">
@@ -78,9 +79,16 @@ th.desc::after {
 
 
         @if($paginatedUsers->isEmpty())
-        <div class="alert alert-warning text-center" role="alert">
-            <p>No Result found</p>
+        <div class="container full-height d-flex align-items-center justify-content-center" style="height: 70vh;">
+            <div class="" style="width: 18rem;">
+                <div class="card-body text-center">
+                    <i class="gd-alert text-danger" style="font-size: 3rem;"></i><br>
+                    <small class="card-title">No data available</small>
+                </div>
+            </div>
         </div>
+
+
 
         @else
         <div class="table-responsive">

@@ -35,21 +35,15 @@ use App\Models\User;
                     <input type="hidden" id="roomId" value="{{ $room->id }}">
                     @if($room->users->isEmpty())
 
-<div class="d-flex justify-content-center align-items-center vh-50">
-    <div class="col-md-6">
-        <!-- Card -->
-        <div class="card h-100 alert alert-danger ">
+                    <div class="container full-height d-flex align-items-center justify-content-center" style="height: 70vh;">
+                        <div class="" style="width: 18rem;">
+                            <div class="card-body text-center">
+                                <i class="gd-alert text-danger" style="font-size: 3rem;"></i><br>
+                                <small class="card-title">No data available</small>
+                            </div>
+                        </div>
+                    </div>
 
-            <div class="card-body pt-0">
-                <div class="text-center">
-
-                    <p>No students assigned to this room.</p>
-                </div>
-            </div>
-        </div>
-        <!-- End Card -->
-    </div>
-</div>
 
 
 

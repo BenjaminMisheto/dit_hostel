@@ -20,6 +20,7 @@ class Publish extends Model
         'reserved_bed',
         'maintenance_bed',
         'expiration_date',
+        'semester_id',
         'deadline',
     ];
 

@@ -13,7 +13,6 @@ class CreateFloorsTable extends Migration
     {
         Schema::create('floors', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('semester_id')->nullable()->constrained('semesters')->onDelete('set null');
             $table->foreignId('block_id')->constrained('blocks')->onDelete('cascade');
             $table->string('floor_number'); // Ensure floor_number is unique
             $table->integer('number_of_rooms');

@@ -133,6 +133,7 @@ if ($row) {
             'application' => 1,
             'status' => 'approved',
             'confirmation' => 1,
+            'semester_id' => session('semester_id'),
 
         ]);
 

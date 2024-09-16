@@ -1,3 +1,9 @@
+@php
+
+use App\Models\User;
+
+@endphp
+
 <!-- Delete Bed Modal -->
 <div id="deleteBed" class="modal fade" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog rounded" role="document">
@@ -145,6 +151,9 @@
                     </div>
 
                     @endif --}}
+
+
+
 
                     @if($bed->user)
                     <div class="alert alert-success" role="alert" id="statusindicator">

@@ -30,7 +30,7 @@ class BlockSeeder extends Seeder
         }
 
         // Create blocks
-        for ($b = 1; $b <= 20; $b++) { // Adjust the number of blocks as needed
+        for ($b = 1; $b <= 3; $b++) { // Adjust the number of blocks as needed
             // Check if there are enough images
             if (empty($imageNumbers)) {
                 throw new \Exception('Not enough unique images available for blocks.');
@@ -51,7 +51,7 @@ class BlockSeeder extends Seeder
                 'price' => rand(500, 1500),
                 'image_data' => $imageFile, // Add image data
                 'status' => 1,
-                'semester_id' => $randomSemester->id, // Assign random semester ID to the block
+                // 'semester_id' => $randomSemester->id, // Assign random semester ID to the block
             ]);
 
             // Create floors for each block

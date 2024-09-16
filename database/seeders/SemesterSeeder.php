@@ -20,13 +20,7 @@ class SemesterSeeder extends Seeder
             ['name' => 'Semester 1 2025/2026', 'start_date' => '2025-09-01', 'end_date' => '2026-01-31'],
             ['name' => 'Semester 2 2025/2026', 'start_date' => '2026-02-01', 'end_date' => '2026-06-30'],
             ['name' => 'Semester 1 2026/2027', 'start_date' => '2026-09-01', 'end_date' => '2027-01-31'],
-            ['name' => 'Semester 2 2026/2027', 'start_date' => '2027-02-01', 'end_date' => '2027-06-30'],
-            ['name' => 'Semester 1 2027/2028', 'start_date' => '2027-09-01', 'end_date' => '2028-01-31'],
-            ['name' => 'Semester 2 2027/2028', 'start_date' => '2028-02-01', 'end_date' => '2028-06-30'],
-            ['name' => 'Semester 1 2028/2029', 'start_date' => '2028-09-01', 'end_date' => '2029-01-31'],
-            ['name' => 'Semester 2 2028/2029', 'start_date' => '2029-02-01', 'end_date' => '2029-06-30'],
-            ['name' => 'Semester 1 2029/2030', 'start_date' => '2029-09-01', 'end_date' => '2030-01-31'],
-            ['name' => 'Semester 2 2029/2030', 'start_date' => '2030-02-01', 'end_date' => '2030-06-30'],
+
         ];
 
 // Create the semesters and mark only the last one as open

@@ -92,7 +92,7 @@
         @foreach($blocks as $block)
 
 
-            <div class="col-12 col-sm-6 col-md-4 mb-3">
+            <div class="col-xl-4 mb-3">
                 <div class="card" id="block{{ $block['id'] }}" data-total-beds="{{ array_sum(array_column($block['totalBedsByFloor'], 'count')) }}">
                     <div class="card-body">
                         <h5 class="card-title">

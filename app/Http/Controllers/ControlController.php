@@ -16,7 +16,7 @@ class ControlController extends Controller
 {
     // Fetch blocks with floors, rooms, beds, and status
     $blocks = Block::with(['floors.rooms.beds'])
-    ->where('semester_id', session('semester_id'))
+
     ->get();
 
 

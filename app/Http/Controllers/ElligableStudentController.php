@@ -398,6 +398,7 @@ public function studentout(Request $request)
             AdminCheckout::updateOrCreate(
                 [
                     'user_id' => $user->id, // Find by user_id
+                    'semester_id' => $user->semester_id, // Find by user_id
                     'name' => $item['name'], // Find by item name
                 ],
                 [

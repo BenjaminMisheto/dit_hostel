@@ -338,7 +338,7 @@ public function updatePublishStatus(Request $request)
 
         // Update the expiration_date for users where expiration_date is null
     // Update expiration_date for users where expiration_date is NULL
-User::whereNull('expiration_date')
+     User::whereNull('expiration_date')
     ->whereHas('bed.room.floor.block', function($query) {
         $query->where('semester_id', session('semester_id'));
     })
@@ -852,7 +852,7 @@ public function updateExpirationapp(Request $request)
         'user_id' => 'required|integer|exists:users,id',
     ]);
 
-    \Log::error("uvbjlkbliufebvlfblui");
+
 
     // Find the user and update the fields
     $user = User::find($request->user_id);
@@ -970,7 +970,7 @@ public function confirmApplication(Request $request)
         'floor_id' => null,
         'bed_id' => null,
         'counter' => 0,
-        'expiration_date' => Carbon::now()->addDays(365) // Adds 365 days to the current date
+       // 'expiration_date' => Carbon::now()->addDays(365) // Adds 365 days to the current date
     ]);
 }
 
@@ -1015,7 +1015,7 @@ public function confirmApplication(Request $request)
     $publish = Publish::first(); // Adjust if needed to fetch the specific record
 
 
-    if ($publish ->first()->status == 1) {
+    if ($publish->first()->status == 1) {
     $user->afterpublish = 1; // Assign the new value
     $user->save();           // Save the updated user to the database
 }
@@ -1023,15 +1023,11 @@ public function confirmApplication(Request $request)
 
 
     if ($publish) {
-        // Convert the stored expiration_date to an integer representing the number of days
         $daysToAdd = (int) $publish->expiration_date;
-
-        // Calculate the new expiration date by adding the days to the current time
         $newExpirationDate = Carbon::now()->addDays($daysToAdd);
-
-        // Set the user's expiration_date to the calculated date
         $user->expiration_date = $newExpirationDate;
-        $user->save();
+
+       // $user->save();
     } else {
         return response()->json(['message' => 'Publish record not found.'], 404);
     }

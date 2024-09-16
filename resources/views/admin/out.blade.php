@@ -202,6 +202,7 @@
                 method: 'POST',
                 data: {
                     user_id: $('#user_id').val(),
+
                     items: items,
                     _token: '{{ csrf_token() }}'
                 },

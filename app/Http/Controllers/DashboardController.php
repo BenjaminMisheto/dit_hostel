@@ -14,9 +14,6 @@ use App\Models\semester;
 class DashboardController extends Controller
 {
 
-
-
-
     public function showAdminDashboard()
 {
     $currentMonth = strtolower(Carbon::now()->format('F'));
@@ -51,16 +48,13 @@ class DashboardController extends Controller
     $visitorCount = VisitorCount::firstOrCreate(['id' => 1]);
 
     // Fetch user data
-    $totalStudents = User::whereHas('bed.room.floor.block', function($query) {
-        $query->where('semester_id', session('semester_id'));
-    })
-    ->count();
+    $totalStudents = User::where('semester_id', session('semester_id'))->count();
+
+
 
     $newStudentsCount = User::whereMonth('created_at', Carbon::now()->month)
     ->whereYear('created_at', $currentYear)
-    ->whereHas('bed.room.floor.block', function($query) {
-        $query->where('semester_id', session('semester_id'));
-    })
+    ->where('semester_id', session('semester_id'))
     ->count();
 
     // Get the number of users for each month of the current year
@@ -68,47 +62,45 @@ class DashboardController extends Controller
     for ($i = 1; $i <= 12; $i++) {
     $monthlyStudentApplications[$i] = User::whereMonth('created_at', $i)
         ->whereYear('created_at', $currentYear)
-        ->whereHas('bed.room.floor.block', function($query) {
-            $query->where('semester_id', session('semester_id'));
-        })
+        ->where('semester_id', session('semester_id'))
         ->count();
     }
 
 
 
+
+
 // Get total number of beds for the current semester
-$totalBeds = Bed::whereHas('room.floor.block', function($query) {
-    $query->where('semester_id', session('semester_id'));
-})->count();
+$totalBeds = Bed::count();
 
 // Get total number of occupied beds for the current semester
-$totalOccupiedBeds = Bed::whereHas('room.floor.block', function($query) {
+$totalOccupiedBeds = Bed::whereHas('user', function($query) {
     $query->where('semester_id', session('semester_id'));
 })->whereNotNull('user_id')->count();
 
+
+
 // Get total number of open beds for the current semester
-$totalOpenBeds = Bed::whereHas('room.floor.block', function($query) {
+$totalOpenBeds = Bed::whereHas('user', function($query) {
     $query->where('semester_id', session('semester_id'));
 })->where('status', 'activate')->count();
 
 // Get total number of beds under maintenance for the current semester
-$totalunder_maintenanceBeds= Bed::whereHas('room.floor.block', function($query) {
+$totalunder_maintenanceBeds= Bed::whereHas('user', function($query) {
     $query->where('semester_id', session('semester_id'));
 })->where('status', 'under_maintenance')->count();
 
 // Get total number of reserved beds for the current semester
-$totalReserveBeds = Bed::whereHas('room.floor.block', function($query) {
+$totalReserveBeds = Bed::whereHas('user', function($query) {
     $query->where('semester_id', session('semester_id'));
 })->where('status', 'reserve')->count();
 
 // Calculate male and female student counts for the current semester
-$maleStudents = User::whereHas('bed.room.floor.block', function($query) {
-    $query->where('semester_id', session('semester_id'));
-})->where('gender', 'male')->count();
+$maleStudents = User::where('semester_id', session('semester_id'))
+->where('gender', 'male')->count();
 
-$femaleStudents = User::whereHas('bed.room.floor.block', function($query) {
-    $query->where('semester_id', session('semester_id'));
-})->where('gender', 'female')->count();
+$femaleStudents = User::where('semester_id', session('semester_id'))
+->where('gender', 'female')->count();
 
 
     // Calculate percentages
@@ -120,9 +112,7 @@ $femaleStudents = User::whereHas('bed.room.floor.block', function($query) {
     // Fetch the 10 most recent applications
 // Get the most recent 5 applications for the current semester
 $recentApplications = User::where('application', 1)
-    ->whereHas('bed.room.floor.block', function($query) {
-        $query->where('semester_id', session('semester_id'));
-    })
+->where('semester_id', session('semester_id'))
     ->latest() // Orders by the most recent first (created_at or updated_at)
     ->take(5)  // Limits the result to 5 records
     ->get();
@@ -176,8 +166,7 @@ $recentApplications = User::where('application', 1)
 
 
     public function showAdminProfile()
-    {
-    $currentMonth = strtolower(Carbon::now()->format('F'));
+    {    $currentMonth = strtolower(Carbon::now()->format('F'));
     $currentYear = Carbon::now()->year;
 
     // Handle view counts
@@ -209,16 +198,13 @@ $recentApplications = User::where('application', 1)
     $visitorCount = VisitorCount::firstOrCreate(['id' => 1]);
 
     // Fetch user data
-    $totalStudents = User::whereHas('bed.room.floor.block', function($query) {
-        $query->where('semester_id', session('semester_id'));
-    })
-    ->count();
+    $totalStudents = User::where('semester_id', session('semester_id'))->count();
+
+
 
     $newStudentsCount = User::whereMonth('created_at', Carbon::now()->month)
     ->whereYear('created_at', $currentYear)
-    ->whereHas('bed.room.floor.block', function($query) {
-        $query->where('semester_id', session('semester_id'));
-    })
+    ->where('semester_id', session('semester_id'))
     ->count();
 
     // Get the number of users for each month of the current year
@@ -226,47 +212,45 @@ $recentApplications = User::where('application', 1)
     for ($i = 1; $i <= 12; $i++) {
     $monthlyStudentApplications[$i] = User::whereMonth('created_at', $i)
         ->whereYear('created_at', $currentYear)
-        ->whereHas('bed.room.floor.block', function($query) {
-            $query->where('semester_id', session('semester_id'));
-        })
+        ->where('semester_id', session('semester_id'))
         ->count();
     }
 
 
 
+
+
 // Get total number of beds for the current semester
-$totalBeds = Bed::whereHas('room.floor.block', function($query) {
-    $query->where('semester_id', session('semester_id'));
-})->count();
+$totalBeds = Bed::count();
 
 // Get total number of occupied beds for the current semester
-$totalOccupiedBeds = Bed::whereHas('room.floor.block', function($query) {
+$totalOccupiedBeds = Bed::whereHas('user', function($query) {
     $query->where('semester_id', session('semester_id'));
 })->whereNotNull('user_id')->count();
 
+
+
 // Get total number of open beds for the current semester
-$totalOpenBeds = Bed::whereHas('room.floor.block', function($query) {
+$totalOpenBeds = Bed::whereHas('user', function($query) {
     $query->where('semester_id', session('semester_id'));
 })->where('status', 'activate')->count();
 
 // Get total number of beds under maintenance for the current semester
-$totalunder_maintenanceBeds= Bed::whereHas('room.floor.block', function($query) {
+$totalunder_maintenanceBeds= Bed::whereHas('user', function($query) {
     $query->where('semester_id', session('semester_id'));
 })->where('status', 'under_maintenance')->count();
 
 // Get total number of reserved beds for the current semester
-$totalReserveBeds = Bed::whereHas('room.floor.block', function($query) {
+$totalReserveBeds = Bed::whereHas('user', function($query) {
     $query->where('semester_id', session('semester_id'));
 })->where('status', 'reserve')->count();
 
 // Calculate male and female student counts for the current semester
-$maleStudents = User::whereHas('bed.room.floor.block', function($query) {
-    $query->where('semester_id', session('semester_id'));
-})->where('gender', 'male')->count();
+$maleStudents = User::where('semester_id', session('semester_id'))
+->where('gender', 'male')->count();
 
-$femaleStudents = User::whereHas('bed.room.floor.block', function($query) {
-    $query->where('semester_id', session('semester_id'));
-})->where('gender', 'female')->count();
+$femaleStudents = User::where('semester_id', session('semester_id'))
+->where('gender', 'female')->count();
 
 
     // Calculate percentages
@@ -278,15 +262,10 @@ $femaleStudents = User::whereHas('bed.room.floor.block', function($query) {
     // Fetch the 10 most recent applications
 // Get the most recent 5 applications for the current semester
 $recentApplications = User::where('application', 1)
-    ->whereHas('bed.room.floor.block', function($query) {
-        $query->where('semester_id', session('semester_id'));
-    })
+->where('semester_id', session('semester_id'))
     ->latest() // Orders by the most recent first (created_at or updated_at)
     ->take(5)  // Limits the result to 5 records
     ->get();
-
-
-
 
 
 
@@ -329,8 +308,6 @@ $recentApplications = User::where('application', 1)
         'occupancyPercentage' => $occupancyPercentage,
 
     ]);
-
-
     }
 
 

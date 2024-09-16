@@ -232,6 +232,13 @@ $hasOccupiedBed = Bed::whereHas('room', function ($query) use ($floorId) {
     $query->where('floor_id', $floorId);
 })->whereHas('user')->exists();
 
+
+// $hasOccupiedBed = Bed::whereHas('room', function ($query) use ($floorId) {
+//     $query->where('floor_id', $floorId);
+// })->whereHas('user', function ($query) {
+//     $query->where('semester_id', session('semester_id')); // Ensure the user belongs to the current semester
+// })->exists();
+
 if ($hasOccupiedBed) {
     echo "At least one bed is currently occupied by a user. Consequently, gender selection has been disabled to prevent both male and female occupants from being assigned to the same room.";
 }

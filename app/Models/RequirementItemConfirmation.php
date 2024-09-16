@@ -26,17 +26,14 @@ class RequirementItemConfirmation extends Model
         'checkout_items_names' => 'array',
     ];
 
-
-
-
-  //  Define relationships if needed
-   // Example:
+    // Relationship with User
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-        // Relationship with Semester
-        public function semester()
+
+    // Relationship with Semester
+    public function semester()
     {
         return $this->belongsTo(Semester::class);
     }

@@ -92,6 +92,8 @@
 
             isRequestInProgress = true;
 
+            $('#overlay').css('display', 'flex');
+
             $.ajax({
                 url: '/create-new-semester',
                 method: 'POST',
@@ -101,12 +103,15 @@
                 success: function(response) {
                     showToast('#success-toast', response.message); // Show server message
                     // Optionally, refresh the semester list
+                    $('#overlay').fadeOut();
                     semester();
                 },
                 error: function(xhr) {
+                    $('#overlay').fadeOut();
                     showToast('#error-toast', xhr.responseJSON?.message || 'Error creating new semester.'); // Show server message
                 },
                 complete: function() {
+                    $('#overlay').fadeOut();
                     isRequestInProgress = false;
                 }
             });
@@ -161,6 +166,7 @@
 
             var format = $('#semesterFormat').val();
             var start = $('#semesterStart').val();
+            $('#overlay').css('display', 'flex');
 
             $.ajax({
                 url: '{{ route("admin.updateSemesterFormat") }}',
@@ -172,9 +178,11 @@
                 success: function(response) {
                     showToast('#success-toast', response.message); // Show server message
                     // Optionally, reload or update the semester list
+                    $('#overlay').fadeOut();
                     semester();
                 },
                 error: function(xhr) {
+                    $('#overlay').fadeOut();
                     var errorMessage = 'Failed to update format: ';
                     if (xhr.responseJSON && xhr.responseJSON.message) {
                         errorMessage += xhr.responseJSON.message;
@@ -184,6 +192,7 @@
                     showToast('#error-toast', errorMessage); // Show server message
                 },
                 complete: function() {
+                    $('#overlay').fadeOut();
                     isRequestInProgress = false;
                     $('#submit-btn').prop('disabled', false); // Re-enable the submit button
                 }
@@ -210,7 +219,7 @@ function onCloseSemesterClick(semesterId) {
 
             // Show confirmation dialog
             if (confirm('Are you sure you want to close this semester? This action is irreversible.')) {
-
+                $('#overlay').css('display', 'flex');
 
                 $.ajax({
                     url: '/semesters/' + semesterId + '/close',
@@ -227,6 +236,8 @@ function onCloseSemesterClick(semesterId) {
                         showToast('#error-toast', xhr.responseJSON?.message || 'Error closing semester.'); // Show server message
                     },
                     complete: function() {
+                        $('#overlay').fadeOut();
+
 
                     }
                 });

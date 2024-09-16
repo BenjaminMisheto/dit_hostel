@@ -39,6 +39,7 @@ class User extends Authenticatable
         'checkin',
         'checkout',
         'semester_id',
+        'expiration_date',
     ];
 
     protected $hidden = [

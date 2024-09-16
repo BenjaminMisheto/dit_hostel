@@ -12,6 +12,7 @@ class CreateAdminCheckoutsTable extends Migration
         Schema::create('admin_checkouts', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id'); // Add user_id field
+            $table->unsignedBigInteger('semester_id'); // Add semester_id column
             $table->string('name');
             $table->string('condition');
             $table->timestamps();
@@ -20,6 +21,13 @@ class CreateAdminCheckoutsTable extends Migration
             $table->foreign('user_id')
                   ->references('id')
                   ->on('users')
+                  ->onDelete('cascade');
+
+
+                           // Foreign key constraint for semester_id
+            $table->foreign('semester_id')
+                  ->references('id')
+                  ->on('semesters')
                   ->onDelete('cascade');
         });
     }

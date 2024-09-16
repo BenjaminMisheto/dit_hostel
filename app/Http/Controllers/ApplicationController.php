@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Bed;
 use App\Models\Publish;
 use App\Models\Semester;
 use Carbon\Carbon;
@@ -261,7 +262,6 @@ $users = User::with('bed.room.floor.block')
     {
         //
     }
-
     public function updateStatus(Request $request, $id)
 {
     // Validate the request
@@ -272,50 +272,52 @@ $users = User::with('bed.room.floor.block')
     // Find the user by ID
     $user = User::find($id);
 
-    if ($user) {
-        // Get the current time and the expiration date
-        $now = Carbon::now();
-        $expirationDate = Carbon::parse($user->expiration_date);
-
-        // Check if both payment_status and control_number are not empty
-        if (!empty($user->payment_status) && !empty($user->Control_Number)) {
-            // Return error response if both payment_status and control_number are set
-            return response()->json([
-                'success' => false,
-                'message' => 'Student has already paid. You cannot change the status now.'
-            ], 400);
-        }
-
-        // Check if control_number is not empty but payment_status is empty
-        if (!empty($user->Control_Number)) {
-            if ($now->lt($expirationDate)) {
-                // If control_number is set but payment_status is not set and the expiration date has not passed
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Student has generated a control number. You cannot change the status until the application expires.'
-                ], 400);
-            }
-            // If expiration date has passed, allow status change
-        }
-
-        // Update the user's status
-        $user->status = $request->status;
-        $user->afterpublish = 0;
-        $user->save();
-
-        // Return success response
-        return response()->json([
-            'success' => true,
-            'message' => 'Status updated successfully'
-        ]);
-    } else {
+    if (!$user) {
         // Return error response if user not found
         return response()->json([
             'success' => false,
             'message' => 'User not found'
         ], 404);
     }
+
+    // Prevent status change if both payment_status and Control_Number are set
+    if (!empty($user->payment_status) && !empty($user->Control_Number)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Student has already paid. You cannot change the status now.'
+        ], 400);
+    }
+
+    // Check if Control_Number exists but the expiration date hasn't passed
+    if (!empty($user->Control_Number) && Carbon::now()->lt(Carbon::parse($user->expiration_date))) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Student has generated a control number. You cannot change the status until the application expires.'
+        ], 400);
+    }
+
+    // Update the user's status
+    $user->status = $request->status;
+    $user->afterpublish = 0;
+
+    // Update expiration date if it's null
+    $publish = Publish::first();
+    if ($publish && is_null($user->expiration_date)) {
+        $user->expiration_date = Carbon::now()->addDays((int) $publish->expiration_date);
+    }
+
+    $user->save();
+
+    // Return success response
+    return response()->json([
+        'success' => true,
+        'message' => 'Status updated successfully'
+    ]);
 }
+
+
+
+
 
 public function applyYes(Request $request)
 {
@@ -349,14 +351,24 @@ public function applyYes(Request $request)
             }
         }
 
+
         // Update the user's status to 'approved'
         $user->status = 'approved';
         $user->afterpublish = 0;
+            // Update expiration date if it's null
+    $publish = Publish::first();
+    if ($publish && is_null($user->expiration_date)) {
+        $user->expiration_date = Carbon::now()->addDays((int) $publish->expiration_date);
+    }
+
         $user->save();
     }
 
     return response()->json(['success' => true, 'message' => 'Applied Yes to selected users.']);
 }
+
+
+
 
 public function applyNo(Request $request)
 {
@@ -438,37 +450,74 @@ public function closeSemester($id)
     return response()->json(['message' => 'Semester closed successfully.']);
 }
 
+
+
+
 public function createNewSemester()
 {
-    // Fetch the latest closed semester
-    $latestSemester = Semester::where('is_closed', true)->latest()->first();
+    // Begin a transaction to ensure all operations are completed successfully
+    \DB::beginTransaction();
 
-    // Generate the next semester name
-    if ($latestSemester) {
-        $name = $this->generateNextSemesterName($latestSemester->name);
-    } else {
-        // If no closed semesters exist, create a default starting name
-        $name = 'Semester 1 ' . (date('Y') + 1) . '/' . (date('Y') + 2);
+    try {
+        // Fetch the latest closed semester
+        $latestSemester = Semester::where('is_closed', true)->latest()->first();
+
+        // Generate the next semester name
+        $nextSemesterName = $latestSemester
+            ? $this->generateNextSemesterName($latestSemester->name)
+            : 'Semester 1 ' . (date('Y') + 1) . '/' . (date('Y') + 2);
+
+        // Create and save the new semester
+        $semester = Semester::create([
+            'name' => $nextSemesterName,
+            'is_closed' => false,
+        ]);
+
+        // Store the newly created semester in the session
+        session([
+            'semester' => $semester->name,
+            'semester_id' => $semester->id,
+        ]);
+
+        // Clear necessary fields for all users in the current semester
+        User::query()->update([
+            'semester_id' => $semester->id,
+            'counter' => 0,
+            'checkin' => 0,
+            'checkout' => 0,
+            'confirmation' => 0,
+            'afterpublish' => 0,
+            'application' => 0,
+            'status' => 'disapproved',
+            'payment_status' => null,
+            'Control_Number' => null,
+            'block_id' => null,
+            'room_id' => null,
+            'floor_id' => null,
+            'bed_id' => null,
+            'expiration_date' => null,
+        ]);
+
+        // Reset user_id in the Bed table
+        Bed::query()->update([
+            'user_id' => null,
+        ]);
+
+        // Commit the transaction
+        \DB::commit();
+
+        // Return success response
+        return response()->json(['success' => true, 'message' => 'New semester created and user data reset successfully.']);
+    } catch (\Exception $e) {
+        // Rollback the transaction if something goes wrong
+        \DB::rollback();
+
+        // Return error response
+        return response()->json(['success' => false, 'message' => 'An error occurred: ' . $e->getMessage()], 500);
     }
-
-    // Create and save the new semester
-    $semester = new Semester();
-    $semester->name = $name;
-
-    $semester->is_closed = false;
-
-    $semester->save();
-
-    $semester = Semester::where('is_closed', '!=', 1)
-                    ->latest() // Order by the most recent
-                    ->first(); // Get the first result
-
-        // Store the semester name in the session
-       session(['semester' => $semester->name ?? '']);
-       session(['semester_id' => $semester->id ?? '']);
-
-    return response()->json(['success' => true, 'message' => 'New semester created successfully.']);
 }
+
+
 
 
 

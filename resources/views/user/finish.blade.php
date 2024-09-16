@@ -1,6 +1,6 @@
 @php
 use Carbon\Carbon;
-$expirationDate = Carbon::parse($user->expiration_date);
+$expirationDate = $user->expiration_date ? Carbon::parse($user->expiration_date) : null;
 @endphp
 <div class="content">
     <div class="py-4 px-3 px-md-4">
@@ -76,6 +76,16 @@ $expirationDate = Carbon::parse($user->expiration_date);
                                     </div>
                                 </div>
 
+
+                                <div class="row mb-3">
+                                    <div class="col  mb-2">
+                                        Floor
+                                    </div>
+                                    <div class="col  mb-2">
+                                        {{ $user->floor ? $user->floor->floor_number : 'Not Assigned' }}
+                                    </div>
+                                </div>
+
                                 <div class="row mb-3">
                                     <div class="col  mb-2">
                                 Room
@@ -107,24 +117,25 @@ $expirationDate = Carbon::parse($user->expiration_date);
                                    <!-- Alert for Important Notice -->
                         </div>
 
-                        <!-- Alerts Based on Application Status -->
-                        @if ($expirationDate->isPast() && empty($user->payment_status) && !empty($user->bed))
-                            <div class="alert alert-danger mb-3" role="alert">
-                                <strong>We regret to inform you, {{$user->name}}.</strong> Your application has expired. If you wish to reapply, please click "Reapply" on the results page.
-                            </div>
-                        @else
-                            @if ($user->application == 1)
-                                <div class="alert alert-success mb-3" role="alert">
-                                    <strong>Congratulations, {{$user->name}}!</strong> Your application has been successfully submitted. Please check the results page regularly to stay updated on the status of your application.
-                                </div>
-                            @else
-                                <form id="confirmApplicationForm" class="mb-3">
-                                    <div class="text-center">
-                                        <button type="submit" class="btn btn-outline-info" id="confirmButton">Confirm Your Application</button>
-                                    </div>
-                                </form>
-                            @endif
-                        @endif
+                    <!-- Alerts Based on Application Status -->
+@if ($expirationDate && $expirationDate->isPast() && empty($user->payment_status) && !empty($user->bed))
+<div class="alert alert-danger mb-3" role="alert">
+    <strong>We regret to inform you, {{$user->name}}.</strong> Your application has expired. If you wish to reapply, please click "Reapply" on the results page.
+</div>
+@else
+@if ($user->application == 1)
+    <div class="alert alert-success mb-3" role="alert">
+        <strong>Congratulations, {{$user->name}}!</strong> Your application has been successfully submitted. Please check the results page regularly to stay updated on the status of your application.
+    </div>
+@else
+    <form id="confirmApplicationForm" class="mb-3">
+        <div class="text-center">
+            <button type="submit" class="btn btn-outline-info" id="confirmButton">Confirm Your Application</button>
+        </div>
+    </form>
+@endif
+@endif
+
                     </div>
                 </div>
             </div>

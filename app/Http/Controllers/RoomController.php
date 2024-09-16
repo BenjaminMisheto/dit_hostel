@@ -41,12 +41,21 @@ class RoomController extends Controller
         }, 0);
     }, 0);
 
-    // Calculate the number of beds with different statuses
-    $totalOccupiedBeds = Bed::whereNotNull('user_id')
-        ->whereHas('room.floor.block', function ($query) use ($id) {
-            $query->where('id', $id);
-        })
-        ->count();
+
+
+
+// Calculate the number of beds with different statuses
+$totalOccupiedBeds = Bed::whereHas('user', function($query) {
+        $query->where('semester_id', session('semester_id'));
+    })
+    ->whereNotNull('user_id') // Fixed the missing '->' here
+    ->whereHas('room.floor.block', function ($query) use ($id) {
+        $query->where('id', $id);
+    })
+    ->count();
+
+
+
 
     $totalOpenBeds = Bed::where('status', 'activate')
         ->whereHas('room.floor.block', function ($query) use ($id) {
@@ -103,12 +112,17 @@ class RoomController extends Controller
     ));
 }
 
+
+
+
 public function showroomitem($id)
 {
-    // Fetch the room with users, ordered by 'id' in descending order
-    $room = Room::with(['users' => function($query) {
-        $query->orderBy('id', 'desc');  // Order users by 'id' in descending order
-    }])->findOrFail($id);
+// Fetch the room with users, ordered by 'id' in descending order
+$room = Room::with(['users' => function($query) {
+    $query->where('semester_id', session('semester_id')) // Correct placement of the where clause
+          ->orderBy('id', 'desc');  // Order users by 'id' in descending order
+}])->findOrFail($id);
+
 
     // Fetch the block related to the room and its related entities (floors, rooms, beds)
     // Since Room belongs to Floor and Floor belongs to Block, we can use the relationships
@@ -250,10 +264,15 @@ public function confirmapplication(Request $request)
 
     // Retrieve requirements and check-out items for the given block
     $requirements = Requirement::where('block_id', $validated['block_id'])->get();
-    $checkOutItems = CheckOutItem::where('room_id',$user->room_id)->get();
+    $checkOutItems = CheckOutItem::where('room_id', $user->room_id)->get();
 
-    // Check if a confirmation record already exists for the user
-    $confirmation = RequirementItemConfirmation::where('user_id', $validated['user_id'])->first();
+    // Retrieve the semester_id from the user
+    $semesterId = $user->semester_id;
+
+    // Check if a confirmation record already exists for the user and semester
+    $confirmation = RequirementItemConfirmation::where('user_id', $validated['user_id'])
+        ->where('semester_id', $semesterId)
+        ->first();
 
     if ($confirmation) {
         // Update existing confirmation record
@@ -277,6 +296,7 @@ public function confirmapplication(Request $request)
         // Create a new confirmation record
         $confirmation = new RequirementItemConfirmation();
         $confirmation->user_id = $validated['user_id'];
+        $confirmation->semester_id = $semesterId; // Set the semester_id from the user
         $confirmation->items_to_bring_names = $requirements->map(function($req) {
             return [
                 'name' => $req->name,
@@ -297,6 +317,5 @@ public function confirmapplication(Request $request)
 
     return response()->json(['message' => 'Confirmation saved successfully'], 200);
 }
-
 
 }

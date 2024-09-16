@@ -12,7 +12,7 @@ class BlockController extends Controller
 {
     // Fetch blocks with their related floors, filtered by the current semester and ordered by 'created_at' in descending order
     $blocks = Block::with('floors')
-                   ->where('semester_id', session('semester_id'))
+
                    ->orderBy('created_at', 'desc')
                    ->get();
 

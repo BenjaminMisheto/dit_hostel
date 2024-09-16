@@ -735,26 +735,42 @@ use App\Models\User;
                                             <div class="card-body">
                                                 @foreach($room->beds as $bed)
                                                 @php
-                                                $usertime = User::find($bed->user_id);
-                                                if ($usertime) {
-                                                    $expirationDate = $usertime->expiration_date;
-                                                }
 
-                                                    // Initialize status class and text
-                                                    $statusClass = '';
-                                                    $statusText = '';
 
-                                                    // Determine the status class and text based on the bed's status and user_id
-                                                    if ($bed->user_id) {
-                                                        if ($expirationDate && Carbon::now()->greaterThan($expirationDate) &&  empty($usertime->payment_status) ) {
-                                                            $statusClass = 'alert-danger';
-                                                            $statusText = 'Expire';
-                                                        } else {
-                                                            $statusClass = 'alert-success';
-                                                            $statusText = 'Taken';
-                                                        }
 
-                                                    }
+                                                        $usertime = User::where('semester_id', session('semester_id'))
+                                                       ->where('id', $bed->user_id)
+                                                        ->first();
+
+
+
+
+
+                                                        if ($usertime) {
+                                                            $expirationDate = $usertime->expiration_date;
+                                                      } else {
+                                                        $expirationDate = null; // Initialize $expirationDate to null if no user is found
+                                                            }
+                                                            // Initialize status class and text
+                                                            $statusClass = '';
+                                                             $statusText = '';
+
+                                                            // Determine the status class and text based on the bed's status and user_id
+                                                       if ($bed->user_id &&  $usertime )
+                                                       {
+
+
+                                                         if ($expirationDate && Carbon::now()->greaterThan($expirationDate) && empty($usertime->payment_status) ) {
+                                                             $statusClass = 'alert-danger';
+                                                               $statusText = 'Expire';
+                                                                 } else {
+                                                                    $statusClass = 'alert-success';
+                                                                      $statusText = 'Taken';
+                                                                    }
+                                                                  }
+
+
+
 
 
 
@@ -781,6 +797,7 @@ use App\Models\User;
                                                 @endphp
 
                                                 <div class="input-container" style="cursor: pointer;">
+
                                                     <div class="radio-tile {{ $statusClass }}" onclick="floorAction('bed', {{ $bed->id }})"style="cursor: pointer;" >
                                                         <label class="radio-tile-label mt-2" style="cursor: pointer;">
                                                             {{ $room->room_number }} - Bed {{ $bed->bed_number }}

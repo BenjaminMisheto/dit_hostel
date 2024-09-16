@@ -47,20 +47,18 @@ use App\Models\User;
 
                 <div class="card-body tab-content">
                     @if($filteredFloors->isEmpty())
-                    <div class="alert alert-warning">
-                        <strong>Notice:</strong>
-                        @if($reasons)
-                        <p>Unfortunately, you do not qualify for any available spaces due to the following reasons:</p>
-                        <ul>
-                            @foreach($reasons as $reason)
-                            <li>{{ $reason }}</li>
-                            @endforeach
-                        </ul>
-                        @else
-                        <p>Unfortunately, there is no available space for you in this block.</p>
-                        @endif
-                        <p>Please consider selecting another block. If you are unable to find a suitable space, please
-                            wait for the next selection period, which will be available soon.</p>
+                    <div class="container full-height d-flex align-items-center justify-content-center" style="height: 70vh;">
+                        <div class="" style="width: 18rem;">
+                            <div class="card-body text-center">
+                                <i class="gd-alert text-danger" style="font-size: 3rem;"></i><br>
+                                @if($reasons)
+                                    @foreach($reasons as $reason)
+                                    <p><small class="card-title">{{ $reason }}</small></p>
+                                    @endforeach
+                                @else
+                                @endif
+                            </div>
+                        </div>
                     </div>
                     @else
                     @foreach($filteredFloors as $floor)

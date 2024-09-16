@@ -5,21 +5,27 @@
         </div>
         @php
         use Carbon\Carbon;
-        $expirationDate = Carbon::parse($user->expiration_date);
+        $expirationDate = $user->expiration_date ? Carbon::parse($user->expiration_date) : null;
     @endphp
 
 
 @if ($user->application != 1)
 
-<div class="alert alert-danger alert-dismissible fade show" role="alert">
-    <strong>Warning!</strong> Please confirm your application first
+
+<div class="container full-height d-flex align-items-center justify-content-center" style="height: 70vh;">
+    <div class="" style="width: 18rem;">
+        <div class="card-body text-center">
+            <i class="gd-alert text-danger" style="font-size: 3rem;"></i><br>
+            <strong>Warning!</strong> Please confirm your application first
+        </div>
+    </div>
 </div>
 <script>
     $('#gd-finish,#gd-result').removeClass('gd-check text-success').addClass(' gd-close text-danger');
 </script>
 
     @else
-    @if ($expirationDate->isPast() and empty($user->payment_status))
+    @if ($expirationDate && $expirationDate->isPast() and empty($user->payment_status))
 
     <script>
         $('#gd-hostel,#gd-finish').removeClass('gd-close text-danger ').addClass(' gd-check text-success');
@@ -32,26 +38,20 @@
 
 
 
-<div class="d-flex justify-content-center align-items-center vh-50">
-    <div class="col-md-6">
-        <!-- Card -->
-        <div class="card h-100 alert alert-danger ">
-            <div class="card-header d-flex">
-                <h5 class="h6 font-weight-semi-bold text-uppercase mb-0">
-                    Information
-                </h5>
-            </div>
-            <div class="card-body pt-0">
-                <div class="text-center">
-                    <span><strong>Dear {{$user->name}},</strong></span><br>
-                    <hr>
-                    <span><small>Your application expired on {{$user->expiration_date}}. To secure a hostel, please reapply if you wish to proceed.</small></span><br>
+<button class="btn btn-danger mt-3" data-toggle="modal" data-target="#reapplyModal">Re-apply</button>
 
-                    <button id="reapplyButton" class="btn btn-danger mt-3">Reapply</button>
-                </div>
-            </div>
+
+
+<div class="container full-height d-flex align-items-center justify-content-center" style="height: 70vh;">
+    <div class="" style="width: 18rem;">
+        <div class="card-body text-center">
+            <i class="gd-alert text-danger" style="font-size: 3rem;"></i><br>
+            <span><strong>Dear {{$user->name}},</strong></span><br>
+            <hr>
+            <span><small>Your application expired on {{$user->expiration_date}}. To secure a hostel, please reapply if you wish to proceed.</small></span><br>
+
+            <button id="reapplyButton" class="btn btn-danger mt-3">Reapply</button>
         </div>
-        <!-- End Card -->
     </div>
 </div>
 
@@ -76,30 +76,19 @@
 
 
 
-
-
-    <div class="d-flex justify-content-center align-items-center vh-50">
-        <div class="col-md-6">
-            <!-- Card -->
-            <div class="card h-100 alert alert-warning ">
-                <div class="card-header d-flex">
-                    <h5 class="h6 font-weight-semi-bold text-uppercase mb-0">
-                        Information
-                    </h5>
-                </div>
-                <div class="card-body pt-0">
-                    <div class="text-center">
-                        <span><strong>Dear {{$user->name}},</strong></span><br>
-                        <hr>
-                        <span><small>Results have not been published yet. Please be patient as we continue
-                            processing your application.</small></span><br>
-
-                    </div>
-                </div>
-            </div>
-            <!-- End Card -->
+<div class="container full-height d-flex align-items-center justify-content-center" style="height: 70vh;">
+    <div class="" style="width: 18rem;">
+        <div class="card-body text-center">
+            <i class="gd-alert text-danger" style="font-size: 3rem;"></i><br>
+            <span><strong>Dear {{$user->name}},</strong></span><br>
+            <hr>
+            <span><small>Results have not been published yet. Please be patient as we continue
+                processing your application.</small></span><br>
         </div>
     </div>
+</div>
+
+
 
 
 
@@ -110,25 +99,21 @@
     <script>
         $('#gd-hostel,#gd-finish,#gd-result').removeClass('gd-close text-danger ').addClass(' gd-check text-success');
 </script>
-    <div class="row">
 
-        <div class="col-md-12">
-            <!-- Card -->
-            <div class="card h-100">
-                <div class="card-header d-flex">
-                    <h5 class="h6 font-weight-semi-bold text-uppercase mb-0">
-                        Information
-                    </h5>
-                </div>
-                <div class="card-body pt-0">
-                    <div class="alert alert-warning">
-                        <span><strong>Dear {{$user->name}},</strong></span><br>
-                        <span><small>Thank you for your patience. Your application is being processed, and you will be notified once it has been reviewed.</small></span>
-                    </div>
-                </div>
+
+
+
+    <div class="container full-height d-flex align-items-center justify-content-center" style="height: 70vh;">
+        <div class="" style="width: 18rem;">
+            <div class="card-body text-center">
+                <i class="gd-alert text-danger" style="font-size: 3rem;"></i><br>
+
+
+                <span><strong>Dear {{$user->name}},</strong></span><br>
+                <span><small>Thank you for your patience. Your application is being processed, and you will be notified once it has been reviewed.</small></span>
+
 
             </div>
-            <!-- End Card -->
         </div>
     </div>
 
@@ -141,58 +126,28 @@
 
 
 
-<div class="d-flex justify-content-center align-items-center vh-50">
-    <div class="col-md-6">
-        <!-- Card -->
-        <div class="card h-100 alert alert-warning ">
-            <div class="card-header d-flex">
-                <h5 class="h6 font-weight-semi-bold text-uppercase mb-0">
-                    Information
-                </h5>
-            </div>
-            <div class="card-body pt-0">
-                <div class="text-center">
-                    <span><strong>Dear {{$user->name}},</strong></span><br>
-                    <hr>
-                    <span><small>Thank you for your patience. Your application is being processed, and you will be notified once it has been reviewed.</small></span><br>
-
-
-                </div>
-            </div>
-        </div>
-        <!-- End Card -->
-    </div>
-
-
-
-
-
-
-</div>
     @else
     <script>
         $('#gd-hostel,#gd-finish,#gd-result').removeClass('gd-close text-danger ').addClass(' gd-check text-success');
 </script>
 
-<div class="d-flex justify-content-center align-items-center vh-50">
-    <div class="col-md-6">
-        <!-- Card -->
-        <div class="card h-100 alert alert-danger ">
-            <div class="card-header d-flex">
-                <h5 class="h6 font-weight-semi-bold text-uppercase mb-0">
-                    Information
-                </h5>
-            </div>
-            <div class="card-body pt-0">
-                <div class="text-center">
-                    <span><strong>Dear {{$user->name}},</strong></span><br>
-                    <hr>
-                    <span><small>We regret to inform you that your application was not approved. If you wish to reapply, please click the button below.</small></span><br>
-                    <button id="reapplyButton" class="btn btn-danger mt-3">Reapply</button>
-                </div>
-            </div>
+
+
+
+
+
+<div class="container full-height d-flex align-items-center justify-content-center" style="height: 70vh;">
+    <div class="" style="width: 18rem;">
+        <div class="card-body text-center">
+            <i class="gd-alert text-danger" style="font-size: 3rem;"></i><br>
+
+            <span><strong>Dear {{$user->name}},</strong></span><br>
+            <hr>
+            <span><small>We regret to inform you that your application was not approved. If you wish to reapply, please click the button below.</small></span><br>
+            <button class="btn btn-danger mt-3" data-toggle="modal" data-target="#reapplyModal">Re-apply</button>
+
+
         </div>
-        <!-- End Card -->
     </div>
 </div>
 
@@ -313,7 +268,7 @@
 
             if (timeDifference <= 0) {
                 $('#countdown').text('Expired');
-                $('#paymentContainer').html('<div class="col-12"><button id="reapplyButton" class="btn btn-outline-danger mt-3">Reapply</button></div>');
+                $('#paymentContainer').html('<button class="btn btn-danger mt-3" data-toggle="modal" data-target="#reapplyModal">Re-apply</button>');
                 clearInterval(countdownInterval);
                 return;
             }
@@ -379,47 +334,6 @@
     });
 </script>
 
-                    <script>
-                        $(document).ready(function() {
-
-
-                            // Use event delegation to handle click events for the reapply button
-                            $('#paymentContainer').on('click', '#reapplyButton', function() {
-                                // Show a confirmation prompt or message if needed
-                                if (confirm('Are you sure you want to reapply?')) {
-                                    $('#overlay').css('display', 'flex');
-                                    $.ajax({
-                                        url: '{{ route("update.expirationapp") }}', // Define this route in your web.php
-                                        type: 'POST',
-                                        data: {
-                                            _token: '{{ csrf_token() }}',
-                                            user_id: '{{ $user->id }}'
-                                        },
-                                        success: function(response) {
-                                            $('#overlay').fadeOut();
-
-                                            // Show toast based on server response
-                                            if (response.success) {
-                                                $('#gd-hostel, #gd-finish, #gd-hostel').removeClass('gd-check text-success').addClass('gd-close text-danger');
-
-                                                console.log(response.message);
-                                                // showToast('#successToast', response.message); // Show success toast with message from server
-                                                hostel(); // Call your hostel function or any other logic
-                                            } else {
-                                                console.log(response.message);
-                                                // showToast('#errorToast', response.message); // Show error toast with message from server
-                                            }
-                                        },
-                                        error: function(xhr, status, error) {
-                                            $('#overlay').fadeOut();
-                                            // Show error toast with a generic message in case of error
-                                            // showToast('#errorToast', 'An error occurred while trying to reset your application. Please try again.');
-                                        }
-                                    });
-                                }
-                            });
-                        });
-                    </script>
 
 
 
@@ -958,7 +872,7 @@
 
         $('#reapplyButton').on('click', function() {
             // Show a confirmation prompt or message if needed
-            if (confirm('Are you sure you want to reapply?')) {
+
                 $('#overlay').css('display', 'flex');
                 $.ajax({
                     url: '{{ route("update.expirationapp") }}', // Define this route in your web.php
@@ -976,7 +890,7 @@
 
                             console.log(response.message);
                             showToast('#successToast', response.message); // Show success toast with message from server
-                            hostel(); // Call your hostel function or any other logic
+                            hidemodalreappy()
                         } else {
                             console.log(response.message);
                             showToast('#errorToast', response.message); // Show error toast with message from server
@@ -988,13 +902,26 @@
                         showToast('#errorToast', 'An error occurred while trying to reset your application. Please try again.');
                     }
                 });
-            }
+
+
+                function hidemodalreappy() {
+        // Close the modal
+        $('#reapplyModal').modal('hide'); // Use the correct ID of your modal
+        // Ensure that hostel() is called after the modal is closed
+        $('#reapplyModal').on('hidden.bs.modal', function() {
+            hostel();
+        });
+    }
+
         });
     });
 </script>
 
 
 </div>
+
+
+
 <div id="confirmItemModal" class="modal fade" role="dialog" aria-labelledby="confirmItemModalLabel" aria-hidden="true">
     <div class="modal-dialog rounded" role="document">
         <div class="modal-content">
@@ -1007,6 +934,26 @@
                     <div class="d-flex justify-content-between mb-4">
                         <a class="btn btn-outline-success" href="#" id="confirm">Yes, Confirm</a>
                         <a class="btn btn-outline-danger" href="#" data-dismiss="modal">Cancel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div id="reapplyModal" class="modal fade" role="dialog" aria-labelledby="Re-applyModalLabel" aria-hidden="true">
+    <div class="modal-dialog rounded" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="text-center rounded">
+                    <i class="gd-alert icon-text icon-text-xxl d-block text-danger mb-3 mb-md-4"></i>
+                    <div class="h5 font-weight-semi-bold mb-2">Are you sure ?</div>
+
+                    <div class="d-flex justify-content-between mb-4">
+                        <a class="btn btn-outline-success" href="#" id="reapplyButton" >Yes, Confirm</a>
+                        <a class="btn btn-outline-danger" href="#" data-dismiss="modal">No</a>
                     </div>
                 </div>
             </div>

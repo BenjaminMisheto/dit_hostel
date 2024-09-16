@@ -109,9 +109,17 @@ $deadlineDate = \Carbon\Carbon::parse($deadlineDate);
         <script>
                 $('#gd-hostel,#gd-finish,#gd-result').removeClass('gd-check text-success').addClass(' gd-close text-danger');
         </script>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <strong>Warning!</strong> Please search and confirm your profile before proceeding to this stage.
+
+
+<div class="container full-height d-flex align-items-center justify-content-center" style="height: 70vh;">
+    <div class="" style="width: 18rem;">
+        <div class="card-body text-center">
+            <i class="gd-alert text-danger" style="font-size: 3rem;"></i><br>
+            <strong>Warning!</strong><br> Please search and confirm your profile before proceeding to this stage.
         </div>
+    </div>
+</div>
+
         @else
 
         <div class="row">
@@ -192,10 +200,24 @@ $deadlineDate = \Carbon\Carbon::parse($deadlineDate);
     </div>
 
     @elseif ($deadlineDate->isPast())
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>Notice:</strong> The application period concluded on {{$deadlineDate->format('F j, Y')}}. Please stay
-        tuned for potential future openings.
+
+
+    <div class="container full-height d-flex align-items-center justify-content-center" style="height: 70vh;">
+        <div class="" style="width: 18rem;">
+            <div class="card-body text-center">
+                <i class="gd-alert text-danger" style="font-size: 3rem;"></i><br>
+                <strong>Notice:</strong> The application period concluded on {{$deadlineDate->format('F j, Y')}}. Please stay
+                tuned for potential future openings.
+            </div>
+        </div>
     </div>
+
+
+
+
+
+
+
     <script>
         $('#gd-hostel,#gd-finish,#gd-result').removeClass('gd-check text-success').addClass(' gd-close text-danger');
 </script>

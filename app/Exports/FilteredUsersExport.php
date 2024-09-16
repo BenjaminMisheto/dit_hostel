@@ -31,14 +31,15 @@ class FilteredUsersExport implements FromArray, WithHeadings, ShouldAutoSize, Wi
             'Course',
             'Gender',
             'Item',
-            'Condition'
+            'Condition',
+            'Semester' // Add this heading
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         // Style the header row
-        $sheet->getStyle('A1:G1')->applyFromArray([
+        $sheet->getStyle('A1:H1')->applyFromArray([ // Update range to include 'Semester' column
             'font' => [
                 'bold' => true,
                 'color' => ['argb' => 'FFFFFF'],
@@ -53,7 +54,7 @@ class FilteredUsersExport implements FromArray, WithHeadings, ShouldAutoSize, Wi
         ]);
 
         // Style the whole sheet
-        $sheet->getStyle('A1:G' . $sheet->getHighestRow())->applyFromArray([
+        $sheet->getStyle('A1:H' . $sheet->getHighestRow())->applyFromArray([ // Update range to include 'Semester' column
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -66,7 +67,7 @@ class FilteredUsersExport implements FromArray, WithHeadings, ShouldAutoSize, Wi
         ]);
 
         // Style the rows
-        $sheet->getStyle('A2:G' . $sheet->getHighestRow())->applyFromArray([
+        $sheet->getStyle('A2:H' . $sheet->getHighestRow())->applyFromArray([ // Update range to include 'Semester' column
             'alignment' => [
                 'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
             ],
@@ -80,6 +81,7 @@ class FilteredUsersExport implements FromArray, WithHeadings, ShouldAutoSize, Wi
         $sheet->getColumnDimension('E')->setWidth(20);
         $sheet->getColumnDimension('F')->setWidth(30);
         $sheet->getColumnDimension('G')->setWidth(20);
+        $sheet->getColumnDimension('H')->setWidth(20); // Add width for 'Semester' column
 
         // Style Condition column (G)
         $sheet->getStyle('G2:G' . $sheet->getHighestRow())->applyFromArray([

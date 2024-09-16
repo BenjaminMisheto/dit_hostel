@@ -81,6 +81,13 @@
             margin: 20px 0;
         }
 
+        .no-data {
+            text-align: center;
+            font-size: 16px;
+            color: #ff0000;
+            margin-top: 20px;
+        }
+
         .page-break {
             page-break-after: always;
         }
@@ -102,29 +109,23 @@
     </style>
 </head>
 
-
-<body><div class="container">
+<body>
+<div class="container">
     @if ($checkinCheckout === 'checkin')
     <h1 class="mb-4">Check-In for {{ $block->name ?? 'Not Available' }}</h1>
     @else
     <h1 class="mb-4">Check-Out for {{ $block->name ?? 'Not Available' }}</h1>
     @endif
 
-
-    <!-- Index Section -->
-    {{-- <div class="index-section">
-        <h2>Details</h2>
-        <ul>
-            <li><p><strong>Block Name:</strong> {{ $block->name ?? 'Not Available' }}</p></li>
-            <li><p><strong>Block Manager:</strong> {{ $block->manager ?? 'Not Available' }}</p></li>
-            <li><p><strong>Block Location:</strong> {{ $block->location ?? 'Not Available' }}</p></li>
-            <li><p><strong>Date:</strong> {{ $date }}</p></li>
-        </ul>
-    </div> --}}
-
     <!-- Report Section -->
     <div id="report" class="table-container">
-        <h2>{{$checkinCheckout}} list</h2>
+        <h2>{{ $semester->name ?? 'Not Available' }}</h2>
+
+        @if ($users->isEmpty())
+        <div class="no-data">
+            No Data Found
+        </div>
+        @else
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
@@ -165,7 +166,6 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-
                                                 @foreach ($checkoutItems as $item)
                                                     <tr>
                                                         <td>{{ $item['name'] ?? 'Not Available' }}</td>
@@ -177,9 +177,7 @@
                                                             @else
                                                                 red
                                                             @endif
-                                                        ">
-                                                            {{ $item['condition'] ?? 'Not Available' }}
-                                                        </td>
+                                                        ">{{ $item['condition'] ?? 'Not Available' }}</td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>
@@ -211,9 +209,7 @@
                                                         @else
                                                             red
                                                         @endif
-                                                    ">
-                                                        {{ $adminCheckout->condition }}
-                                                    </td>
+                                                    ">{{ $adminCheckout->condition }}</td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
@@ -227,12 +223,12 @@
                 @endforeach
             </tbody>
         </table>
+        @endif
     </div>
 </div>
 <div class="footer">
     <p>Report generated on {{ now()->format('Y-m-d H:i:s') }}</p>
     <p>© {{ now()->format('Y') }} {{ $block->name ?? 'Not Available' }}</p>
 </div>
-
 </body>
 </html>

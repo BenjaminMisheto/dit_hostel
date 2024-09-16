@@ -1213,9 +1213,10 @@ public function updateControlNumber(Request $request)
 {
     // Fetch all blocks with their related floors and rooms
     $blocks = Block::with('floors.rooms')->get();
+    $semesters = Semester::all();
 
     // Return the view and pass the blocks data
-    return view('admin.report', compact('blocks'));
+    return view('admin.report', compact('blocks','semesters'));
 }
 
     // Fetch floors based on hostelId

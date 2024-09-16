@@ -163,6 +163,18 @@
 
         <div class="container-fluid mt-5">
             <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="form-floating">
+                        <label for="semesterSelectNew">Semester Filter</label>
+                        <select id="semesterSelectNew" class="form-select wide" aria-label="Select Semester">
+                            <option value="" selected>Select a semester</option>
+                            @foreach($semesters as $semester)
+                                <option value="{{ $semester->id }}">{{ $semester->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
                 <!-- Block Filter -->
                 <div class="col-md-3 mb-3">
                     <div class="form-floating">
@@ -962,27 +974,34 @@ function restoreButtonText(buttonId, originalText) {
 
     // Handle report generation based on all filters
     $('#printReportNew').on('click', function () {
-        var hostelId = $('#blockSelectNew').val();
-        var gender = $('#genderSelectNew').val();
-        var course = $('#courseSelectNew').val();
-        var checkinCheckout = $('#checkinCheckoutSelectNew').val();
+    var semesterId = $('#semesterSelectNew').val();
+    var hostelId = $('#blockSelectNew').val();
+    var gender = $('#genderSelectNew').val();
+    var course = $('#courseSelectNew').val();
+    var checkinCheckout = $('#checkinCheckoutSelectNew').val();
 
-        if (hostelId && gender && course && checkinCheckout) {
-            var url = '/generate-report-print-new?hostel_id=' + hostelId + '&gender=' + gender + '&course=' + course + '&checkin_checkout=' + checkinCheckout;
+    if (hostelId && gender && course && checkinCheckout && semesterId) {
+        // Include the semesterId in the URL query parameters
+        var url = '/generate-report-print-new?hostel_id=' + encodeURIComponent(hostelId) +
+                  '&gender=' + encodeURIComponent(gender) +
+                  '&course=' + encodeURIComponent(course) +
+                  '&checkin_checkout=' + encodeURIComponent(checkinCheckout) +
+                  '&semester_id=' + encodeURIComponent(semesterId);
 
-            $('#overlay').css('display', 'flex');
+        $('#overlay').css('display', 'flex');
 
-            loadPDF(url).then(() => {
-                $('#overlay').fadeOut();
-            }).catch((error) => {
-                showToast('#error-toast', 'Error loading the PDF.');
-                console.error("Error loading PDF:", error);
-                $('#overlay').fadeOut();
-            });
-        } else {
-            showToast('#error-toast', 'Please select all filters before generating the report.');
-        }
-    });
+        loadPDF(url).then(() => {
+            $('#overlay').fadeOut();
+        }).catch((error) => {
+            showToast('#error-toast', 'Error loading the PDF.');
+            console.error("Error loading PDF:", error);
+            $('#overlay').fadeOut();
+        });
+    } else {
+        showToast('#error-toast', 'Please select all filters before generating the report.');
+    }
+});
+
 
     // Load PDF and handle overlay
     function loadPDF(url) {
@@ -1045,14 +1064,19 @@ function restoreButtonText(buttonId, originalText) {
     if (printButton) {
         printButton.addEventListener('click', function () {
             setButtonText('printPDFNew', 'Generating...');
+            var semesterId = $('#semesterSelectNew').val();
 
             var hostelId = $('#blockSelectNew').val();
             var gender = $('#genderSelectNew').val();
             var course = $('#courseSelectNew').val();
             var checkinCheckout = $('#checkinCheckoutSelectNew').val();
 
-            if (hostelId && gender && course && checkinCheckout) {
-                var url = '/generate-report-print-check?hostel_id=' + hostelId + '&gender=' + gender + '&course=' + course + '&checkin_checkout=' + checkinCheckout;
+            if (hostelId && gender && course && checkinCheckout && semesterId) {
+                var url = '/generate-report-print-check?hostel_id=' + encodeURIComponent(hostelId) +
+                  '&gender=' + encodeURIComponent(gender) +
+                  '&course=' + encodeURIComponent(course) +
+                  '&checkin_checkout=' + encodeURIComponent(checkinCheckout) +
+                  '&semester_id=' + encodeURIComponent(semesterId);
 
                 var printWindow = window.open(url, '_blank');
                 printWindow.onload = function () {
@@ -1069,22 +1093,58 @@ function restoreButtonText(buttonId, originalText) {
     }
 
     if (downloadButton) {
-        downloadButton.addEventListener('click', function () {
-            setButtonText('downloadPDFNew', 'Generating...');
-            var url = '/generate-report-print-new?hostel_id=' + $('#blockSelectNew').val() + '&gender=' + $('#genderSelectNew').val() + '&course=' + $('#courseSelectNew').val() + '&checkin_checkout=' + $('#checkinCheckoutSelectNew').val();
-            window.location.href = url;
-            restoreButtonText('downloadPDFNew', 'Download PDF');
-        });
-    }
+    downloadButton.addEventListener('click', function () {
+        setButtonText('downloadPDFNew', 'Generating...');
 
-    if (exportExcelButton) {
-        exportExcelButton.addEventListener('click', function () {
-            setButtonText('exportExcelNew', 'Exporting...');
-            var url = '/generate-report-excel-new?hostel_id=' + $('#blockSelectNew').val() + '&gender=' + $('#genderSelectNew').val() + '&course=' + $('#courseSelectNew').val() + '&checkin_checkout=' + $('#checkinCheckoutSelectNew').val();
-            window.location.href = url;
-            restoreButtonText('exportExcelNew', 'Export Excel');
-        });
-    }
+        // Get values for each parameter
+        var semesterId = $('#semesterSelectNew').val();
+        var hostelId = $('#blockSelectNew').val();
+        var gender = $('#genderSelectNew').val();
+        var course = $('#courseSelectNew').val();
+        var checkinCheckout = $('#checkinCheckoutSelectNew').val();
+
+        // Construct the URL with all parameters
+        var url = '/generate-report-print-new?hostel_id=' + encodeURIComponent(hostelId) +
+                  '&gender=' + encodeURIComponent(gender) +
+                  '&course=' + encodeURIComponent(course) +
+                  '&checkin_checkout=' + encodeURIComponent(checkinCheckout) +
+                  '&semester_id=' + encodeURIComponent(semesterId); // Add semester_id to URL
+
+        // Trigger the download
+        window.location.href = url;
+
+        // Restore the button text
+        restoreButtonText('downloadPDFNew', 'Download PDF');
+    });
+}
+
+
+if (exportExcelButton) {
+    exportExcelButton.addEventListener('click', function () {
+        setButtonText('exportExcelNew', 'Exporting...');
+
+        // Get values for each parameter
+        var semesterId = $('#semesterSelectNew').val();
+        var hostelId = $('#blockSelectNew').val();
+        var gender = $('#genderSelectNew').val();
+        var course = $('#courseSelectNew').val();
+        var checkinCheckout = $('#checkinCheckoutSelectNew').val();
+
+        // Construct the URL with all parameters
+        var url = '/generate-report-excel-new?hostel_id=' + encodeURIComponent(hostelId) +
+                  '&gender=' + encodeURIComponent(gender) +
+                  '&course=' + encodeURIComponent(course) +
+                  '&checkin_checkout=' + encodeURIComponent(checkinCheckout) +
+                  '&semester_id=' + encodeURIComponent(semesterId); // Add semester_id to URL
+
+        // Trigger the download
+        window.location.href = url;
+
+        // Restore the button text
+        restoreButtonText('exportExcelNew', 'Export Excel');
+    });
+}
+
 });
 
 </script>

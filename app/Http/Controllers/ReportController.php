@@ -6,6 +6,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\User;
+use App\Models\Semester;
+
 //use App\Models\CheckOutItem;
 use App\Models\AdminCheckout;
 use Maatwebsite\Excel\Facades\Excel;
@@ -221,32 +223,30 @@ public function exportPDFPrint(Request $request)
 
 
 
-
-
-
-
-
-
 public function exportPDFPrintnew(Request $request)
 {
     $hostelId = $request->query('hostel_id');
     $gender = $request->query('gender');
     $course = $request->query('course');
-    $checkinCheckout = $request->query('checkin_checkout'); // New parameter for Check-in/Check-out status
+    $checkinCheckout = $request->query('checkin_checkout');
+    $semesterId = $request->query('semester_id'); // New parameter for semester
 
     // Initialize query for filtering users
     $query = User::query();
 
-    // Apply filters if provided
+    // Apply semester filter if provided
+    if ($semesterId) {
+        $query->where('semester_id', $semesterId);
+    }
+
+    // Apply other filters if provided
     if ($hostelId) {
         $query->where('block_id', $hostelId);
     }
 
-
     if ($gender && $gender !== 'all') {
         $query->where('gender', $gender);
     }
-
 
     if ($course && $course !== 'all') {
         $query->where('course', $course);
@@ -254,39 +254,27 @@ public function exportPDFPrintnew(Request $request)
 
     // Apply check-in/check-out filter
     if ($checkinCheckout === 'checkin') {
-        // Check-in
         $query->where('checkin', 2); // Assuming `checkin_checkout` is used to determine check-in
         Log::info('Filtering users with check-in status');
-    }
-
-    elseif ($checkinCheckout === 'checkout-good') {
-    $query->where('checkout', 1)
-          ->whereDoesntHave('adminCheckouts', function ($q) {
-              $q->where('condition', '!=', 'Good'); // Ensure no condition is different from "Good"
-          });
-}
-
-
-
-    elseif ($checkinCheckout === 'checkout') {
-        // Check-out
+    } elseif ($checkinCheckout === 'checkout-good') {
+        $query->where('checkout', 1)
+              ->whereDoesntHave('adminCheckouts', function ($q) use ($semesterId) {
+                  $q->where('condition', '!=', 'Good')
+                    ->where('semester_id', $semesterId); // Filter by semester_id
+              });
+    } elseif ($checkinCheckout === 'checkout') {
         $query->where('checkout', 1); // Assuming `checkin_checkout` is used to determine check-out
         Log::info('Filtering users with check-out status');
+    } elseif ($checkinCheckout === 'checkout-bad') {
+        $query->where('checkout', 1)
+              ->whereHas('adminCheckouts', function ($q) use ($semesterId) {
+                  $q->where('condition', '!=', 'Good')
+                    ->where('semester_id', $semesterId); // Filter by semester_id
+              });
     }
 
-
-    elseif ($checkinCheckout === 'checkout-bad') {
-    $query->where('checkout', 1)
-          ->whereHas('adminCheckouts', function ($q) {
-              $q->where('condition', '!=', 'Good');
-          });
-}
-
-
-
-
     // Fetch the filtered users
-    $users = $query->with(['block'])->get();
+    $users = $query->with(['block', 'adminCheckouts'])->get();
 
     // Log the number of users found and their details for debugging
     Log::info('Number of users found: ' . $users->count());
@@ -297,14 +285,17 @@ public function exportPDFPrintnew(Request $request)
     // Get block details for the report header
     $block = $users->first()->block ?? null;
 
+    // Fetch semester details for the report header
+    $semester = Semester::find($semesterId); // Get the semester by ID
+
     // Prepare data for the PDF view
     $data = [
-        'checkinCheckout'=>$checkinCheckout,
+        'checkinCheckout' => $checkinCheckout,
         'users' => $users,
         'block' => $block,
+        'semester' => $semester, // Pass the semester data
         'date' => now()->format('Y-m-d'), // Current date or format as needed
     ];
-
 
     // Generate the file name using the block name and date
     $blockName = $block ? $block->name : 'report';
@@ -321,26 +312,31 @@ public function exportPDFPrintnew(Request $request)
 
 
 
+
+
 public function exportPDFPrintcheck(Request $request)
-{
-    $hostelId = $request->query('hostel_id');
+{    $hostelId = $request->query('hostel_id');
     $gender = $request->query('gender');
     $course = $request->query('course');
-    $checkinCheckout = $request->query('checkin_checkout'); // New parameter for Check-in/Check-out status
+    $checkinCheckout = $request->query('checkin_checkout');
+    $semesterId = $request->query('semester_id'); // New parameter for semester
 
     // Initialize query for filtering users
     $query = User::query();
 
-    // Apply filters if provided
+    // Apply semester filter if provided
+    if ($semesterId) {
+        $query->where('semester_id', $semesterId);
+    }
+
+    // Apply other filters if provided
     if ($hostelId) {
         $query->where('block_id', $hostelId);
     }
 
-
     if ($gender && $gender !== 'all') {
         $query->where('gender', $gender);
     }
-
 
     if ($course && $course !== 'all') {
         $query->where('course', $course);
@@ -348,37 +344,27 @@ public function exportPDFPrintcheck(Request $request)
 
     // Apply check-in/check-out filter
     if ($checkinCheckout === 'checkin') {
-        // Check-in
         $query->where('checkin', 2); // Assuming `checkin_checkout` is used to determine check-in
         Log::info('Filtering users with check-in status');
-    }
-
-    elseif ($checkinCheckout === 'checkout-good') {
-    $query->where('checkout', 1)
-          ->whereDoesntHave('adminCheckouts', function ($q) {
-              $q->where('condition', '!=', 'Good'); // Ensure no condition is different from "Good"
-          });
-}
-
-
-
-
-    elseif ($checkinCheckout === 'checkout') {
-        // Check-out
+    } elseif ($checkinCheckout === 'checkout-good') {
+        $query->where('checkout', 1)
+              ->whereDoesntHave('adminCheckouts', function ($q) use ($semesterId) {
+                  $q->where('condition', '!=', 'Good')
+                    ->where('semester_id', $semesterId); // Filter by semester_id
+              });
+    } elseif ($checkinCheckout === 'checkout') {
         $query->where('checkout', 1); // Assuming `checkin_checkout` is used to determine check-out
         Log::info('Filtering users with check-out status');
+    } elseif ($checkinCheckout === 'checkout-bad') {
+        $query->where('checkout', 1)
+              ->whereHas('adminCheckouts', function ($q) use ($semesterId) {
+                  $q->where('condition', '!=', 'Good')
+                    ->where('semester_id', $semesterId); // Filter by semester_id
+              });
     }
-    elseif ($checkinCheckout === 'checkout-bad') {
-    $query->where('checkout', 1)
-          ->whereHas('adminCheckouts', function ($q) {
-              $q->where('condition', '!=', 'Good');
-          });
-}
-
-
 
     // Fetch the filtered users
-    $users = $query->with(['block'])->get();
+    $users = $query->with(['block', 'adminCheckouts'])->get();
 
     // Log the number of users found and their details for debugging
     Log::info('Number of users found: ' . $users->count());
@@ -389,14 +375,17 @@ public function exportPDFPrintcheck(Request $request)
     // Get block details for the report header
     $block = $users->first()->block ?? null;
 
+    // Fetch semester details for the report header
+    $semester = Semester::find($semesterId); // Get the semester by ID
+
     // Prepare data for the PDF view
     $data = [
-        'checkinCheckout'=>$checkinCheckout,
+        'checkinCheckout' => $checkinCheckout,
         'users' => $users,
         'block' => $block,
+        'semester' => $semester, // Pass the semester data
         'date' => now()->format('Y-m-d'), // Current date or format as needed
     ];
-
 
     // Generate the file name using the block name and date
     $blockName = $block ? $block->name : 'report';
@@ -406,11 +395,9 @@ public function exportPDFPrintcheck(Request $request)
     // Load the view and generate the PDF
     $pdf = Pdf::loadView('admin.pdf.reportnew', $data);
 
-    // Return the PDF to be viewed in the browser
+
     return $pdf->stream($fileName);
 }
-
-
 
 
 
@@ -420,11 +407,15 @@ public function exportExcelnew(Request $request)
     $gender = $request->query('gender');
     $course = $request->query('course');
     $checkinCheckout = $request->query('checkin_checkout');
+    $semesterId = $request->query('semester_id'); // New parameter for semester
 
     // Initialize query for filtering users
     $query = User::query();
 
     // Apply filters if provided
+    if ($semesterId) {
+        $query->where('semester_id', $semesterId);
+    }
     if ($hostelId) {
         $query->where('block_id', $hostelId);
     }
@@ -438,17 +429,18 @@ public function exportExcelnew(Request $request)
         $query->where('checkin', 2);
     } elseif ($checkinCheckout === 'checkout') {
         $query->where('checkout', 1);
+    } elseif ($checkinCheckout === 'checkout-bad') {
+        $query->where('checkout', 1)
+              ->whereHas('adminCheckouts', function ($q) {
+                  $q->where('condition', '!=', 'Good');
+              });
     }
-    elseif ($checkinCheckout === 'checkout-bad') {
-    $query->where('checkout', 1)
-          ->whereHas('adminCheckouts', function ($q) {
-              $q->where('condition', '!=', 'Good');
-          });
-}
-
 
     // Fetch the filtered users
     $users = $query->with(['block', 'requirementItemConfirmation', 'adminCheckouts'])->get();
+
+    // Fetch semester details for the export
+    $semester = Semester::find($semesterId);
 
     // Prepare data for the Excel export
     $exportData = [];
@@ -465,7 +457,8 @@ public function exportExcelnew(Request $request)
                             $user->course,
                             $user->gender,
                             $item['name'] ?? 'Not Available',
-                            $item['condition'] ?? 'Not Available'
+                            $item['condition'] ?? 'Not Available',
+                            $semester->name ?? 'Not Available' // Add semester name
                         ];
                     }
                 } else {
@@ -476,7 +469,8 @@ public function exportExcelnew(Request $request)
                         $user->course,
                         $user->gender,
                         'Not Available',
-                        'Not Available'
+                        'Not Available',
+                        $semester->name ?? 'Not Available' // Add semester name
                     ];
                 }
             } else {
@@ -487,7 +481,8 @@ public function exportExcelnew(Request $request)
                     $user->course,
                     $user->gender,
                     'Not Available',
-                    'Not Available'
+                    'Not Available',
+                    $semester->name ?? 'Not Available' // Add semester name
                 ];
             }
         } else { // check-out
@@ -500,7 +495,8 @@ public function exportExcelnew(Request $request)
                         $user->course,
                         $user->gender,
                         $adminCheckout->name,
-                        $adminCheckout->condition
+                        $adminCheckout->condition,
+                        $semester->name ?? 'Not Available' // Add semester name
                     ];
                 }
             } else {
@@ -511,7 +507,8 @@ public function exportExcelnew(Request $request)
                     $user->course,
                     $user->gender,
                     'Not Available',
-                    'Not Available'
+                    'Not Available',
+                    $semester->name ?? 'Not Available' // Add semester name
                 ];
             }
         }
@@ -525,6 +522,7 @@ public function exportExcelnew(Request $request)
     // Pass the formatted data to the Excel export class
     return Excel::download(new FilteredUsersExport($exportData), $fileName);
 }
+
 
 
 

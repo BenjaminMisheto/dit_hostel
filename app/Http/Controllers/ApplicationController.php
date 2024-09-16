@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Bed;
 use App\Models\Publish;
 use App\Models\Semester;
+use App\Models\SliderData;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 
@@ -501,6 +502,18 @@ public function createNewSemester()
         // Reset user_id in the Bed table
         Bed::query()->update([
             'user_id' => null,
+        ]);
+
+        Sliderdata::truncate();
+        Publishes::query()->update([
+            'status' => 0,
+            'algorithm'=> 0,
+            'reserved_bed'=> 0,
+             'maintenance_bed'=> 0,
+             'expiration_date'=>1,
+             'open_date'=> null,
+             'report_date'=> null,
+             'deadline'=> null,
         ]);
 
         // Commit the transaction

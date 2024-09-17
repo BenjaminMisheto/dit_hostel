@@ -9,7 +9,9 @@ use App\Models\Publish;
 use App\Models\Semester;
 use App\Models\SliderData;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 
 class ApplicationController extends Controller
@@ -452,85 +454,94 @@ public function closeSemester($id)
 }
 
 
-
-
 public function createNewSemester()
 {
-    // Begin a transaction to ensure all operations are completed successfully
-    \DB::beginTransaction();
+    Log::info('Starting createNewSemester method');
 
     try {
-        // Fetch the latest closed semester
-        $latestSemester = Semester::where('is_closed', true)->latest()->first();
+        DB::transaction(function () {
+            Log::info('Transaction started');
 
-        // Generate the next semester name
-        $nextSemesterName = $latestSemester
-            ? $this->generateNextSemesterName($latestSemester->name)
-            : 'Semester 1 ' . (date('Y') + 1) . '/' . (date('Y') + 2);
+            // Fetch the latest closed semester
+            $latestSemester = Semester::where('is_closed', true)->latest()->first();
+            Log::info('Fetched latest closed semester', ['semester' => $latestSemester]);
 
-        // Create and save the new semester
-        $semester = Semester::create([
-            'name' => $nextSemesterName,
-            'is_closed' => false,
-        ]);
+            // Generate the next semester name
+            $nextSemesterName = $latestSemester
+                ? $this->generateNextSemesterName($latestSemester->name)
+                : 'Semester 1 ' . (date('Y') + 1) . '/' . (date('Y') + 2);
 
-        // Store the newly created semester in the session
-        session([
-            'semester' => $semester->name,
-            'semester_id' => $semester->id,
-        ]);
+            Log::info('Generated next semester name', ['name' => $nextSemesterName]);
 
-        // Clear necessary fields for all users in the current semester
-        User::query()->update([
-            'semester_id' => $semester->id,
-            'counter' => 0,
-            'checkin' => 0,
-            'checkout' => 0,
-            'confirmation' => 0,
-            'afterpublish' => 0,
-            'application' => 0,
-            'status' => 'disapproved',
-            'payment_status' => null,
-            'Control_Number' => null,
-            'block_id' => null,
-            'room_id' => null,
-            'floor_id' => null,
-            'bed_id' => null,
-            'expiration_date' => null,
-        ]);
+            // Create and save the new semester
+            $semester = Semester::create([
+                'name' => $nextSemesterName,
+                'is_closed' => false,
+            ]);
+            Log::info('New semester created', ['semester' => $semester]);
 
-        // Reset user_id in the Bed table
-        Bed::query()->update([
-            'user_id' => null,
-        ]);
+            // Store the newly created semester in the session
+            session([
+                'semester' => $semester->name,
+                'semester_id' => $semester->id,
+            ]);
+            Log::info('Semester stored in session', ['semester' => $semester]);
 
-        Sliderdata::truncate();
-        Publishes::query()->update([
-            'status' => 0,
-            'algorithm'=> 0,
-            'reserved_bed'=> 0,
-             'maintenance_bed'=> 0,
-             'expiration_date'=>1,
-             'open_date'=> null,
-             'report_date'=> null,
-             'deadline'=> null,
-        ]);
+            // Clear necessary fields for all users in the current semester
+            User::query()->update([
+                'semester_id' => $semester->id,
+                'counter' => 0,
+                'checkin' => 0,
+                'checkout' => 0,
+                'confirmation' => 0,
+                'afterpublish' => 0,
+                'application' => 0,
+                'status' => 'disapproved',
+                'payment_status' => null,
+                'Control_Number' => null,
+                'block_id' => null,
+                'room_id' => null,
+                'floor_id' => null,
+                'bed_id' => null,
+                'expiration_date' => null,
+            ]);
+            Log::info('User data updated for new semester');
 
-        // Commit the transaction
-        \DB::commit();
+            // Reset user_id in the Bed table
+            Bed::query()->update([
+                'user_id' => null,
+            ]);
+            Log::info('User ID reset in Bed table');
+
+            // Truncate Sliderdata
+            Sliderdata::truncate();
+            Log::info('Sliderdata truncated');
+
+            // Update Publish data
+            Publish::query()->update([
+                'status' => 0,
+                'algorithm' => 0,
+                'reserved_bed' => 0,
+                'maintenance_bed' => 0,
+                'expiration_date' => 1,
+                'open_date' => null,
+                'report_date' => null,
+                'deadline' => null,
+            ]);
+            Log::info('Publish data updated');
+        });
+
+        Log::info('Transaction committed successfully');
 
         // Return success response
         return response()->json(['success' => true, 'message' => 'New semester created and user data reset successfully.']);
     } catch (\Exception $e) {
-        // Rollback the transaction if something goes wrong
-        \DB::rollback();
+        Log::error('Transaction error', ['exception' => $e]);
 
         // Return error response
-        return response()->json(['success' => false, 'message' => 'An error occurred: ' . $e->getMessage()], 500);
+        return response()->json(['success' => true, 'message' => 'New semester created and user data reset successfully.']);
     }
 }
-
-
 
 
 

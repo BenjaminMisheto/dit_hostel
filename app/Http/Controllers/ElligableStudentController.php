@@ -346,7 +346,9 @@ public function out($bedId)
     $user = $bed->user;
 
     // Fetch check-out items related to this user, if any
-    $adminCheckouts = AdminCheckout::where('user_id', $user->id)->get();
+    $adminCheckouts = AdminCheckout::where('user_id', $user->id)
+    ->where('semester_id',$user->semester_id)
+    ->get();
 
     // Determine the confirmation items to use
     if ($adminCheckouts->isNotEmpty()) {
@@ -359,7 +361,8 @@ public function out($bedId)
         });
     } else {
         // If no admin check-outs, fetch from RequirementItemConfirmation
-        $confirmation = RequirementItemConfirmation::where('user_id', $user->id)->first();
+        $confirmation = RequirementItemConfirmation::where('user_id', $user->id)
+        ->where('semester_id',$user->semester_id)->first();
         $confirmationItems = $confirmation ? json_decode($confirmation->checkout_items_names, true) : [];
     }
 
@@ -397,8 +400,13 @@ public function studentout(Request $request)
             // Use updateOrCreate to either update an existing record or create a new one
             AdminCheckout::updateOrCreate(
                 [
-                    'user_id' => $user->id, // Find by user_id
-                    'semester_id' => $user->semester_id, // Find by user_id
+                    'user_id' => $user->id,
+                    'semester_id' => $user->semester_id,
+                     'block_name' => $user->block ? $user->block->name : 'N/A',
+                     'floor_name' => $user->floor ? $user->floor->floor_number : 'N/A',
+                     'room_name' => $user->room ? $user->room->room_number : 'N/A',
+                     'bed_name' => $user->bed ? $user->bed->bed_number : 'N/A',
+                     'course_name' => $user->course,
                     'name' => $item['name'], // Find by item name
                 ],
                 [

@@ -181,8 +181,8 @@
                         <label for="blockSelectNew">Block Filter</label>
                         <select id="blockSelectNew" class="form-select wide" aria-label="Select Block">
                             <option value="" selected>Select a block</option>
-                            @foreach($blocks as $block)
-                                <option value="{{ $block->id }}">{{ $block->name }}</option>
+                            @foreach($RequirementItemConfirmation  as $RequirementItemConfirmation )
+                                <option value="{{ $RequirementItemConfirmation->block_name  }}">{{ $RequirementItemConfirmation->block_name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -268,8 +268,8 @@
                         <label for="blockFilter">Block Filter</label>
                         <select id="blockFilter" class="form-select wide" aria-label="Select Block">
                             <option value="" selected>Select a block</option>
-                            @foreach($blocks as $block)
-                                <option value="{{ $block->id }}">{{ $block->name }}</option>
+                            @foreach($AdminCheckout as $AdminCheckout)
+                                <option value="{{ $AdminCheckout->block_name}}">{{ $AdminCheckout->block_name}}</option>
                             @endforeach
                         </select>
                     </div>
@@ -893,7 +893,7 @@ function restoreButtonText(buttonId, originalText) {
 
         $('#genderSelectNew').html('<option value="">Select Gender</option>').prop('disabled', true);
         $('#courseSelectNew').html('<option value="">Select Course</option>').prop('disabled', true);
-        $('#checkinCheckoutSelectNew').html('<option value="">Select status</option><option value="checkin">Check-in</option><option value="checkout">Check-out</option><option value="checkout-bad">Check-out-bad</option><option value="checkout-good">Check-out-good</option>').prop('disabled', true);
+        $('#checkinCheckoutSelectNew').html('<option value="">Select status</option><option value="checkin">Check-in</option><option value="checkout">Check-out</option>').prop('disabled', true);
 
         if (hostelId) {
             $('#checkinCheckoutSelectNew').prop('disabled', false);

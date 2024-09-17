@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Report</title>
     <style>
@@ -53,7 +54,8 @@
             font-size: 12px;
         }
 
-        th, td {
+        th,
+        td {
             text-align: left;
             padding: 8px;
             border: 1px solid #ddd;
@@ -110,54 +112,109 @@
 </head>
 
 <body>
-<div class="container">
-    @if ($checkinCheckout === 'checkin')
-    <h1 class="mb-4">Check-In for {{ $block->name ?? 'Not Available' }}</h1>
-    @else
-    <h1 class="mb-4">Check-Out for {{ $block->name ?? 'Not Available' }}</h1>
-    @endif
+    <div class="container">
+        <h1 class="mb-4">
+            {{ $checkinCheckout === 'checkin' ? 'Check-In' : 'Check-Out' }} for {{ $block ?? 'Not Available' }}
+        </h1>
 
-    <!-- Report Section -->
-    <div id="report" class="table-container">
-        <h2>{{ $semester->name ?? 'Not Available' }}</h2>
+        <!-- Report Section -->
+        <div id="report" class="table-container">
+            <h2>{{ $semester->name ?? 'Not Available' }}</h2>
 
-        @if ($users->isEmpty())
-        <div class="no-data">
-            No Data Found
-        </div>
-        @else
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Reg No</th>
-                    <th>Course</th>
-                    <th>Gender</th>
-                    @if ($checkinCheckout === 'checkin')
-                        <th>Given Items</th>
-                    @else
-                        <th>Returned Items</th>
-                    @endif
-                </tr>
-            </thead>
-            <tbody>
-                @php $currentIndex = 1; @endphp
-                @foreach ($users as $user)
-                    <tr>
-                        <td>{{ $currentIndex++ }}</td>
-                        <td>{{ $user->name }}</td>
-                        <td>{{ $user->registration_number }}</td>
-                        <td>{{ $user->course }}</td>
-                        <td>{{ $user->gender }}</td>
+            @if ($users->isEmpty())
+                <div class="no-data">
+                    No Data Found
+                </div>
+            @else
+                @if ($checkinCheckout === 'checkin')
 
-                        <td>
-                            @if ($checkinCheckout === 'checkin')
-                                @if ($user->requirementItemConfirmation)
-                                    @php
-                                        $checkoutItems = json_decode($user->requirementItemConfirmation->checkout_items_names, true);
-                                    @endphp
-                                    @if ($checkoutItems)
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Reg No</th>
+                                <th>Course</th>
+                                <th>Gender</th>
+                                <th>{{ $checkinCheckout === 'checkin' ? 'Given Items' : 'Returned Items' }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php $currentIndex = 1; @endphp
+
+                            @foreach ($users as $user)
+                                @php
+                                    $checkoutItems = json_decode($user->checkout_items_names, true);
+                                @endphp
+                                <tr>
+                                    <td>{{ $currentIndex++ }}</td>
+                                    <td>{{ $user->user->name }}</td>
+                                    <td>{{ $user->user->registration_number }}</td>
+                                    <td>{{ $user->course_name }}</td>
+                                    <td>{{ $user->user->gender }}</td>
+                                    <td>
+                                        @if ($checkoutItems)
+                                            <table class="table table-bordered table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Items</th>
+                                                        <th>Condition</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach ($checkoutItems as $item)
+                                                        <tr>
+                                                            <td>{{ $item['name'] ?? 'Not Available' }}</td>
+                                                            <td
+                                                                style="color:
+                                                    @if ($item['condition'] === 'Good') green
+                                                    @elseif($item['condition'] === 'Bad')
+                                                        red
+                                                    @else
+                                                        red @endif
+                                                ">
+                                                                {{ $item['condition'] ?? 'Not Available' }}</td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        @else
+                                            Not Available
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+
+                    </table>
+                @else
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Reg No</th>
+                                <th>Course</th>
+                                <th>Gender</th>
+                                <th>{{ $checkinCheckout === 'checkin' ? 'Given Items' : 'Returned Items' }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php $currentIndex = 1; @endphp
+
+                            @foreach ($users as $userId => $checkouts)
+                                @php
+                                    $user = $checkouts->first()->user; // Get the user object
+                                    $groupedCheckouts = $checkouts->groupBy('name');
+                                @endphp
+
+                                <tr>
+                                    <td>{{ $currentIndex++ }}</td>
+                                    <td>{{ $user->name }}</td>
+                                    <td>{{ $user->registration_number }}</td>
+                                    <td>{{ $checkouts->first()->course_name }}</td>
+                                    <td>{{ $user->gender }}</td>
+                                    <td>
                                         <table class="table table-bordered table-striped">
                                             <thead>
                                                 <tr>
@@ -166,69 +223,41 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach ($checkoutItems as $item)
-                                                    <tr>
-                                                        <td>{{ $item['name'] ?? 'Not Available' }}</td>
-                                                        <td style="color:
-                                                            @if($item['condition'] == 'Good')
-                                                                green
-                                                            @elseif($item['condition'] == 'Bad')
-                                                                red
-                                                            @else
-                                                                red
-                                                            @endif
-                                                        ">{{ $item['condition'] ?? 'Not Available' }}</td>
-                                                    </tr>
+                                                @foreach ($groupedCheckouts as $itemName => $checkoutsGroup)
+                                                    @foreach ($checkoutsGroup as $adminCheckout)
+                                                        <tr>
+                                                            <td>{{ $itemName }}</td>
+                                                            <td
+                                                                style="color:
+                                                    @if ($adminCheckout->condition === 'Good') green
+                                                    @elseif($adminCheckout->condition === 'Bad')
+                                                        red
+                                                    @else
+                                                        red @endif
+                                                ">
+                                                                {{ $adminCheckout->condition }}</td>
+                                                        </tr>
+                                                    @endforeach
                                                 @endforeach
                                             </tbody>
                                         </table>
-                                    @else
-                                        Not Available
-                                    @endif
-                                @else
-                                    Not Available
-                                @endif
-                            @else
-                                @if ($user->adminCheckouts->isNotEmpty())
-                                    <table class="table table-bordered table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>Items</th>
-                                                <th>Condition</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($user->adminCheckouts as $adminCheckout)
-                                                <tr>
-                                                    <td>{{ $adminCheckout->name }}</td>
-                                                    <td style="color:
-                                                        @if($adminCheckout->condition === 'Good')
-                                                            green
-                                                        @elseif($adminCheckout->condition === 'Bad')
-                                                            red
-                                                        @else
-                                                            red
-                                                        @endif
-                                                    ">{{ $adminCheckout->condition }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                @else
-                                    Not Available
-                                @endif
-                            @endif
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+
+                    </table>
+
+                @endif
+
+            @endif
+        </div>
     </div>
-</div>
-<div class="footer">
-    <p>Report generated on {{ now()->format('Y-m-d H:i:s') }}</p>
-    <p>© {{ now()->format('Y') }} {{ $block->name ?? 'Not Available' }}</p>
-</div>
+
+    <div class="footer">
+        <p>Report generated on {{ now()->format('Y-m-d H:i:s') }}</p>
+        <p>© {{ now()->format('Y') }} {{ $block->name ?? 'Not Available' }}</p>
+    </div>
 </body>
+
 </html>

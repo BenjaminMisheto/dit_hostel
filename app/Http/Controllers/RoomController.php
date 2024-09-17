@@ -249,6 +249,7 @@ public function saveCheckOutItemsroom(Request $request)
 
 
 
+
 public function confirmapplication(Request $request)
 {
     // Validate the request
@@ -296,7 +297,12 @@ public function confirmapplication(Request $request)
         // Create a new confirmation record
         $confirmation = new RequirementItemConfirmation();
         $confirmation->user_id = $validated['user_id'];
-        $confirmation->semester_id = $semesterId; // Set the semester_id from the user
+        $confirmation->semester_id = $semesterId;
+        $confirmation->block_name = $user->block ? $user->block->name : 'N/A';
+        $confirmation->floor_name = $user->floor ? $user->floor->floor_number : 'N/A';
+        $confirmation->room_name = $user->room ? $user->room->room_number : 'N/A';
+        $confirmation->bed_name = $user->bed ? $user->bed->bed_number : 'N/A';
+        $confirmation->course_name = $user->course;
         $confirmation->items_to_bring_names = $requirements->map(function($req) {
             return [
                 'name' => $req->name,

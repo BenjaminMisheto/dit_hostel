@@ -20,7 +20,7 @@ class ElligableStudentSeeder extends Seeder
         ]);
 
         // Create 100 random students
-        for ($index = 1; $index <= 100; $index++) {
+        for ($index = 1; $index <= 300; $index++) {
             $imageIndex = ($index % 24) === 0 ? 24 : ($index % 24);
 
             ElligableStudent::create([
@@ -31,7 +31,7 @@ class ElligableStudentSeeder extends Seeder
                 'phone' => $faker->phoneNumber,
                 'gender' => $faker->randomElement(['Male', 'Female']),
                 'nationality' => $faker->country,
-                'course' => $faker->randomElement($courses), // Set course randomly from the list
+                'course' => $faker->randomElement(['D1', 'D2', 'D3', 'B1', 'B2', 'B3', 'B4']),
                 'email' => $faker->unique()->email, // Ensure the email is unique
                 'image' => 'img/' . $imageIndex . '.jpg', // Reset image index after 15
             ]);

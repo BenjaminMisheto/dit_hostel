@@ -833,10 +833,14 @@ public function getUserInfoResult(Request $request)
     $requirements = Requirement::where('block_id', $selectedBlockId)->get();
     $checkOutItems = CheckOutItem::where('room_id', $selectedRoomId)->get();
 
-    $checkOutItemsadmin = AdminCheckout::where('user_id', $user->id)->get();
+    $checkOutItemsadmin = AdminCheckout::where('user_id', $user->id)
+    ->where('semester_id',$user->semester_id)
+    ->get();
 
     // Check if a confirmation record already exists for the user and block
-    $confirmation = RequirementItemConfirmation::where('user_id', $user->id)->first();
+    $confirmation = RequirementItemConfirmation::where('user_id', $user->id)
+    ->where('semester_id',$user->semester_id)
+    ->first();
 
     // Pass the user, publishes, expirationDate, formattedExpirationDate, requirements, checkOutItems, and confirmation to the view
     return view('user.result', compact('user', 'publishes', 'expirationDate', 'formattedExpirationDate', 'requirements', 'checkOutItems', 'confirmation','checkOutItemsadmin'));
@@ -1209,15 +1213,23 @@ public function updateControlNumber(Request $request)
         ]);
     }
 
+
     public function report()
 {
     // Fetch all blocks with their related floors and rooms
     $blocks = Block::with('floors.rooms')->get();
+
+    $AdminCheckout = AdminCheckout::all();
+
+    $RequirementItemConfirmation = RequirementItemConfirmation::all();
+
     $semesters = Semester::all();
 
     // Return the view and pass the blocks data
-    return view('admin.report', compact('blocks','semesters'));
+    return view('admin.report', compact('blocks','semesters','AdminCheckout','RequirementItemConfirmation'));
 }
+
+
 
     // Fetch floors based on hostelId
     public function getFloors($hostelId)

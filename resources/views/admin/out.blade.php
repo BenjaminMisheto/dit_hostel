@@ -69,7 +69,7 @@
 <!-- Check-Out Items Section -->
 <div class="col-12 col-md-6">
     <div class="card p-3 p-md-4">
-        <h5 class="card-title mb-3">Check-Out Items</h5>
+        <h5 class="card-title mb-3">Check-Out Items {{session('semester')}}</h5>
         <input type="hidden" id="user_id" value="{{ $user->id }}">
 
         <p class="mb-4">Please verify that the student has returned the following items</p>

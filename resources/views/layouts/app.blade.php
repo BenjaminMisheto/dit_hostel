@@ -328,6 +328,15 @@
                     <!-- End Authentication -->
 
                     <!-- Settings -->
+                    <li class="side-nav-menu-item" id="nav_history">
+                        <a class="side-nav-menu-link media align-items-center" href="#" onclick="historyFunction()">
+                            <span class="side-nav-menu-icon d-flex mr-3">
+                                <i class="gd-agenda"></i>
+                            </span>
+                            <span class="side-nav-fadeout-on-closed media-body text-dark">History</span>
+                        </a>
+                    </li>
+
                     <li class="side-nav-menu-item"  id="nav_setting">
                         <a class="side-nav-menu-link media align-items-center" href="#" onclick="setting()">
                             <span class="side-nav-menu-icon d-flex mr-3">
@@ -388,6 +397,7 @@
         "#nav_finish",
         "#nav_result",
         "#nav_setting",
+        "#nav_history",
     ];
 
     selectors.forEach(function(selector) {
@@ -423,6 +433,7 @@ function setting() {
         "#nav_finish",
         "#nav_result",
         "#nav_profile",
+        "#nav_history",
     ];
 
     selectors.forEach(function(selector) {
@@ -450,6 +461,53 @@ function setting() {
 
 
 
+
+            function historyFunction(){
+                const selectors = [
+        "#nav_hostel",
+        "#nav_room",
+        "#nav_finish",
+        "#nav_result",
+        "#nav_profile",
+        "#nav_setting",
+
+    ];
+
+
+
+    selectors.forEach(function(selector) {
+        $(selector).removeClass("active");
+    });
+    $("#nav_history").addClass("active");
+                $("#dash").html(
+                    '<div class="spinner-container">' +
+                    '<div class="black show d-flex align-items-center justify-content-center">' +
+                    '<div class="spinner-border lik" style="width: 3rem; height: 3rem;" role="status">' +
+                    '<span class="sr-only">Loading...</span>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>'
+                );
+
+                $("#dash").load("{{ route('history') }}", (response, status, xhr) => {
+                    if (status === "error") {
+                        const msg = `Sorry, but there was an error: ${xhr.status} ${xhr.statusText}`;
+                        $("#error").html(msg);
+                    }
+                });
+            }
+
+
+
+
+
+
+
+
+
+
+
+
             function profile() {
                 const selectors = [
         "#nav_hostel",
@@ -457,6 +515,7 @@ function setting() {
         "#nav_finish",
         "#nav_result",
         "#nav_setting",
+        "#nav_history",
     ];
 
     selectors.forEach(function(selector) {
@@ -493,6 +552,7 @@ function hostel() {
         "#nav_finish",
         "#nav_result",
         "#nav_setting",
+        "#nav_history",
     ];
 
     selectors.forEach(function(selector) {
@@ -532,6 +592,7 @@ function hostel() {
         "#nav_room",
         "#nav_result",
         "#nav_setting",
+        "#nav_history",
     ];
 
     selectors.forEach(function(selector) {
@@ -564,6 +625,7 @@ function hostel() {
         "#nav_room",
         "#nav_finish",
         "#nav_setting",
+        "#nav_history",
     ];
 
     selectors.forEach(function(selector) {

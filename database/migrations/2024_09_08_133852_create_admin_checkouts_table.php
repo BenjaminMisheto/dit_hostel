@@ -13,6 +13,11 @@ class CreateAdminCheckoutsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id'); // Add user_id field
             $table->unsignedBigInteger('semester_id'); // Add semester_id column
+            $table->string('block_name')->nullable();
+            $table->string('floor_name')->nullable();
+            $table->string('room_name')->nullable();
+            $table->string('bed_name')->nullable();
+            $table->string('course_name')->nullable();
             $table->string('name');
             $table->string('condition');
             $table->timestamps();

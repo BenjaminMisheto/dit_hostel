@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Bed;
 use App\Models\Semester;
+use App\Models\ElligableStudent;
 use Faker\Factory as Faker;
 
 class UserSeeder extends Seeder
@@ -27,18 +28,31 @@ class UserSeeder extends Seeder
             ->limit(200)
             ->get();
 
-        // Populate the user table with users who have already applied for beds
-        foreach ($beds as $bed) {
+        // Fetch elligible students to map them to users
+        $elligibleStudents = ElligableStudent::inRandomOrder()
+            ->limit($beds->count())
+            ->get();
+
+        // Ensure we have enough elligible students to map to beds
+        if ($elligibleStudents->count() < $beds->count()) {
+            throw new \Exception('Not enough elligible students to map to the available beds.');
+        }
+
+        // Populate the user table using eligible student data
+        foreach ($beds as $index => $bed) {
             $room = $bed->room;
             $floor = $room->floor;
             $block = $floor->block;
 
+            // Fetch corresponding eligible student
+            $elligibleStudent = $elligibleStudents[$index];
+
             // Create the user for the open semester
             $user = User::create([
-                'name' => $faker->name,
+                'name' => $elligibleStudent->student_name, // Use the name from eligible student
+                'registration_number' => $elligibleStudent->registration_number, // Use the registration number from eligible student
                 'semester_id' => $openSemester->id, // Assign only to the open semester
 
-                'registration_number' => $faker->unique()->numerify('#########'), // Generates a 9-digit number
                 'confirmation' => 1,
                 'application' => 1,
                 'status' => 'approved',
@@ -46,20 +60,19 @@ class UserSeeder extends Seeder
                     $block->price ?? $faker->numerify('#########'), // Use block price if available, otherwise generate a 9-digit number
                     null,
                 ]),
-
                 'Control_Number' => $faker->unique()->numerify('#########'), // Generates a 9-digit number
                 'block_id' => $block->id,
                 'room_id' => $room->id,
                 'floor_id' => $floor->id,
                 'bed_id' => $bed->id,
-                'sponsorship' => $faker->randomElement(['government', 'private']),
-                'phone' => $faker->phoneNumber,
-                'gender' => $faker->randomElement(['Male', 'Female']),
-                'nationality' => $faker->country,
-                'course' => $faker->randomElement(['D1', 'D2', 'D3', 'B1', 'B2', 'B3', 'B4']),
-                'email' => $faker->unique()->safeEmail, // Ensure the email is unique
+                'sponsorship' => $elligibleStudent->sponsorship, // Use sponsorship from eligible student
+                'phone' => $elligibleStudent->phone, // Use phone from eligible student
+                'gender' => $elligibleStudent->gender, // Use gender from eligible student
+                'nationality' => $elligibleStudent->nationality, // Use nationality from eligible student
+                'course' => $elligibleStudent->course, // Use course from eligible student
+                'email' => $elligibleStudent->email, // Use email from eligible student
                 'password' => bcrypt('password'), // Or use a hash that you prefer
-                'profile_photo_path' => 'img/' . (($bed->id % 15) + 1) . '.jpg', // Cycle image index from 1 to 15
+                'profile_photo_path' => $elligibleStudent->image,
                 'expiration_date' => $faker->boolean ? $faker->dateTimeBetween('now', 'now') : $faker->dateTimeBetween('now', '+1 month'),
                 'created_at' => now(),
                 'updated_at' => now(),

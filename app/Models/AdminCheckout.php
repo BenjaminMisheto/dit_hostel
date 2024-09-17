@@ -14,6 +14,11 @@ class AdminCheckout extends Model
         'name',
         'condition',
         'semester_id',
+        'block_name',
+        'floor_name',
+        'room_name',
+        'bed_name',
+        'course_name',
     ];
 
     public function user()

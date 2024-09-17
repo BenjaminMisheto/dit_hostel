@@ -18,6 +18,9 @@ use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\ControlController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\HistoryController;
+
+
 
 use App\Models\Block;
 
@@ -132,7 +135,7 @@ Route::post('/update-profile', [SearchController::class, 'updateProfile']);
     Route::post('/confirm-requirements-items', [RoomController::class, 'confirmapplication']);
 
 
-
+    Route::get('history', [HistoryController::class, 'index'])->name('history');
 
 });
 

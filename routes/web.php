@@ -231,10 +231,19 @@ Route::post('admin.updateExpirationDate', [AjaxController::class, 'updateExpirat
 
 
     Route::get('admin.report', [AjaxController::class, 'report'])->name('admin.report');
+
     route::get('/get-floors/{hostelId}', [AjaxController::class, 'getFloors']);
+
+    route::get('/get-floors-main/{hostelId}', [AjaxController::class, 'getFloorsmain']);
+
+
     route::get('/get-rooms/{floorId}', [AjaxController::class, 'getRooms']);
 
+    route::get('/get-rooms-main/{floorId}', [AjaxController::class, 'getRoomsmain']);
+
+
     route::get('/get-rooms-for-block/{blockId}', [AjaxController::class, 'getRoomsForBlock']);
+    route::get('/get-rooms-for-block-main/{blockId}', [AjaxController::class, 'getRoomsForBlockmain']);
 
 
     Route::get('room/bed/{roomId}', [RoomController::class, 'showBed'])->name('room.bed');

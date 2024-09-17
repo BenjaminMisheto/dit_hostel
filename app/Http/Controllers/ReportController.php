@@ -524,60 +524,39 @@ public function exportPDFPrintnewmaintanace(Request $request)
         $hostelId = $request->query('block_id');
         $floorId = $request->query('floor_id');
         $roomId = $request->query('room_id');
+        $semesterId =  $request->query('semester_id');
 
         // Initialize query for filtering users
-        $query = User::query();
+        $query = AdminCheckout::query();
 
         // Apply filters if provided
+        if ($semesterId) {
+            $query->where('semester_id', $semesterId);
+        }
         if ($hostelId) {
-            $query->where('block_id', $hostelId);
+            $query->where('block_name', $hostelId);
         }
         if ($floorId && $floorId !== 'all') {
-            $query->where('floor_id', $floorId);
+            $query->where('floor_name', $floorId);
         }
         if ($roomId && $roomId !== 'all') {
-            $query->where('room_id', $roomId);
+            $query->where('room_name', $roomId);
         }
+
 
         // Fetch the filtered users
-        $users = $query->with(['block', 'floor', 'room'])->get();
+        $users = $query->with(['user'])->get();
 
-        // Get block details for the report header
-        $block = $users->first()->block ?? null;
-
-        // Initialize query for filtering AdminCheckout
-        $adminCheckoutQuery = AdminCheckout::query();
-
-        // Apply filters to AdminCheckout if provided
-        if ($hostelId) {
-            $adminCheckoutQuery->whereHas('user', function ($q) use ($hostelId) {
-                $q->where('block_id', $hostelId);
-            });
-        }
-        if ($floorId && $floorId !== 'all') {
-            $adminCheckoutQuery->whereHas('user', function ($q) use ($floorId) {
-                $q->where('floor_id', $floorId);
-            });
-        }
-        if ($roomId && $roomId !== 'all') {
-            $adminCheckoutQuery->whereHas('user', function ($q) use ($roomId) {
-                $q->where('room_id', $roomId);
-            });
-        }
-
-        // Fetch the filtered AdminCheckout items
-        $adminCheckouts = $adminCheckoutQuery->with(['user', 'user.block', 'user.floor', 'user.room'])->get();
 
         // Prepare data for the PDF view
         $data = [
             'users' => $users,
-            'adminCheckouts' => $adminCheckouts,
-            'block' => $block,
+            'block' => $hostelId,
             'date' => now()->format('Y-m-d'), // Current date or format as needed
         ];
 
         // Generate the file name using the block name and date
-        $blockName = $block ? $block->name : 'report';
+        $blockName = $hostelId ? $hostelId : 'report';
         $date = now()->format('Y-m-d');
         $fileName = $blockName . '_report_Maintenance_' . $date . '.pdf';
 
@@ -607,60 +586,39 @@ public function exportPDFPrintnewmaintanaceprint(Request $request)
         $hostelId = $request->query('block_id');
         $floorId = $request->query('floor_id');
         $roomId = $request->query('room_id');
+        $semesterId =  $request->query('semester_id');
 
         // Initialize query for filtering users
-        $query = User::query();
+        $query = AdminCheckout::query();
 
         // Apply filters if provided
+        if ($semesterId) {
+            $query->where('semester_id', $semesterId);
+        }
         if ($hostelId) {
-            $query->where('block_id', $hostelId);
+            $query->where('block_name', $hostelId);
         }
         if ($floorId && $floorId !== 'all') {
-            $query->where('floor_id', $floorId);
+            $query->where('floor_name', $floorId);
         }
         if ($roomId && $roomId !== 'all') {
-            $query->where('room_id', $roomId);
+            $query->where('room_name', $roomId);
         }
+
 
         // Fetch the filtered users
-        $users = $query->with(['block', 'floor', 'room'])->get();
+        $users = $query->with(['user'])->get();
 
-        // Get block details for the report header
-        $block = $users->first()->block ?? null;
-
-        // Initialize query for filtering AdminCheckout
-        $adminCheckoutQuery = AdminCheckout::query();
-
-        // Apply filters to AdminCheckout if provided
-        if ($hostelId) {
-            $adminCheckoutQuery->whereHas('user', function ($q) use ($hostelId) {
-                $q->where('block_id', $hostelId);
-            });
-        }
-        if ($floorId && $floorId !== 'all') {
-            $adminCheckoutQuery->whereHas('user', function ($q) use ($floorId) {
-                $q->where('floor_id', $floorId);
-            });
-        }
-        if ($roomId && $roomId !== 'all') {
-            $adminCheckoutQuery->whereHas('user', function ($q) use ($roomId) {
-                $q->where('room_id', $roomId);
-            });
-        }
-
-        // Fetch the filtered AdminCheckout items
-        $adminCheckouts = $adminCheckoutQuery->with(['user', 'user.block', 'user.floor', 'user.room'])->get();
 
         // Prepare data for the PDF view
         $data = [
             'users' => $users,
-            'adminCheckouts' => $adminCheckouts,
-            'block' => $block,
+            'block' => $hostelId,
             'date' => now()->format('Y-m-d'), // Current date or format as needed
         ];
 
         // Generate the file name using the block name and date
-        $blockName = $block ? $block->name : 'report';
+        $blockName = $hostelId ? $hostelId : 'report';
         $date = now()->format('Y-m-d');
         $fileName = $blockName . '_report_Maintenance_' . $date . '.pdf';
 
@@ -679,61 +637,46 @@ public function exportPDFPrintnewmaintanaceprint(Request $request)
 }
 
 
+
 public function exportPDFPrintnewmaintanaceprintexel(Request $request)
 {
     try {
         $hostelId = $request->query('block_id');
         $floorId = $request->query('floor_id');
         $roomId = $request->query('room_id');
+        $semesterId =  $request->query('semester_id');
 
         // Initialize query for filtering users
-        $query = User::query();
+        $query = AdminCheckout::query();
 
         // Apply filters if provided
+        if ($semesterId) {
+            $query->where('semester_id', $semesterId);
+        }
         if ($hostelId) {
-            $query->where('block_id', $hostelId);
+            $query->where('block_name', $hostelId);
         }
         if ($floorId && $floorId !== 'all') {
-            $query->where('floor_id', $floorId);
+            $query->where('floor_name', $floorId);
         }
         if ($roomId && $roomId !== 'all') {
-            $query->where('room_id', $roomId);
+            $query->where('room_name', $roomId);
         }
 
         // Fetch the filtered users
-        $users = $query->with(['block', 'floor', 'room'])->get();
+        $users = $query->with(['user'])->get();
 
-        // Get block details for the report header
-        $block = $users->first()->block ?? null;
+        // Generate the file name using the block name and date
+        $blockName = $hostelId ? $hostelId : 'report';
+        $date = now()->format('Y-m-d');
+        $fileName = $blockName . '_report_Maintenance_' . $date . '.xlsx';
 
-        // Initialize query for filtering AdminCheckout
-        $adminCheckoutQuery = AdminCheckout::query();
+        // Return the Excel export using the FilteredUsersExport class
+        return Excel::download(new MaintenanceReportExport($users, 'maintenance', $semesterId), $fileName);
 
-        // Apply filters to AdminCheckout if provided
-        if ($hostelId) {
-            $adminCheckoutQuery->whereHas('user', function ($q) use ($hostelId) {
-                $q->where('block_id', $hostelId);
-            });
-        }
-        if ($floorId && $floorId !== 'all') {
-            $adminCheckoutQuery->whereHas('user', function ($q) use ($floorId) {
-                $q->where('floor_id', $floorId);
-            });
-        }
-        if ($roomId && $roomId !== 'all') {
-            $adminCheckoutQuery->whereHas('user', function ($q) use ($roomId) {
-                $q->where('room_id', $roomId);
-            });
-        }
-
-        // Fetch the filtered AdminCheckout items
-        $adminCheckouts = $adminCheckoutQuery->with(['user', 'user.block', 'user.floor', 'user.room'])->get();
-
-        // Export to Excel
-        return Excel::download(new MaintenanceReportExport($users, $adminCheckouts, $block), 'report_Maintenance_' . now()->format('Y-m-d') . '.xlsx');
     } catch (\Exception $e) {
         // Log the error
-        Log::error('Excel Export Error: ' . $e->getMessage());
+        Log::error('Excel Generation Error: ' . $e->getMessage());
 
         // Return a JSON response with error message
         return response()->json(['error' => 'Failed to generate Excel report.'], 500);

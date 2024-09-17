@@ -265,6 +265,18 @@
             <div class="row">
                 <div class="col-md-3 mb-3">
                     <div class="form-floating">
+                        <label for="semesterfillter">Semester Filter</label>
+                        <select id="semesterfillter" class="form-select wide" aria-label="Select Semester">
+                            <option value="" selected>Select a semester</option>
+                            @foreach($semesters as $semester)
+                                <option value="{{ $semester->id }}">{{ $semester->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="form-floating">
                         <label for="blockFilter">Block Filter</label>
                         <select id="blockFilter" class="form-select wide" aria-label="Select Block">
                             <option value="" selected>Select a block</option>
@@ -1212,7 +1224,7 @@ if (exportExcelButton) {
 
                 // Fetch floors for the selected block via AJAX
                 $.ajax({
-                    url: '/get-floors/' + blockId,
+                    url: '/get-floors-main/' + blockId,
                     type: 'GET',
                     success: function (data) {
                         console.log("Floors received: ", data);
@@ -1221,7 +1233,7 @@ if (exportExcelButton) {
                             $('#floorFilter').prop('disabled', false);
                             $('#floorFilter').append('<option value="all">All Floors</option>');
                             $.each(data.floors, function (key, floor) {
-                                $('#floorFilter').append('<option value="' + floor.id + '">' + floor.floor_number + '</option>');
+                                $('#floorFilter').append('<option value="' + floor.floor_name + '">' + floor.floor_name + '</option>');
                             });
 
                             // Update niceSelect
@@ -1253,7 +1265,7 @@ if (exportExcelButton) {
 
                 // Fetch all rooms for all floors in the selected block via AJAX
                 $.ajax({
-                    url: '/get-rooms-for-block/' + blockId,
+                    url: '/get-rooms-for-block-main/' + blockId,
                     type: 'GET',
                     success: function (data) {
                         console.log("Rooms for all floors received: ", data);
@@ -1262,7 +1274,7 @@ if (exportExcelButton) {
                             $('#roomFilter').prop('disabled', false);
                             $('#roomFilter').append('<option value="all">All Rooms</option>');
                             $.each(data.rooms, function (key, room) {
-                                $('#roomFilter').append('<option value="' + room.id + '">' + room.room_number + '</option>');
+                                $('#roomFilter').append('<option value="' + room.room_name + '">' + room.room_name + '</option>');
                             });
 
                             // Update niceSelect
@@ -1282,7 +1294,7 @@ if (exportExcelButton) {
 
                 // Fetch rooms for the selected floor via AJAX
                 $.ajax({
-                    url: '/get-rooms/' + floorId,
+                    url: '/get-rooms-main/' + floorId,
                     type: 'GET',
                     success: function (data) {
                         console.log("Rooms received: ", data);
@@ -1291,7 +1303,7 @@ if (exportExcelButton) {
                             $('#roomFilter').prop('disabled', false);
                             $('#roomFilter').append('<option value="all">All Rooms</option>');
                             $.each(data.rooms, function (key, room) {
-                                $('#roomFilter').append('<option value="' + room.id + '">' + room.room_number + '</option>');
+                                $('#roomFilter').append('<option value="' + room.room_name + '">' + room.room_name + '</option>');
                             });
 
                             // Update niceSelect
@@ -1315,8 +1327,10 @@ if (exportExcelButton) {
             var floorId = $('#floorFilter').val();
             var roomId = $('#roomFilter').val();
 
-            if (blockId && floorId && roomId) {
-                var url = '/generate-report-print-maintanace?block_id=' + blockId + '&floor_id=' + floorId + '&room_id=' + roomId;
+            var semesterId = $('#semesterfillter').val();
+
+            if (blockId && floorId && roomId && semesterId) {
+                var url = '/generate-report-print-maintanace?block_id=' + blockId + '&floor_id=' + floorId + '&room_id=' + roomId + '&semester_id=' + semesterId;
 
                 $('#overlay').css('display', 'flex');
 
@@ -1399,10 +1413,11 @@ if (exportExcelButton) {
                 var blockId = $('#blockFilter').val();
                 var floorId = $('#floorFilter').val();
                 var roomId = $('#roomFilter').val();
+                var semesterId = $('#semesterfillter').val();
 
                 if (blockId && floorId && roomId) {
                     // URL to generate the PDF report
-                    var url = '/generate-report-print-maintanace_print?block_id=' + blockId + '&floor_id=' + floorId + '&room_id=' + roomId;
+                    var url = '/generate-report-print-maintanace_print?block_id=' + blockId + '&floor_id=' + floorId + '&room_id=' + roomId+ '&semester_id=' + semesterId;
 
                     // Open the PDF in a new tab
                     var printWindow = window.open(url, '_blank');
@@ -1430,10 +1445,11 @@ if (exportExcelButton) {
                 var blockId = $('#blockFilter').val();
                 var floorId = $('#floorFilter').val();
                 var roomId = $('#roomFilter').val();
+                var semesterId = $('#semesterfillter').val();
 
                 if (blockId && floorId && roomId) {
                     // URL to generate and download the PDF report
-                    var url = '/generate-report-print-maintanace?block_id=' + blockId + '&floor_id=' + floorId + '&room_id=' + roomId;
+                    var url = '/generate-report-print-maintanace?block_id=' + blockId + '&floor_id=' + floorId + '&room_id=' + roomId + '&semester_id=' + semesterId;
 
                     window.location.href = url;
                     restoreButtonText('downloadPDFBtn', 'Download PDF');
@@ -1455,10 +1471,12 @@ if (exportExcelButton) {
                 var blockId = $('#blockFilter').val();
                 var floorId = $('#floorFilter').val();
                 var roomId = $('#roomFilter').val();
+                var semesterId = $('#semesterfillter').val();
+
 
                 if (blockId && floorId && roomId) {
                     // URL to generate and export the Excel report
-                    var url = '/generate-report-print-maintanace_print_exel?block_id=' + blockId + '&floor_id=' + floorId + '&room_id=' + roomId;
+                    var url = '/generate-report-print-maintanace_print_exel?block_id=' + blockId + '&floor_id=' + floorId + '&room_id=' + roomId+ '&semester_id=' + semesterId;
                     window.location.href = url;
 
 

@@ -1238,12 +1238,27 @@ public function updateControlNumber(Request $request)
         return response()->json(['floors' => $floors]);
     }
 
+       // Fetch floors based on hostelId
+       public function getFloorsmain($hostelId)
+    {
+        $floors = AdminCheckout::where('block_name', $hostelId)->get();
+        return response()->json(['floors' => $floors]);
+    }
+
+
+
 
 
     // Fetch rooms based on floorId
     public function getRooms($floorId)
     {
         $rooms = Room::where('floor_id', $floorId)->get();
+        return response()->json(['rooms' => $rooms]);
+    }
+
+    public function getRoomsmain($floorId)
+    {
+        $rooms = AdminCheckout::where('floor_name', $floorId)->get();
         return response()->json(['rooms' => $rooms]);
     }
 
@@ -1262,10 +1277,19 @@ public function updateControlNumber(Request $request)
 
 
 
+}
 
 
+public function getRoomsForBlockmain($blockId)
+{
+    // Fetch all floors for the selected block
+    $floors = AdminCheckout::where('block_name', $blockId)->pluck('id');
 
+    // Fetch all rooms for these floors
+    $rooms = AdminCheckout::whereIn('floor_name', $floors)->get();
 
+    // Return rooms as JSON
+    return response()->json(['rooms' => $rooms]);
 
 
 

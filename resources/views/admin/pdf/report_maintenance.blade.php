@@ -139,7 +139,7 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="mb-4">Maintenance Report for {{ $block->name ?? 'Not Available' }}</h1>
+        <h1 class="mb-4">Maintenance Report for {{ $block ?? 'Not Available' }}</h1>
 
         <!-- AdminCheckouts Section -->
         <div id="admin-checkouts" class="table-container">
@@ -156,16 +156,16 @@
                 </thead>
                 <tbody>
                     @php $currentIndex = 1; @endphp
-                    @foreach ($adminCheckouts as $item)
+                    @foreach ($users as $item)
                         <tr>
                             <td>{{ $currentIndex++ }}</td>
                             <td>{{ $item->name }}</td>
                             <td class="{{ $item->condition === 'Good' ? 'text-success' : 'text-danger' }}">
                                 {{ $item->condition }}
                             </td>
-                            <td>{{ $item->user->block->name ?? 'Not Available' }}</td>
-                            <td>{{ $item->user->floor->floor_number ?? 'Not Available' }}</td>
-                            <td>{{ $item->user->room->room_number ?? 'Not Available' }}</td>
+                            <td>{{ $item->block_name ?? 'Not Available' }}</td>
+                            <td>{{ $item->floor_name ?? 'Not Available' }}</td>
+                            <td>{{ $item->bed_name ?? 'Not Available' }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -188,10 +188,10 @@
                 </thead>
                 <tbody>
                     @php
-                        $totalItems = $adminCheckouts->count();
-                        $goodItems = $adminCheckouts->where('condition', 'Good')->count();
-                        $badItems = $adminCheckouts->where('condition', 'Bad')->count();
-                        $noneItems = $adminCheckouts->where('condition', 'None')->count();
+                        $totalItems = $users->count();
+                        $goodItems = $users->where('condition', 'Good')->count();
+                        $badItems = $users->where('condition', 'Bad')->count();
+                        $noneItems = $users->where('condition', 'None')->count();
                         $goodPercentage = $totalItems > 0 ? ($goodItems / $totalItems) * 100 : 0;
                         $badPercentage = $totalItems > 0 ? ($badItems / $totalItems) * 100 : 0;
                         $nonePercentage = $totalItems > 0 ? ($noneItems / $totalItems) * 100 : 0;
@@ -222,7 +222,7 @@
     </div>
     <div class="footer">
         <p>Report generated on {{ now()->format('Y-m-d H:i:s') }}</p>
-        <p>© {{ now()->format('Y') }} {{ $block->name ?? 'Not Available' }}</p>
+        <p>© {{ now()->format('Y') }} {{ $block ?? 'Not Available' }}</p>
     </div>
 </body>
 </html>

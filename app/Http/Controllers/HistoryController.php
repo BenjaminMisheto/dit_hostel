@@ -12,9 +12,9 @@ class HistoryController extends Controller
 {
     // Retrieve the checkout records for the logged-in user
     $adminCheckouts = AdminCheckout::where('user_id', Auth::id())
-
-                                   ->get()
-                                   ->groupBy('semester_id');
+                               ->orderBy('created_at', 'desc') // Order by the `created_at` field in descending order
+                               ->get()
+                               ->groupBy('semester_id');
 
     // Pass the data to the view
     return view('user.history', ['adminCheckouts' => $adminCheckouts]);

@@ -47,6 +47,8 @@ $deadlineDate = \Carbon\Carbon::parse($deadlineDate);
     <div class="py-4 px-3 px-md-4">
         <div class="mb-3 mb-md-4 d-flex justify-content-between">
             <div class="h3 mb-0">Hostel</div>
+            <p>{{ auth()->user()->semester->name ?? 'No semester found' }}</p>
+
         </div>
 
         @if (($openDate->lessThan($now) and !$deadlineDate->isPast()) or $user->application == 1 )

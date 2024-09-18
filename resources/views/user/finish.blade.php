@@ -5,7 +5,9 @@ $expirationDate = $user->expiration_date ? Carbon::parse($user->expiration_date)
 <div class="content">
     <div class="py-4 px-3 px-md-4">
         <div class="mb-3 mb-md-4 d-flex justify-content-between align-items-center">
-            <h3 class="mb-0">Confirm your Application</h3>
+            <h3 class="mb-0">Application</h3>
+            <p>{{ auth()->user()->semester->name ?? 'No semester found' }}</p>
+
         </div>
 
         @php

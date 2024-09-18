@@ -27,6 +27,8 @@
     <div class="py-4 px-3 px-md-4">
         <div class="mb-3 mb-md-4 d-flex justify-content-between">
             <h3 class="mb-0">My Profile</h3>
+            <p>{{ auth()->user()->semester->name ?? 'No semester found' }}</p>
+
         </div>
         @if ($user->application == 1)
         <div class="">

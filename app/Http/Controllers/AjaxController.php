@@ -1219,14 +1219,20 @@ public function updateControlNumber(Request $request)
     // Fetch all blocks with their related floors and rooms
     $blocks = Block::with('floors.rooms')->get();
 
-    $AdminCheckout = AdminCheckout::all();
+    $AdminCheckout = AdminCheckout::select('block_name')->distinct()->groupBy('block_name')->get();
+
+
+
 
     $RequirementItemConfirmation = RequirementItemConfirmation::all();
 
-    $semesters = Semester::all();
+    $semesters = AdminCheckout::with('semester')->select('semester_id')->distinct()->groupBy('semester_id')->get();
+
+    $semestersAdminCheckout = AdminCheckout::with('semester')->select('semester_id')->distinct()->groupBy('semester_id')->get();
+
 
     // Return the view and pass the blocks data
-    return view('admin.report', compact('blocks','semesters','AdminCheckout','RequirementItemConfirmation'));
+    return view('admin.report', compact('blocks','semesters','AdminCheckout','RequirementItemConfirmation','semestersAdminCheckout'));
 }
 
 
@@ -1238,10 +1244,20 @@ public function updateControlNumber(Request $request)
         return response()->json(['floors' => $floors]);
     }
 
+
+
        // Fetch floors based on hostelId
        public function getFloorsmain($hostelId)
     {
-        $floors = AdminCheckout::where('block_name', $hostelId)->get();
+
+        $floors = AdminCheckout::select('floor_name')
+    ->where('block_name', $hostelId)
+    ->distinct()
+    ->get();
+
+
+
+
         return response()->json(['floors' => $floors]);
     }
 
@@ -1256,9 +1272,19 @@ public function updateControlNumber(Request $request)
         return response()->json(['rooms' => $rooms]);
     }
 
+
+
     public function getRoomsmain($floorId)
     {
-        $rooms = AdminCheckout::where('floor_name', $floorId)->get();
+        // $rooms = AdminCheckout::where('floor_name', $floorId)->get();
+
+
+        $rooms = AdminCheckout::select('room_name')
+    ->where('floor_name', $floorId)
+    ->distinct()
+    ->get();
+
+
         return response()->json(['rooms' => $rooms]);
     }
 
@@ -1272,6 +1298,8 @@ public function updateControlNumber(Request $request)
     // Fetch all rooms for these floors
     $rooms = Room::whereIn('floor_id', $floors)->get();
 
+
+
     // Return rooms as JSON
     return response()->json(['rooms' => $rooms]);
 
@@ -1280,19 +1308,41 @@ public function updateControlNumber(Request $request)
 }
 
 
+
 public function getRoomsForBlockmain($blockId)
 {
     // Fetch all floors for the selected block
-    $floors = AdminCheckout::where('block_name', $blockId)->pluck('id');
+    $floors = AdminCheckout::where('block_name', $blockId)->pluck('floor_name');
 
     // Fetch all rooms for these floors
-    $rooms = AdminCheckout::whereIn('floor_name', $floors)->get();
+    // $rooms = AdminCheckout::whereIn('floor_name', $floors)->get();
+
+
+
+
+    $rooms = AdminCheckout::select('room_name')
+    ->where('block_name', $blockId)
+    ->distinct()
+    ->get();
 
     // Return rooms as JSON
     return response()->json(['rooms' => $rooms]);
+}
 
 
 
+
+
+public function getBlocks($semesterId)
+{
+
+    // Assuming you have a Block model that is related to the semester
+    $blocks = AdminCheckout::select('block_name')
+        ->where('semester_id', $semesterId)
+        ->distinct()
+        ->get();
+
+    return response()->json(['blocks' => $blocks]);
 }
 
 

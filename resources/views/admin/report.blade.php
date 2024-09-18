@@ -163,13 +163,14 @@
 
         <div class="container-fluid mt-5">
             <div class="row">
+                <!-- Semester Filter -->
                 <div class="col-md-3 mb-3">
                     <div class="form-floating">
                         <label for="semesterSelectNew">Semester Filter</label>
                         <select id="semesterSelectNew" class="form-select wide" aria-label="Select Semester">
                             <option value="" selected>Select a semester</option>
                             @foreach($semesters as $semester)
-                                <option value="{{ $semester->id }}">{{ $semester->name }}</option>
+                                <option value="{{ $semester->semester->id}}">{{ $semester->semester->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -179,11 +180,8 @@
                 <div class="col-md-3 mb-3">
                     <div class="form-floating">
                         <label for="blockSelectNew">Block Filter</label>
-                        <select id="blockSelectNew" class="form-select wide" aria-label="Select Block">
+                        <select id="blockSelectNew" class="form-select wide" aria-label="Select Block" disabled>
                             <option value="" selected>Select a block</option>
-                            @foreach($RequirementItemConfirmation  as $RequirementItemConfirmation )
-                                <option value="{{ $RequirementItemConfirmation->block_name  }}">{{ $RequirementItemConfirmation->block_name }}</option>
-                            @endforeach
                         </select>
                     </div>
                 </div>
@@ -193,7 +191,9 @@
                     <div class="form-floating">
                         <label for="checkinCheckoutSelectNew">Check-in/Check-out Filter</label>
                         <select id="checkinCheckoutSelectNew" class="form-select wide" aria-label="Select Status" disabled>
-
+                            <option value="" selected>Select status</option>
+                            <option value="checkin">Check-in</option>
+                            <option value="checkout">Check-out</option>
                         </select>
                     </div>
                 </div>
@@ -203,7 +203,9 @@
                     <div class="form-floating">
                         <label for="genderSelectNew">Gender Filter</label>
                         <select id="genderSelectNew" class="form-select wide" aria-label="Select Gender" disabled>
-
+                            <option value="" selected>Select gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
                         </select>
                     </div>
                 </div>
@@ -213,12 +215,13 @@
                     <div class="form-floating">
                         <label for="courseSelectNew">Course Filter</label>
                         <select id="courseSelectNew" class="form-select wide" aria-label="Select Course" disabled>
-
+                            <option value="" selected>Select course</option>
                         </select>
                     </div>
                 </div>
             </div>
         </div>
+
 
 
 
@@ -260,6 +263,9 @@
 
 
     </div>
+
+
+
     <div class="tab-pane fade" id="tabs1-tab3" role="tabpanel">
         <div class="container-fluid mt-5">
             <div class="row">
@@ -268,8 +274,8 @@
                         <label for="semesterfillter">Semester Filter</label>
                         <select id="semesterfillter" class="form-select wide" aria-label="Select Semester">
                             <option value="" selected>Select a semester</option>
-                            @foreach($semesters as $semester)
-                                <option value="{{ $semester->id }}">{{ $semester->name }}</option>
+                            @foreach($semestersAdminCheckout as $semestersAdminCheckout)
+                                <option value="{{ $semestersAdminCheckout->semester_id }}">{{ $semestersAdminCheckout->semester->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -278,11 +284,8 @@
                 <div class="col-md-3 mb-3">
                     <div class="form-floating">
                         <label for="blockFilter">Block Filter</label>
-                        <select id="blockFilter" class="form-select wide" aria-label="Select Block">
-                            <option value="" selected>Select a block</option>
-                            @foreach($AdminCheckout as $AdminCheckout)
-                                <option value="{{ $AdminCheckout->block_name}}">{{ $AdminCheckout->block_name}}</option>
-                            @endforeach
+                        <select id="blockFilter" class="form-select wide" aria-label="Select Block" disabled>
+                            <!-- Blocks will be dynamically populated -->
                         </select>
                     </div>
                 </div>
@@ -313,6 +316,8 @@
     <span class="btn shadow-sm border" id="printReportBtn" style="cursor: pointer"><i class="gd-loop"></i></span>
 </div>
 
+
+
 <div class="d-flex justify-content-around mt-4" style="display: none;" id="pdfButtonsContainer">
     <!-- Export as Excel button -->
     <button id="exportExcelBtn" class="btn btn-outline-success shadow-sm" style="display: none;">
@@ -340,12 +345,12 @@
 
 
     </div>
+
+
+
+
+
 </div>
-
-
-
-
-
     </div>
 </div>
 
@@ -398,6 +403,14 @@ function restoreButtonText(buttonId, originalText) {
             $('#genderSelect').html('<option value="">Select Gender</option>').prop('disabled', true);
             $('#paymentSelect').html('<option value="">Select Payment</option>').prop('disabled', true);
             $('#courseSelect').html('<option value="">Select Course</option>').prop('disabled', true);
+
+
+
+
+
+
+
+
 
             if (hostelId) {
                 console.log("Fetching floors for hostel ID: ", hostelId);
@@ -857,316 +870,340 @@ $('#paymentSelect').on('change', function () {
 
 
 
-
-
-
-
-<script>$(document).ready(function () {
-    // Function to change button text to "Generating..."
-function setButtonText(buttonId, text) {
-    var button = document.getElementById(buttonId);
-    if (button) {
-        $('#' + buttonId).text(text); // Use the variable buttonId to create the jQuery selector
-    }
-}
-
-
-
-function restoreButtonText(buttonId, originalText) {
-    var button = document.getElementById(buttonId);
-    if (button) {
-        // Set a 5-second delay before changing the button text
-        setTimeout(function() {
-            $('#' + buttonId).text(originalText);
-        }, 5000); // 5000 milliseconds = 5 seconds
-    }
-}
-
-    function updateNiceSelect(selector) {
-        if ($.fn.niceSelect) {
-            $(selector).niceSelect('update');
+<script>
+    $(document).ready(function () {
+        // Function to change button text to "Generating..."
+        function setButtonText(buttonId, text) {
+            var button = document.getElementById(buttonId);
+            if (button) {
+                $('#' + buttonId).text(text); // Use the variable buttonId to create the jQuery selector
+            }
         }
-    }
 
-    // Function to display toast messages
-    function showToast(toastId, message) {
-        var $toast = $(toastId);
-        $toast.find('.toast-body').text(message);
-        $toast.toast({
-            delay: 3000
-        }); // Set the delay for the toast to hide automatically
-        $toast.toast('show');
-    }
-
-    // When a block is selected
-    $('#blockSelectNew').on('change', function () {
-        var hostelId = $(this).val();
-        console.log("Selected hostel ID: ", hostelId);
-
-        $('#genderSelectNew').html('<option value="">Select Gender</option>').prop('disabled', true);
-        $('#courseSelectNew').html('<option value="">Select Course</option>').prop('disabled', true);
-        $('#checkinCheckoutSelectNew').html('<option value="">Select status</option><option value="checkin">Check-in</option><option value="checkout">Check-out</option>').prop('disabled', true);
-
-        if (hostelId) {
-            $('#checkinCheckoutSelectNew').prop('disabled', false);
-            updateNiceSelect('#checkinCheckoutSelectNew');
+        function restoreButtonText(buttonId, originalText) {
+            var button = document.getElementById(buttonId);
+            if (button) {
+                // Set a 5-second delay before changing the button text
+                setTimeout(function() {
+                    $('#' + buttonId).text(originalText);
+                }, 5000); // 5000 milliseconds = 5 seconds
+            }
         }
-    });
 
-    // When Check-in/Check-out option is selected
-    $('#checkinCheckoutSelectNew').on('change', function () {
-        var checkinCheckout = $(this).val();
-        console.log("Selected Check-in/Check-out status: ", checkinCheckout);
+        function updateNiceSelect(selector) {
+            if ($.fn.niceSelect) {
+                $(selector).niceSelect('update');
+            }
+        }
 
-        $('#genderSelectNew').html('<option value="">Select Gender</option>').prop('disabled', true);
-        $('#courseSelectNew').html('<option value="">Select Course</option>').prop('disabled', true);
-        updateNiceSelect('#genderSelectNew');
+        // Function to display toast messages
+        function showToast(toastId, message) {
+            var $toast = $(toastId);
+            $toast.find('.toast-body').text(message);
+            $toast.toast({
+                delay: 3000
+            }); // Set the delay for the toast to hide automatically
+            $toast.toast('show');
+        }
 
-        if (checkinCheckout) {
-            console.log("Fetching gender options based on selected check-in/check-out status.");
-            $.ajax({
-                url: '/get-gender-options/' + checkinCheckout,
-                type: 'GET',
-                success: function (data) {
-                    console.log("Gender options received: ", data);
-                    if (data && data.genders && data.genders.length > 0) {
-                        var genderOptions = '<option value="">Select Gender</option>' +
-                                            '<option value="all">All Gender</option>';
-                        $.each(data.genders, function (key, gender) {
-                            genderOptions += '<option value="' + gender + '">' + gender + '</option>';
-                        });
-                        $('#genderSelectNew').prop('disabled', false).html(genderOptions);
-                        updateNiceSelect('#genderSelectNew');
-                    } else {
-                        showToast('#error-toast', 'No gender options found.');
+        // When a semester is selected
+        $('#semesterSelectNew').on('change', function () {
+            var semesterId = $(this).val();
+            console.log("Selected semester ID: ", semesterId);
+
+            // Clear and disable block filter initially
+            $('#blockSelectNew').html('<option value="">Select a block</option>').prop('disabled', true);
+            $('#checkinCheckoutSelectNew').html('<option value="">Select status</option><option value="checkin">Check-in</option><option value="checkout">Check-out</option>').prop('disabled', true);
+            $('#genderSelectNew').html('<option value="">Select Gender</option>').prop('disabled', true);
+            $('#courseSelectNew').html('<option value="">Select Course</option>').prop('disabled', true);
+
+            if (semesterId) {
+
+                // Make an AJAX request to fetch blocks for the selected semester
+                $.ajax({
+                    url: '/get-blocks-main/' + semesterId,
+                    type: 'GET',
+                    success: function (data) {
+                        console.log("Block options received: ", data);
+                        if (data && data.blocks && data.blocks.length > 0) {
+                            // Enable the block filter and populate with options
+                            $('#blockSelectNew').prop('disabled', false);
+                            var blockOptions = '<option value="">Select a block</option>';
+                            $.each(data.blocks, function (key, block) {
+                                blockOptions += '<option value="' + block.block_name + '">' + block.block_name + '</option>';
+                            });
+                            $('#blockSelectNew').html(blockOptions);
+                            updateNiceSelect('#blockSelectNew');
+                        } else {
+                            showToast('#error-toast', 'No blocks found for this semester.');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        showToast('#error-toast', 'Error retrieving blocks.');
+                        console.error("Error retrieving blocks:", xhr, status, error);
                     }
-                },
-                error: function (xhr, status, error) {
-                    showToast('#error-toast', 'Error retrieving gender options.');
-                    console.error("Error retrieving gender options:", xhr, status, error);
-                }
-            });
-        }
-    });
-
-    // When Gender is selected
-    $('#genderSelectNew').on('change', function () {
-        var gender = $(this).val();
-        console.log("Selected gender: ", gender);
-
-        $('#courseSelectNew').html('<option value="">Select Course</option>').prop('disabled', true);
-        updateNiceSelect('#courseSelectNew');
-
-        if (gender) {
-            console.log("Fetching course options based on gender: ", gender);
-            $.ajax({
-                url: '/get-course-options/' + gender,
-                type: 'GET',
-                success: function (data) {
-                    console.log("Course options received: ", data);
-                    if (data && data.courses && data.courses.length > 0) {
-                        var courseOptions = '<option value="">Select Course</option>' +
-                                            '<option value="all">All Courses</option>';
-                        $.each(data.courses, function (key, course) {
-                            courseOptions += '<option value="' + course + '">' + course + '</option>';
-                        });
-                        $('#courseSelectNew').prop('disabled', false).html(courseOptions);
-                        updateNiceSelect('#courseSelectNew');
-                    } else {
-                        showToast('#error-toast', 'No course options found.');
-                    }
-                },
-                error: function (xhr, status, error) {
-                    showToast('#error-toast', 'Error retrieving course options.');
-                    console.error("Error retrieving course options:", xhr, status, error);
-                }
-            });
-        }
-    });
-
-    // Handle report generation based on all filters
-    $('#printReportNew').on('click', function () {
-    var semesterId = $('#semesterSelectNew').val();
-    var hostelId = $('#blockSelectNew').val();
-    var gender = $('#genderSelectNew').val();
-    var course = $('#courseSelectNew').val();
-    var checkinCheckout = $('#checkinCheckoutSelectNew').val();
-
-    if (hostelId && gender && course && checkinCheckout && semesterId) {
-        // Include the semesterId in the URL query parameters
-        var url = '/generate-report-print-new?hostel_id=' + encodeURIComponent(hostelId) +
-                  '&gender=' + encodeURIComponent(gender) +
-                  '&course=' + encodeURIComponent(course) +
-                  '&checkin_checkout=' + encodeURIComponent(checkinCheckout) +
-                  '&semester_id=' + encodeURIComponent(semesterId);
-
-        $('#overlay').css('display', 'flex');
-
-        loadPDF(url).then(() => {
-            $('#overlay').fadeOut();
-        }).catch((error) => {
-            showToast('#error-toast', 'Error loading the PDF.');
-            console.error("Error loading PDF:", error);
-            $('#overlay').fadeOut();
-        });
-    } else {
-        showToast('#error-toast', 'Please select all filters before generating the report.');
-    }
-});
-
-
-    // Load PDF and handle overlay
-    function loadPDF(url) {
-        return new Promise((resolve, reject) => {
-            var container = document.getElementById('pdfCanvasContainerNew');
-            container.innerHTML = '';
-
-            var loadingTask = pdfjsLib.getDocument(url);
-            loadingTask.promise.then(function (pdf) {
-                var totalPages = pdf.numPages;
-                var pagesPromises = [];
-
-                for (var pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
-                    pagesPromises.push(
-                        pdf.getPage(pageNumber).then(function (page) {
-                            var pageDiv = document.createElement('div');
-                            pageDiv.classList.add('pdf-page');
-
-                            var canvas = document.createElement('canvas');
-                            canvas.classList.add('pdf-canvas');
-                            var context = canvas.getContext('2d');
-                            var viewport = page.getViewport({ scale: 1.5 });
-
-                            canvas.height = viewport.height;
-                            canvas.width = viewport.width;
-                            pageDiv.appendChild(canvas);
-                            container.appendChild(pageDiv);
-
-                            var renderContext = {
-                                canvasContext: context,
-                                viewport: viewport
-                            };
-
-                            return page.render(renderContext).promise;
-                        })
-                    );
-                }
-
-                Promise.all(pagesPromises).then(function () {
-                    console.log('PDF rendered successfully.');
-                    $('#exportExcelNew').show();
-                    $('#downloadPDFNew').show();
-                    $('#printPDFNew').show();
-                    resolve();
-                }).catch(function (error) {
-                    console.error('Error rendering pages:', error);
-                    reject(error);
                 });
-            }).catch(function (error) {
-                console.error('Error loading PDF document:', error);
-                reject(error);
-            });
+            }
         });
-    }
 
-    var printButton = document.getElementById('printPDFNew');
-    var downloadButton = document.getElementById('downloadPDFNew');
-    var exportExcelButton = document.getElementById('exportExcelNew');
+        // When a block is selected
+        $('#blockSelectNew').on('change', function () {
+            var hostelId = $(this).val();
+            console.log("Selected hostel ID: ", hostelId);
 
-    if (printButton) {
-        printButton.addEventListener('click', function () {
-            setButtonText('printPDFNew', 'Generating...');
+            $('#genderSelectNew').html('<option value="">Select Gender</option>').prop('disabled', true);
+            $('#courseSelectNew').html('<option value="">Select Course</option>').prop('disabled', true);
+            $('#checkinCheckoutSelectNew').html('<option value="">Select status</option><option value="checkin">Check-in</option><option value="checkout">Check-out</option>').prop('disabled', true);
+
+            if (hostelId) {
+                $('#checkinCheckoutSelectNew').prop('disabled', false);
+                updateNiceSelect('#checkinCheckoutSelectNew');
+            }
+        });
+
+        // When Check-in/Check-out option is selected
+        $('#checkinCheckoutSelectNew').on('change', function () {
+            var checkinCheckout = $(this).val();
+            console.log("Selected Check-in/Check-out status: ", checkinCheckout);
+
+            $('#genderSelectNew').html('<option value="">Select Gender</option>').prop('disabled', true);
+            $('#courseSelectNew').html('<option value="">Select Course</option>').prop('disabled', true);
+            updateNiceSelect('#genderSelectNew');
+
+            if (checkinCheckout) {
+                console.log("Fetching gender options based on selected check-in/check-out status.");
+                $.ajax({
+                    url: '/get-gender-options/' + checkinCheckout,
+                    type: 'GET',
+                    success: function (data) {
+                        console.log("Gender options received: ", data);
+                        if (data && data.genders && data.genders.length > 0) {
+                            var genderOptions = '<option value="">Select Gender</option>' +
+                                                '<option value="all">All Gender</option>';
+                            $.each(data.genders, function (key, gender) {
+                                genderOptions += '<option value="' + gender + '">' + gender + '</option>';
+                            });
+                            $('#genderSelectNew').prop('disabled', false).html(genderOptions);
+                            updateNiceSelect('#genderSelectNew');
+                        } else {
+                            showToast('#error-toast', 'No gender options found.');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        showToast('#error-toast', 'Error retrieving gender options.');
+                        console.error("Error retrieving gender options:", xhr, status, error);
+                    }
+                });
+            }
+        });
+
+        // When Gender is selected
+        $('#genderSelectNew').on('change', function () {
+            var gender = $(this).val();
+            console.log("Selected gender: ", gender);
+
+            $('#courseSelectNew').html('<option value="">Select Course</option>').prop('disabled', true);
+            updateNiceSelect('#courseSelectNew');
+
+            if (gender) {
+                console.log("Fetching course options based on gender: ", gender);
+                $.ajax({
+                    url: '/get-course-options/' + gender,
+                    type: 'GET',
+                    success: function (data) {
+                        console.log("Course options received: ", data);
+                        if (data && data.courses && data.courses.length > 0) {
+                            var courseOptions = '<option value="">Select Course</option>' +
+                                                '<option value="all">All Courses</option>';
+                            $.each(data.courses, function (key, course) {
+                                courseOptions += '<option value="' + course + '">' + course + '</option>';
+                            });
+                            $('#courseSelectNew').prop('disabled', false).html(courseOptions);
+                            updateNiceSelect('#courseSelectNew');
+                        } else {
+                            showToast('#error-toast', 'No course options found.');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        showToast('#error-toast', 'Error retrieving course options.');
+                        console.error("Error retrieving course options:", xhr, status, error);
+                    }
+                });
+            }
+        });
+
+        // Handle report generation based on all filters
+        $('#printReportNew').on('click', function () {
             var semesterId = $('#semesterSelectNew').val();
-
             var hostelId = $('#blockSelectNew').val();
             var gender = $('#genderSelectNew').val();
             var course = $('#courseSelectNew').val();
             var checkinCheckout = $('#checkinCheckoutSelectNew').val();
 
             if (hostelId && gender && course && checkinCheckout && semesterId) {
-                var url = '/generate-report-print-check?hostel_id=' + encodeURIComponent(hostelId) +
-                  '&gender=' + encodeURIComponent(gender) +
-                  '&course=' + encodeURIComponent(course) +
-                  '&checkin_checkout=' + encodeURIComponent(checkinCheckout) +
-                  '&semester_id=' + encodeURIComponent(semesterId);
+                // Include the semesterId in the URL query parameters
+                var url = '/generate-report-print-new?hostel_id=' + encodeURIComponent(hostelId) +
+                          '&gender=' + encodeURIComponent(gender) +
+                          '&course=' + encodeURIComponent(course) +
+                          '&checkin_checkout=' + encodeURIComponent(checkinCheckout) +
+                          '&semester_id=' + encodeURIComponent(semesterId);
 
-                var printWindow = window.open(url, '_blank');
-                printWindow.onload = function () {
-                    printWindow.focus();
-                    printWindow.print();
-                };
+                $('#overlay').css('display', 'flex');
 
-                restoreButtonText('printPDFNew', 'Print PDF');
+                loadPDF(url).then(() => {
+                    $('#overlay').fadeOut();
+                }).catch((error) => {
+                    showToast('#error-toast', 'Error loading the PDF.');
+                    console.error("Error loading PDF:", error);
+                    $('#overlay').fadeOut();
+                });
             } else {
                 showToast('#error-toast', 'Please select all filters before generating the report.');
-                restoreButtonText('printPDFNew', 'Print PDF');
             }
         });
-    }
 
-    if (downloadButton) {
-    downloadButton.addEventListener('click', function () {
-        setButtonText('downloadPDFNew', 'Generating...');
+        // Load PDF and handle overlay
+        function loadPDF(url) {
+            return new Promise((resolve, reject) => {
+                var container = document.getElementById('pdfCanvasContainerNew');
+                container.innerHTML = '';
 
-        // Get values for each parameter
-        var semesterId = $('#semesterSelectNew').val();
-        var hostelId = $('#blockSelectNew').val();
-        var gender = $('#genderSelectNew').val();
-        var course = $('#courseSelectNew').val();
-        var checkinCheckout = $('#checkinCheckoutSelectNew').val();
+                var loadingTask = pdfjsLib.getDocument(url);
+                loadingTask.promise.then(function (pdf) {
+                    var totalPages = pdf.numPages;
+                    var pagesPromises = [];
 
-        // Construct the URL with all parameters
-        var url = '/generate-report-print-new?hostel_id=' + encodeURIComponent(hostelId) +
-                  '&gender=' + encodeURIComponent(gender) +
-                  '&course=' + encodeURIComponent(course) +
-                  '&checkin_checkout=' + encodeURIComponent(checkinCheckout) +
-                  '&semester_id=' + encodeURIComponent(semesterId); // Add semester_id to URL
+                    for (var pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
+                        pagesPromises.push(
+                            pdf.getPage(pageNumber).then(function (page) {
+                                var pageDiv = document.createElement('div');
+                                pageDiv.classList.add('pdf-page');
 
-        // Trigger the download
-        window.location.href = url;
+                                var canvas = document.createElement('canvas');
+                                canvas.classList.add('pdf-canvas');
+                                var context = canvas.getContext('2d');
+                                var viewport = page.getViewport({ scale: 1.5 });
 
-        // Restore the button text
-        restoreButtonText('downloadPDFNew', 'Download PDF');
+                                canvas.height = viewport.height;
+                                canvas.width = viewport.width;
+                                pageDiv.appendChild(canvas);
+                                container.appendChild(pageDiv);
+
+                                var renderContext = {
+                                    canvasContext: context,
+                                    viewport: viewport
+                                };
+
+                                return page.render(renderContext).promise;
+                            })
+                        );
+                    }
+
+                    Promise.all(pagesPromises).then(function () {
+                        console.log('PDF rendered successfully.');
+                        $('#exportExcelNew').show();
+                        $('#downloadPDFNew').show();
+                        $('#printPDFNew').show();
+                        resolve();
+                    }).catch(function (error) {
+                        console.error('Error rendering pages:', error);
+                        reject(error);
+                    });
+                }).catch(function (error) {
+                    console.error('Error loading PDF document:', error);
+                    reject(error);
+                });
+            });
+        }
+
+        var printButton = document.getElementById('printPDFNew');
+        var downloadButton = document.getElementById('downloadPDFNew');
+        var exportExcelButton = document.getElementById('exportExcelNew');
+
+        if (printButton) {
+            printButton.addEventListener('click', function () {
+                setButtonText('printPDFNew', 'Generating...');
+                var semesterId = $('#semesterSelectNew').val();
+
+                var hostelId = $('#blockSelectNew').val();
+                var gender = $('#genderSelectNew').val();
+                var course = $('#courseSelectNew').val();
+                var checkinCheckout = $('#checkinCheckoutSelectNew').val();
+
+                if (hostelId && gender && course && checkinCheckout && semesterId) {
+                    var url = '/generate-report-print-check?hostel_id=' + encodeURIComponent(hostelId) +
+                      '&gender=' + encodeURIComponent(gender) +
+                      '&course=' + encodeURIComponent(course) +
+                      '&checkin_checkout=' + encodeURIComponent(checkinCheckout) +
+                      '&semester_id=' + encodeURIComponent(semesterId);
+
+                    var printWindow = window.open(url, '_blank');
+                    printWindow.onload = function () {
+                        printWindow.focus();
+                        printWindow.print();
+                    };
+
+                    restoreButtonText('printPDFNew', 'Print PDF');
+                } else {
+                    showToast('#error-toast', 'Please select all filters before generating the report.');
+                    restoreButtonText('printPDFNew', 'Print PDF');
+                }
+            });
+        }
+
+        if (downloadButton) {
+            downloadButton.addEventListener('click', function () {
+                setButtonText('downloadPDFNew', 'Generating...');
+
+                // Get values for each parameter
+                var semesterId = $('#semesterSelectNew').val();
+                var hostelId = $('#blockSelectNew').val();
+                var gender = $('#genderSelectNew').val();
+                var course = $('#courseSelectNew').val();
+                var checkinCheckout = $('#checkinCheckoutSelectNew').val();
+
+                // Construct the URL with all parameters
+                var url = '/generate-report-print-new?hostel_id=' + encodeURIComponent(hostelId) +
+                          '&gender=' + encodeURIComponent(gender) +
+                          '&course=' + encodeURIComponent(course) +
+                          '&checkin_checkout=' + encodeURIComponent(checkinCheckout) +
+                          '&semester_id=' + encodeURIComponent(semesterId); // Add semester_id to URL
+
+                // Trigger the download
+                window.location.href = url;
+
+                // Restore the button text
+                restoreButtonText('downloadPDFNew', 'Download PDF');
+            });
+        }
+
+        if (exportExcelButton) {
+            exportExcelButton.addEventListener('click', function () {
+                setButtonText('exportExcelNew', 'Exporting...');
+
+                // Get values for each parameter
+                var semesterId = $('#semesterSelectNew').val();
+                var hostelId = $('#blockSelectNew').val();
+                var gender = $('#genderSelectNew').val();
+                var course = $('#courseSelectNew').val();
+                var checkinCheckout = $('#checkinCheckoutSelectNew').val();
+
+                // Construct the URL with all parameters
+                var url = '/generate-report-excel-new?hostel_id=' + encodeURIComponent(hostelId) +
+                          '&gender=' + encodeURIComponent(gender) +
+                          '&course=' + encodeURIComponent(course) +
+                          '&checkin_checkout=' + encodeURIComponent(checkinCheckout) +
+                          '&semester_id=' + encodeURIComponent(semesterId); // Add semester_id to URL
+
+                // Trigger the download
+                window.location.href = url;
+
+                // Restore the button text
+                restoreButtonText('exportExcelNew', 'Export Excel');
+            });
+        }
     });
-}
-
-
-if (exportExcelButton) {
-    exportExcelButton.addEventListener('click', function () {
-        setButtonText('exportExcelNew', 'Exporting...');
-
-        // Get values for each parameter
-        var semesterId = $('#semesterSelectNew').val();
-        var hostelId = $('#blockSelectNew').val();
-        var gender = $('#genderSelectNew').val();
-        var course = $('#courseSelectNew').val();
-        var checkinCheckout = $('#checkinCheckoutSelectNew').val();
-
-        // Construct the URL with all parameters
-        var url = '/generate-report-excel-new?hostel_id=' + encodeURIComponent(hostelId) +
-                  '&gender=' + encodeURIComponent(gender) +
-                  '&course=' + encodeURIComponent(course) +
-                  '&checkin_checkout=' + encodeURIComponent(checkinCheckout) +
-                  '&semester_id=' + encodeURIComponent(semesterId); // Add semester_id to URL
-
-        // Trigger the download
-        window.location.href = url;
-
-        // Restore the button text
-        restoreButtonText('exportExcelNew', 'Export Excel');
-    });
-}
-
-});
-
-</script>
-
-
-
-
-
-
-
+    </script>
 
 
 
@@ -1209,6 +1246,45 @@ if (exportExcelButton) {
             $(toast).find('.toast-body').text(message);
             $(toast).toast('show');
         }
+
+        // When a semester is selected
+        $('#semesterfillter').on('change', function () {
+            var semesterId = $(this).val();
+            console.log("Selected semester ID: ", semesterId);
+
+            // Clear and disable the Block dropdown initially
+            $('#blockFilter').html('<option value="">Select a block</option>').prop('disabled', true);
+
+            if (semesterId) {
+                console.log("Fetching blocks for semester ID: ", semesterId);
+
+                // Fetch blocks for the selected semester via AJAX
+                $.ajax({
+                    url: '/get-blocks-main/' + semesterId,
+                    type: 'GET',
+                    success: function (data) {
+                        console.log("Blocks received: ", data);
+
+                        if (data && data.blocks && data.blocks.length > 0) {
+                            $('#blockFilter').prop('disabled', false);
+                            $.each(data.blocks, function (key, block) {
+                                $('#blockFilter').append('<option value="' + block.block_name + '">' + block.block_name + '</option>');
+                            });
+
+                            // Update niceSelect
+                            $('#blockFilter').niceSelect('update');
+                        } else {
+                            console.log("No blocks found for this semester.");
+                            showToast("No blocks found for this semester.", true);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("Error retrieving blocks:", xhr, status, error);
+                        showToast('Error retrieving blocks.', true);
+                    }
+                });
+            }
+        });
 
         // When a block is selected
         $('#blockFilter').on('change', function () {
@@ -1326,7 +1402,6 @@ if (exportExcelButton) {
             var blockId = $('#blockFilter').val();
             var floorId = $('#floorFilter').val();
             var roomId = $('#roomFilter').val();
-
             var semesterId = $('#semesterfillter').val();
 
             if (blockId && floorId && roomId && semesterId) {
@@ -1385,22 +1460,24 @@ if (exportExcelButton) {
 
                     Promise.all(pagesPromises).then(function () {
                         console.log('PDF rendered successfully.');
-
-                        document.getElementById('exportExcelBtn').style.display = 'inline-block';
-                        document.getElementById('downloadPDFBtn').style.display = 'inline-block';
-                        document.getElementById('printPDFBtn').style.display = 'inline-block';
-
+                        $('#exportExcelBtn').show();
+                        $('#downloadPDFBtn').show();
+                        $('#printPDFBtn').show();
                         resolve();
                     }).catch(function (error) {
-                        console.error('Error rendering pages:', error);
+                        console.error("Error rendering pages:", error);
                         reject(error);
                     });
                 }).catch(function (error) {
-                    console.error('Error loading PDF document:', error);
+                    console.error("Error loading PDF:", error);
                     reject(error);
                 });
             });
         }
+
+
+
+
 
         var printButton = document.getElementById('printPDFBtn');
         var downloadButton = document.getElementById('downloadPDFBtn');
@@ -1488,5 +1565,12 @@ if (exportExcelButton) {
                 }
             });
         }
+
+
+
+
+
+
+
     });
 </script>

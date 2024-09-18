@@ -240,6 +240,8 @@ public function exportPDFPrint(Request $request)
 
 public function exportPDFPrintnew(Request $request)
 {
+
+    Log::info($request);
     $hostelId = $request->query('hostel_id');
     $gender = $request->query('gender');
     $course = $request->query('course');
@@ -260,6 +262,13 @@ public function exportPDFPrintnew(Request $request)
         if ($hostelId) {
             $queryRequirementItemConfirmation->where('block_name', $hostelId);
         }
+
+        if ($gender && $gender !== 'all') {
+            $queryRequirementItemConfirmation->where('gender', $gender);
+        }
+
+
+
 
         if ($course && $course !== 'all') {
             $queryRequirementItemConfirmation->where('course_name', $course);
@@ -307,10 +316,15 @@ public function exportPDFPrintnew(Request $request)
             $queryAdminCheckout->where('course_name', $course);
         }
 
+
+        if ($gender && $gender !== 'all') {
+            $queryAdminCheckout->where('gender', $gender);
+        }
+
         // Get the data for checkout
         $users = $queryAdminCheckout->with('user')->get()->groupBy('user_id');
 
-        Log::info( $users);
+
 
 
 

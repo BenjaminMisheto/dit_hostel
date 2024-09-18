@@ -36,15 +36,7 @@
 
 
 
-                                <div class="text-right">
-                                    @if (Route::has('password.request'))
-                                    <a href="{{ route('password.request') }}" class="small">
-                                        {{ __('Forgot your password?') }}
-                                    </a>
-                                @endif
 
-
-                                </div>
                             </div>
 
                             <div class="form-group">

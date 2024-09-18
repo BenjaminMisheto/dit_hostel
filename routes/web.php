@@ -245,6 +245,8 @@ Route::post('admin.updateExpirationDate', [AjaxController::class, 'updateExpirat
     route::get('/get-rooms-for-block/{blockId}', [AjaxController::class, 'getRoomsForBlock']);
     route::get('/get-rooms-for-block-main/{blockId}', [AjaxController::class, 'getRoomsForBlockmain']);
 
+    route::get('/get-blocks-main/{semesterId}',  [AjaxController::class, 'getBlocks']);
+
 
     Route::get('room/bed/{roomId}', [RoomController::class, 'showBed'])->name('room.bed');
 

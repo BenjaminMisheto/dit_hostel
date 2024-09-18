@@ -156,7 +156,7 @@ use App\Models\User;
                                 </div>
                                 <div class="text-center mt-3">
                                     <button id="addItem" class="btn btn-outline-primary">
-                                        <i class="gd-plus"></i> Add Item
+                                        <i class="gd-plus"></i>
                                     </button>
                                 </div>
                             </div>

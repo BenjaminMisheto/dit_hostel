@@ -8,11 +8,13 @@ use App\Models\Floor;
 use App\Models\Room;
 use App\Models\Bed;
 use App\Models\Semester;
+use Faker\Factory as Faker;
 
 class BlockSeeder extends Seeder
 {
     public function run()
     {
+        $faker = Faker::create();
         // Path to images
         $imagePath = 'img/';
         $imageStart = 25;
@@ -30,7 +32,7 @@ class BlockSeeder extends Seeder
         }
 
         // Create blocks
-        for ($b = 1; $b <= 3; $b++) { // Adjust the number of blocks as needed
+        for ($b = 1; $b <= 5; $b++) { // Adjust the number of blocks as needed
             // Check if there are enough images
             if (empty($imageNumbers)) {
                 throw new \Exception('Not enough unique images available for blocks.');
@@ -45,7 +47,7 @@ class BlockSeeder extends Seeder
 
             $block = Block::create([
                 'name' => 'Block ' . $b,
-                'manager' => 'Manager ' . $b,
+                'manager' => $faker->name,
                 'location' => 'Location ' . $b,
                 'number_of_floors' => rand(7, 10), // Random number of floors
                 'price' => rand(500, 1500),

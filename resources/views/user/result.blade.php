@@ -568,7 +568,7 @@
 
                                 @else
                                 <div class="text-center mt-4">
-                                    <div class="alert alert-success">
+                                    <div class="alert alert-warning">
                                         <strong>Note:</strong> You have already confirmed your items. Please await
                                         confirmation from the admin to complete your check-in process.
                                     </div>

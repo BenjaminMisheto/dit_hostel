@@ -303,6 +303,7 @@ public function confirmapplication(Request $request)
         $confirmation->room_name = $user->room ? $user->room->room_number : 'N/A';
         $confirmation->bed_name = $user->bed ? $user->bed->bed_number : 'N/A';
         $confirmation->course_name = $user->course;
+        $confirmation->gender = $user->gender;
         $confirmation->items_to_bring_names = $requirements->map(function($req) {
             return [
                 'name' => $req->name,

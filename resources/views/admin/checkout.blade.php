@@ -57,6 +57,7 @@ th.desc::after {
     <div class="py-4 px-3 px-md-4">
         <div class="mb-3 mb-md-4 d-flex justify-content-between align-items-center">
             <div class="h3 mb-0">Check-Out</div>
+            <p>{{session('semester') ?? 'No semester found'}}</p>
 
         </div>
         <div class="form-group position-relative">

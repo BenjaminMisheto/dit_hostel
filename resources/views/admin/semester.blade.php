@@ -1,5 +1,3 @@
-
-
 <div class="content">
     <div class="py-4 px-3 px-md-4">
         <div class="mb-3 mb-md-4 d-flex justify-content-between align-items-center">
@@ -9,40 +7,38 @@
         <!-- Check if there are existing semesters -->
         @if($semesters->isNotEmpty())
             <!-- Display existing semesters as a list -->
-            <div class="p-4 container">
-                          <!-- If all semesters are closed, show "Create New Semester" button -->
-                          @if($allClosed)
-                          <div class="mb-4">
-                              <button type="button" class="btn btn-outline-success" id="create-semester-btn">
-                                  Create New Semester
-                              </button>
-                          </div>
-                      @endif
-
+            <div class="p-4 container-fluid">
+                <!-- If all semesters are closed, show "Create New Semester" button -->
+                @if($allClosed)
+                    <div class="mb-4">
+                        <button type="button" class="btn btn-outline-success" id="create-semester-btn">
+                            Create New Semester
+                        </button>
+                    </div>
+                @endif
 
                 <ul class="list-group">
                     @foreach($semesters as $semester)
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <li class="list-group-item d-flex justify-content-between align-items-center mt-3">
                             {{ $semester->name }}
                             @if($semester->is_closed)
                                 <button type="button" class="btn btn-outline-danger btn-sm" disabled>
                                     Closed
                                 </button>
                             @else
-                                <button type="button" class="btn btn-outline-warning btn-sm "
+                                <small>Current semester</small>
+                                <button type="button" class="btn btn-outline-warning btn-sm"
                                         onclick="onCloseSemesterClick({{ $semester->id }})">
                                     Close Semester
                                 </button>
                             @endif
-                        </li><br>
+                        </li>
                     @endforeach
                 </ul>
-
-
             </div>
         @else
             <!-- Display Semester Format Selection Form -->
-            <div class="p-4 container">
+            <div class="p-4 container-fluid">
                 <form id="semesterFormatForm" class="row g-3">
                     <div class="form-group col-md-12">
                         <label for="semesterFormat" class="form-label">Select Semester Format</label>
@@ -76,10 +72,7 @@
     </div>
 </div>
 
-
 <script>
-
-
     $(document).ready(function() {
         // Initialize Nice Select
         $('select').niceSelect();
@@ -88,35 +81,35 @@
 
         // Function to create a new semester
         function onCreateSemesterClick() {
-            if (isRequestInProgress) return; // Prevent multiple submissions
+            if (confirm('Are you sure you want to create a new semester? This action will reset all student accounts to their default settings, allowing eligible students to begin the process of applying for hostel accommodation for the newly created semester. Please note that once created, the semester cannot be deleted.')) {
+                if (isRequestInProgress) return; // Prevent multiple submissions
 
-            isRequestInProgress = true;
+                isRequestInProgress = true;
+                $('#overlay').css('display', 'flex');
 
-            $('#overlay').css('display', 'flex');
-
-            $.ajax({
-                url: '/create-new-semester',
-                method: 'POST',
-                data: {
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function(response) {
-                    showToast('#success-toast', response.message); // Show server message
-                    // Optionally, refresh the semester list
-                    $('#overlay').fadeOut();
-                    semester();
-                },
-                error: function(xhr) {
-                    $('#overlay').fadeOut();
-                    showToast('#error-toast', xhr.responseJSON?.message || 'Error creating new semester.'); // Show server message
-                },
-                complete: function() {
-                    $('#overlay').fadeOut();
-                    isRequestInProgress = false;
-                }
-            });
+                $.ajax({
+                    url: '/create-new-semester',
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        showToast('#success-toast', response.message); // Show server message
+                        // Optionally, refresh the semester list
+                        $('#overlay').fadeOut();
+                        semester();
+                    },
+                    error: function(xhr) {
+                        $('#overlay').fadeOut();
+                        showToast('#error-toast', xhr.responseJSON?.message || 'Error creating new semester.'); // Show server message
+                    },
+                    complete: function() {
+                        $('#overlay').fadeOut();
+                        isRequestInProgress = false;
+                    }
+                });
+            }
         }
-
 
         // Function to generate semester options based on the selected format
         function generateSemesterOptions(format) {
@@ -148,11 +141,6 @@
                 $('#submitButtonGroup').slideUp();
                 $('#semesterStart').html('').niceSelect('update');
             }
-        }
-
-        // Handle when the start option is changed
-        function onStartChange() {
-            // No manual entry handling required anymore
         }
 
         // Handle form submission to update semester format
@@ -193,66 +181,54 @@
                 },
                 complete: function() {
                     $('#overlay').fadeOut();
-                    isRequestInProgress = false;
-                    $('#submit-btn').prop('disabled', false); // Re-enable the submit button
+                    isRequestInProgress = false; // Re-enable the submit button
+                    $('#submit-btn').prop('disabled', false);
                 }
             });
         }
 
         // Attach event handlers for form and buttons
         $('#semesterFormat').on('change', onFormatChange);
-        $('#semesterStart').on('change', onStartChange);
         $('#semesterFormatForm').on('submit', onSubmitSemesterFormat);
-
-
-
 
         // Attach event handler for "Create New Semester" button
         $('#create-semester-btn').on('click', onCreateSemesterClick);
     });
 
+    // Function to close a specific semester
+    function onCloseSemesterClick(semesterId) {
+        // Show confirmation dialog
+        if (confirm('Are you sure you want to close this semester? This action is irreversible and the semester cannot be reopened.')) {
+            $('#overlay').css('display', 'flex');
 
-
-// Function to close a specific semester
-function onCloseSemesterClick(semesterId) {
-
-
-            // Show confirmation dialog
-            if (confirm('Are you sure you want to close this semester? This action is irreversible.')) {
-                $('#overlay').css('display', 'flex');
-
-                $.ajax({
-                    url: '/semesters/' + semesterId + '/close',
-                    type: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}' // Include CSRF token
-                    },
-                    success: function(response) {
-                        showToast('#success-toast', response.message); // Show server message
-                        // Optionally, reload or update the semester list
-                        semester();
-                    },
-                    error: function(xhr) {
-                        showToast('#error-toast', xhr.responseJSON?.message || 'Error closing semester.'); // Show server message
-                    },
-                    complete: function() {
-                        $('#overlay').fadeOut();
-
-
-                    }
-                });
-            }
-        }
-
-
-
-     // Show toast message
-     function showToast(toastId, message) {
-            var $toast = $(toastId);
-            $toast.find('.toast-body').text(message);
-            $toast.toast({
-                delay: 3000
+            $.ajax({
+                url: '/semesters/' + semesterId + '/close',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}' // Include CSRF token
+                },
+                success: function(response) {
+                    showToast('#success-toast', response.message); // Show server message
+                    // Optionally, reload or update the semester list
+                    semester();
+                },
+                error: function(xhr) {
+                    showToast('#error-toast', xhr.responseJSON?.message || 'Error closing semester.'); // Show server message
+                },
+                complete: function() {
+                    $('#overlay').fadeOut();
+                }
             });
-            $toast.toast('show');
         }
+    }
+
+    // Show toast message
+    function showToast(toastId, message) {
+        var $toast = $(toastId);
+        $toast.find('.toast-body').text(message);
+        $toast.toast({
+            delay: 3000
+        });
+        $toast.toast('show');
+    }
 </script>

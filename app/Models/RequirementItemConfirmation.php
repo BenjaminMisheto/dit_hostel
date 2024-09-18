@@ -18,6 +18,7 @@ class RequirementItemConfirmation extends Model
         'items_to_bring_names',
         'checkout_items_names',
         'semester_id',
+        'gender',
     ];
 
     // Cast attributes to a specific type

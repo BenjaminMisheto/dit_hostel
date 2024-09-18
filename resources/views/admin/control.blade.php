@@ -142,7 +142,8 @@
 
     <!-- Single Submit Button for All Blocks -->
     <div class="text-center mb-3">
-        <button type="button" class="btn btn-primary" id="submit-all-sliders">Submit All Sliders</button>
+        <button type="button" class="btn btn-primary" id="submit-all-sliders">Restart Algorithm</button>
+
     </div>
 </form>
 

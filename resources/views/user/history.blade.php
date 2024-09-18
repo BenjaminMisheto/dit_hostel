@@ -5,7 +5,7 @@
         </div>
 
         @if ($adminCheckouts->isEmpty())
-            <div class="container full-height d-flex align-items-center justify-content-center" style="height: 70vh;">
+            <div class="container d-flex align-items-center justify-content-center" style="height: 70vh;">
                 <div style="width: 18rem;">
                     <div class="card-body text-center">
                         <i class="gd-alert text-danger" style="font-size: 3rem;"></i><br>
@@ -15,13 +15,18 @@
             </div>
         @else
             @foreach ($adminCheckouts as $semesterId => $checkouts)
-                <p class="mt-4">{{ $checkouts->first()->semester->name }}</p>
+                <p class="mt-4 text-center">{{ $checkouts->first()->semester->name }}</p>
+                <p class="text-center">{{ auth()->user()->name }}</p>
 
                 <div class="table-responsive">
                     <table class="table table-striped table-hover table-bordered">
                         <thead>
                             <tr>
                                 <th scope="col">#</th>
+                                <th scope="col">Block</th>
+                                <th scope="col">Floor</th>
+                                <th scope="col">Room</th>
+                                <th scope="col">Bed</th>
                                 <th scope="col">Items</th>
                                 <th scope="col">Condition</th>
                                 <th scope="col">Payment</th>
@@ -31,6 +36,10 @@
                             @foreach ($checkouts as $checkout)
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $checkout->block_name }}</td>
+                                    <td>{{ $checkout->floor_name }}</td>
+                                    <td>{{ $checkout->room_name }}</td>
+                                    <td>{{ $checkout->bed_name }}</td>
                                     <td>{{ $checkout->name }}</td>
                                     <td class="
                                         @if($checkout->condition === 'None') text-warning
@@ -44,7 +53,7 @@
                                         @elseif($checkout->condition === 'Good') text-success
                                         @endif">
                                         @if($checkout->condition === 'Bad' || $checkout->condition === 'None')
-                                            Payment Required
+                                            Not paid
                                         @elseif($checkout->condition === 'Good')
                                             Good
                                         @endif

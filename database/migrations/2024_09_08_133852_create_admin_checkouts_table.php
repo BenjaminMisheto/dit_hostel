@@ -18,6 +18,7 @@ class CreateAdminCheckoutsTable extends Migration
             $table->string('room_name')->nullable();
             $table->string('bed_name')->nullable();
             $table->string('course_name')->nullable();
+            $table->string('gender')->nullable();
             $table->string('name');
             $table->string('condition');
             $table->timestamps();

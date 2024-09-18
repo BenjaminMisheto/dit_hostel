@@ -90,15 +90,15 @@
                 <div class="d-flex flex-wrap justify-content-between">
                     <div class="d-flex align-items-center me-2">
                         <input class="form-check-input me-1" type="radio" name="condition-{{ $index }}" value="Good" id="good-{{ $index }}" {{ $item['condition'] === 'Good' ? 'checked' : '' }} @if ($checkoutCount > 0) disabled @endif hidden >
-                        <label class="btn btn-outline-success cursor-pointer" for="good-{{ $index }}" @if ($checkoutCount > 0) style="pointer-events: none!important; opacity: 0.6;" @endif>Good</label>
+                        <label class="btn btn-outline-success cursor-pointer" for="good-{{ $index }}" @if ($checkoutCount > 0) style="pointer-events: none!important;" @endif>Good</label>
                     </div>
                     <div class="d-flex align-items-center me-2">
                         <input class="form-check-input me-1" type="radio" name="condition-{{ $index }}" value="None" id="none-{{ $index }}" {{ $item['condition'] === 'None' ? 'checked' : '' }} hidden @if ($checkoutCount > 0) disabled @endif>
-                        <label class="btn btn-outline-warning cursor-pointer" for="none-{{ $index }}" @if ($checkoutCount > 0) style="pointer-events: none; opacity: 0.6;" @endif>None</label>
+                        <label class="btn btn-outline-warning cursor-pointer" for="none-{{ $index }}" @if ($checkoutCount > 0) style="pointer-events: none; " @endif>None</label>
                     </div>
                     <div class="d-flex align-items-center">
                         <input class="form-check-input me-1" type="radio" name="condition-{{ $index }}" value="Bad" id="bad-{{ $index }}" {{ $item['condition'] === 'Bad' ? 'checked' : '' }} hidden @if ($checkoutCount > 0) disabled @endif>
-                        <label class="btn btn-outline-danger cursor-pointer" for="bad-{{ $index }}" @if ($checkoutCount > 0) style="pointer-events: none; opacity: 0.6;" @endif>Bad</label>
+                        <label class="btn btn-outline-danger cursor-pointer" for="bad-{{ $index }}" @if ($checkoutCount > 0) style="pointer-events: none;" @endif>Bad</label>
                     </div>
                 </div>
             </div>
@@ -115,7 +115,7 @@
 
             <!-- Submit button -->
             <div class="d-grid text-center">
-                <button id="submitButton" class="btn btn-outline-default text-primary" onclick="submitCheckout()" >Submit Check-Out</button>
+                <button id="submitButton" class="btn btn-outline-secondary" data-toggle="modal" data-target="#Checkout_Confirmation">Submit Check-Out</button>
             </div>
         @else
             <div id="warningMessage" class="alert alert-success mb-3">
@@ -213,13 +213,13 @@
                     console.log('AJAX success response:', response); // Log the entire response
 
                     if (response.success) {
+                        hidemodal()
                         showToast('#success-toast', 'Check-out successfully submitted!');
                     } else {
                         console.log('Error message from server:', response.message); // Log error message
                         showToast('#error-toast', response.message || 'An error occurred.');
                     }
 
-                    checkoutAction({{ $user->bed->id }})
                 },
                 error: function(xhr) {
                     $('#overlay').fadeOut();
@@ -241,6 +241,16 @@
                     }
                 }
             });
+
+                // Function to close the modal and call the hostel() function
+        function hidemodal() {
+            $('#Checkout_Confirmation').modal('hide'); // Close the modal
+
+            // Ensure hostel() is called after modal is closed
+            $('#Checkout_Confirmation').on('hidden.bs.modal', function() {
+                checkoutAction({{ $user->bed->id }})
+            });
+        }
         }
 
         // Function to display toast messages
@@ -297,4 +307,25 @@
 }
 
 </script>
+</div>
+</div>
+</div>
 
+<div id="Checkout_Confirmation" class="modal fade" role="dialog" aria-labelledby="Re-applyModalLabel" aria-hidden="true">
+    <div class="modal-dialog rounded" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="text-center rounded">
+                    <i class="gd-alert icon-text icon-text-xxl d-block text-danger mb-3 mb-md-4"></i>
+                    <div class="h5 font-weight-semi-bold mb-2">Are you sure ?</div>
+                    <p>Any errors may result in the student being charged if the returned item is not carefully confirmed.</p>
+
+                    <div class="d-flex justify-content-between mb-4">
+                        <a class="btn btn-outline-success" href="#" onclick="submitCheckout()">Yes, Confirm</a>
+                        <a class="btn btn-outline-danger" href="#" data-dismiss="modal">No</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

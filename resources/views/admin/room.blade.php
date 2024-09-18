@@ -778,7 +778,7 @@ use App\Models\User;
                                                         switch ($bed->status) {
                                                             case 'activate':
                                                                 $statusText = 'Open';
-                                                                $statusClass = 'text-dark'; // Add this class for active beds
+                                                                $statusClass = ''; // Add this class for active beds
                                                                 break;
                                                             case 'under_maintenance':
                                                                 $statusText = 'Maintenance';
@@ -894,7 +894,7 @@ use App\Models\User;
                                 </div>
                                 <div class="text-center mt-3">
                                     <button id="addRequirement" class="btn btn-outline-primary">
-                                        <i class="gd-plus"></i> Add Requirement
+                                        <i class="gd-plus"></i>
                                     </button>
                                 </div>
                             </div>

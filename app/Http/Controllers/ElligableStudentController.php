@@ -407,6 +407,7 @@ public function studentout(Request $request)
                      'room_name' => $user->room ? $user->room->room_number : 'N/A',
                      'bed_name' => $user->bed ? $user->bed->bed_number : 'N/A',
                      'course_name' => $user->course,
+                     'gender' => $user->gender,
                     'name' => $item['name'], // Find by item name
                 ],
                 [

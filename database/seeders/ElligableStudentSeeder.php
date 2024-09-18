@@ -25,7 +25,7 @@ class ElligableStudentSeeder extends Seeder
 
             ElligableStudent::create([
                 'student_name' => $faker->name,
-                'registration_number' => $faker->unique()->randomNumber(),
+                'registration_number' => $faker->unique()->numerify('#########'),
                 'payment_status' => $faker->randomElement(['pending', 'paid']),
                 'sponsorship' => $faker->randomElement(['government', 'private']),
                 'phone' => $faker->phoneNumber,

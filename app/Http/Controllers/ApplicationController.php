@@ -105,6 +105,21 @@ $totalRecords = User::where('application', 1)
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 public function search(Request $request)
 {
     $query = $request->input('query', '');

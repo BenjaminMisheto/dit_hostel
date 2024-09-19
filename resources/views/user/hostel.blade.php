@@ -101,9 +101,15 @@ $deadlineDate = \Carbon\Carbon::parse($deadlineDate);
         </div>
         @else
 
-        @if (isset($user->block_id))
+        @if (isset($user->block_id) and $user->block->status == 1)
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
             <strong>Notice:</strong> You have already <strong>selected {{ $user->block->name }}, Room {{ $user->room->room_number }}, Bed {{ $user->bed->bed_number }}</strong>. Please proceed to confirm your application on the final page, or choose another bed if you wish to make a change.
+
+        </div>
+        @elseif (isset($user->block_id))
+
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>Notice:</strong> The block you selected  <strong>{{ $user->block->name ?? '' }}</strong> previously has unfortunately been taken offline. Please select another available option.
 
         </div>
     @endif

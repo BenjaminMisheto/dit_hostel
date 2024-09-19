@@ -38,17 +38,17 @@ class ElligableStudentSeeder extends Seeder
         }
 
 
-        // ElligableStudent::create([
-        //         'student_name' => 'Benjamin Misheto',
-        //         'registration_number' => '230242467801',
-        //         'payment_status' => $faker->randomElement(['pending', 'paid']),
-        //         'sponsorship' => 'private',
-        //         'phone' => '+255 712 656 887',
-        //         'gender' => 'Male',
-        //         'nationality' => 'Tanzania',
-        //         'course' => 'B2',
-        //         'email' => 'benmisheto@gmail.com',
-        //         'image' => 'img/10.jpg', // Reset image index after 15
-        //     ]);
+        ElligableStudent::create([
+                'student_name' => 'Benjamin Misheto',
+                'registration_number' => '230242467801',
+                'payment_status' => $faker->randomElement(['pending', 'paid']),
+                'sponsorship' => 'private',
+                'phone' => '+255 712 656 887',
+                'gender' => 'Male',
+                'nationality' => 'Tanzania',
+                'course' => 'B2',
+                'email' => 'benmisheto@gmail.com',
+                'image' => 'img/10.jpg', // Reset image index after 15
+            ]);
     }
 }

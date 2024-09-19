@@ -204,7 +204,7 @@ class AjaxController extends Controller
             'manager' => $request->blockManager,
             'number_of_floors' => $request->numFloors,
             'price' => $request->blockPrice,
-            'semester_id' => session('semester_id'),
+
         ]);
 
         // Handle image upload if present and valid
@@ -452,6 +452,13 @@ public function updatePublishStatus(Request $request)
 public function loadRoom($blockId)
 {
     $block = $this->fetchBlockWithDetails($blockId);
+
+    // Check if the block status is set to 1
+    if ($block->status != 1) {
+        // Redirect to the user.hostel view if the status is not 1
+        return redirect()->route('hostel');
+    }
+
     $user = auth()->user();
     $publishSettings = $this->getPublishSettings();
 
@@ -731,8 +738,6 @@ private function matchCriteria($userAttribute, $criteria)
 
 
 
-
-
 public function updateBedSelection(Request $request)
 {
     // Validate the incoming data
@@ -753,15 +758,20 @@ public function updateBedSelection(Request $request)
         $floor = Floor::find($validatedData['floor_id']);
         $block = Block::find($validatedData['block_id']);
 
-        // Check if the entities exist and are in a valid state
+        // Check if the entities exist
         if (!$bed || !$room || !$floor || !$block) {
             return response()->json(['error' => 'Invalid selection.'], 400);
+        }
+
+        // Check if the block status is set to 1
+        if ($block->status != 1) {
+            return response()->json(['error' => 'Sorry, this block is offline.'], 400);
         }
 
         // Get the user currently assigned to the bed
         $bedUser = $bed->user;
 
-        // Check if the bed is occupied and if the assigned user's expiration date has not expired
+        // Check if the bed is occupied or under maintenance
         if ($bed->status === 'under_maintenance' || $bed->status === 'reserve' || ($bedUser && Carbon::now()->lessThan($bedUser->expiration_date))) {
             return response()->json(['error' => 'Selected bed is not available.'], 400);
         }
@@ -787,10 +797,6 @@ public function updateBedSelection(Request $request)
         return response()->json(['error' => 'An error occurred while updating your selection. Please try again.'], 500);
     }
 }
-
-
-
-
 
 
 
@@ -947,13 +953,15 @@ public function confirmApplication(Request $request)
     // Get the authenticated user
     $user = auth()->user();
 
-    // Update the user's application status
-    $user->update([
-        'application' => $request->application
-    ]);
+    // Check if the block status is not set to 1
+    $userBlock = $user->block;
+    if ($userBlock && $userBlock->status != 1) {
+        return response()->json([
+            'message' => 'Sorry, the selected block is offline. Please choose another block.'
+        ], 400);
+    }
 
-
-    // Update the specific bed with the user's user_id
+    // Check if the bed is already occupied
     if ($user->bed_id) {
         // Find the bed
         $bed = Bed::find($user->bed_id);
@@ -961,27 +969,28 @@ public function confirmApplication(Request $request)
         if ($bed) {
             // Check if the bed already has a user associated with it
             if ($bed->user_id) {
-                // Load the current user associated with the bed
-                $existingUser = User::find($bed->user_id);
-
-                if ($existingUser) {
-    // Update the existing user's bed-related columns and reset application status
-    $existingUser->update([
-        'application' => 0,
-        'status' => 'disapproved',
-        'block_id' => null,
-        'room_id' => null,
-        'floor_id' => null,
-        'bed_id' => null,
-        'counter' => 0,
-       // 'expiration_date' => Carbon::now()->addDays(365) // Adds 365 days to the current date
-    ]);
-}
-
+                // Return a message if the bed is already occupied
+                return response()->json([
+                    'message' => 'Sorry, the selected bed is already occupied by another student. Please choose another bed.'
+                ], 400);
             }
 
-            // Now, update the bed's user_id with the current user's ID
+            // If bed is not occupied, proceed to update the bed with the user's user_id
             $bed->update(['user_id' => $user->id]);
+
+            // Update the previous user's bed-related columns and reset application status
+            $existingUser = User::find($bed->user_id);
+            if ($existingUser) {
+                $existingUser->update([
+                    'application' => 1,
+                    // 'status' => 'disapproved',
+                    // 'block_id' => null,
+                    // 'room_id' => null,
+                    // 'floor_id' => null,
+                    // 'bed_id' => null,
+                    // 'counter' => 0,
+                ]);
+            }
 
             // Retrieve the associated room, floor, and block
             $room = $bed->room;
@@ -1018,28 +1027,22 @@ public function confirmApplication(Request $request)
     // Fetch the expiration days from the publishes table
     $publish = Publish::first(); // Adjust if needed to fetch the specific record
 
-
-    if ($publish->first()->status == 1) {
-    $user->afterpublish = 1; // Assign the new value
-    $user->save();           // Save the updated user to the database
-}
-
-
-
     if ($publish) {
         $daysToAdd = (int) $publish->expiration_date;
         $newExpirationDate = Carbon::now()->addDays($daysToAdd);
         $user->expiration_date = $newExpirationDate;
+        $user->save(); // Save the updated user to the database
 
-       // $user->save();
+        if ($publish->status == 1) {
+            $user->afterpublish = 1; // Assign the new value
+            $user->save(); // Save the updated user to the database
+        }
     } else {
         return response()->json(['message' => 'Publish record not found.'], 404);
     }
 
     return response()->json(['message' => 'Application confirmed successfully.']);
 }
-
-
 
 
 

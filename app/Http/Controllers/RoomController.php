@@ -140,19 +140,28 @@ $room = Room::with(['users' => function($query) {
 
 
 
-
-
 public function showBed($bedId)
 {
     // Retrieve the status from the query string
     $status = request()->query('status', 0);
 
-    // Eager load the related data: room, floor, and block
-    $bed = Bed::with('room.floor.block')->findOrFail($bedId);
+    // Eager load the related data: room, floor, block
+    $bed = Bed::with(['room.floor.block'])->findOrFail($bedId);
 
-    // Return the view with the bed data and status
-    return view('admin.bed', compact('bed', 'status'));
+    // Load the user associated with the bed using user_id
+    $user = User::find($bed->user_id);
+
+    // Log the bed and user information for debugging
+    Log::info($bed);
+
+
+    // Return the view with the bed data, status, and user data
+    return view('admin.bed', compact('bed', 'status', 'user'));
 }
+
+
+
+
 
 
 

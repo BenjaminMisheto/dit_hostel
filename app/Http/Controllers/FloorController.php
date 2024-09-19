@@ -165,14 +165,26 @@ class FloorController extends Controller
 
 
 
-
-
-
 public function destroy($id)
 {
     try {
         // Find the floor or throw a ModelNotFoundException
         $floor = Floor::findOrFail($id);
+
+        // Check if any bed in the floor's rooms is occupied by a user
+        $occupiedBeds = $floor->rooms->flatMap(function($room) {
+            return $room->beds->filter(function($bed) {
+                return $bed->user; // Assuming each bed has a 'user' relationship
+            });
+        });
+
+        // If any bed is occupied, prevent deletion
+        if ($occupiedBeds->isNotEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot delete floor. One or more beds are occupied by users.',
+            ], 400);
+        }
 
         // Delete all associated rooms and their beds
         $floor->rooms->each(function($room) {
@@ -203,6 +215,7 @@ public function destroy($id)
         ], 500);
     }
 }
+
 
 
 public function create(Request $request, $blockId)

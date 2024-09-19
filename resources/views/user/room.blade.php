@@ -44,7 +44,6 @@ use App\Models\User;
                         @endif
                     </ul>
                 </div>
-
                 <div class="card-body tab-content">
                     @if($filteredFloors->isEmpty())
                     <div class="container full-height d-flex align-items-center justify-content-center" style="height: 70vh;">
@@ -101,7 +100,6 @@ use App\Models\User;
                                     @foreach($room->beds as $bed)
 
                                     @php
-
                                     // Fetch the user associated with the bed
                                     $usertime = User::find($bed->user_id);
 
@@ -119,7 +117,6 @@ use App\Models\User;
                                     // Determine the status of the bed
                                     if ($bed->user_id) {
                                         if ($expirationDate && Carbon::now()->greaterThan($expirationDate)) {
-
                                             $statusText = 'Open';
                                             $disabled = false;
                                         } else {
@@ -150,22 +147,29 @@ use App\Models\User;
                                                 break;
                                         }
                                     }
-                                @endphp
 
+                                    // Check if the user has already selected this bed
+                                    $userSelectedBed = $user->bed_id == $bed->id;
+                                    @endphp
 
                                     <div class="input-container" style="cursor: pointer;">
                                         <input id="bed_{{ $bed->id }}" class="radio-button" type="radio" name="bed"
                                             value="{{ $bed->id }}" data-room-id="{{ $room->id }}"
                                             data-floor-id="{{ $floor->id }}" data-block-id="{{ $block->id }}"
-                                            {{ $disabled ? 'disabled' : '' }}>
+                                            {{ $disabled ? 'disabled' : '' }} {{ $userSelectedBed ? ' disabled' : '' }}>
 
-                                        <div class="radio-tile {{ $statusClass }}">
+                                        <div class="radio-tile {{ $statusClass }}" >
                                             <label for="bed_{{ $bed->id }}"
                                                 class="radio-tile-label mt-2">{{ $room->room_number }} - Bed
                                                 {{ $bed->bed_number }}</label>
                                             <label for="bed_{{ $bed->id }}"
-                                                class="radio-tile-label  {{ $statusClass }}">{{ $statusText }}</label>
+                                                class="radio-tile-label  {{ $statusClass }}">{{ $statusText }}
+                                                @if($userSelectedBed)selected @endif
+
+                                            </label>
                                         </div>
+
+
                                     </div>
 
                                     @endforeach
@@ -178,6 +182,10 @@ use App\Models\User;
                     @endforeach
                     @endif
                 </div>
+
+
+
+
             </div>
         </div>
     </div>

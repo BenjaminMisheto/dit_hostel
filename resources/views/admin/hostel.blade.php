@@ -243,7 +243,6 @@
 
 @endif
 
-
 <script>
     $(document).ready(function() {
         // Function to handle the block deletion
@@ -263,21 +262,35 @@
                     'X-CSRF-TOKEN': csrfToken // Include the CSRF token in the request headers
                 },
                 success: function(response) {
-                    // Show success toast
-                    showToast('success-toast',
-                        'Block and associated data deleted successfully.');
-                    @if($blocks->isEmpty())
-                    @else
-                    @foreach($blocks as $block)
+                    if (response.success) {
+                        // Show success toast with the server's success message
+                        showToast('success-toast', response.message);
 
-                    closeModalAndExecuteHostel_{{$block->id}}();
-                    @endforeach
-                    @endif
+                        @if($blocks->isEmpty())
+                        @else
+                        @foreach($blocks as $block)
+                        closeModalAndExecuteHostel_{{$block->id}}();
+                        @endforeach
+                        @endif
+                    } else {
+                        // Show error toast with the server's failure message
+                        showToast('error-toast', response.message);
+
+                    }
+
                     $('#overlay').fadeOut(); // Hide the overlay
                 },
                 error: function(xhr) {
+                    var errorMessage = 'An error occurred while deleting the block.';
+
+                    // If the server provided a more specific error message, show it
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+
+                    }
+
                     // Show error toast
-                    showToast('error-toast', 'An error occurred while deleting the block.');
+                    showToast('error-toast', errorMessage);
                 },
                 complete: function() {
                     // Always hide the overlay and re-enable the button
@@ -293,25 +306,26 @@
             toastElement.find('.toast-body').text(message);
             toastElement.toast('show');
         }
+
         @if($blocks->isEmpty())
         @else
         @foreach($blocks as $block)
 
-        function  closeModalAndExecuteHostel_{{$block->id}}() {
-
+        function closeModalAndExecuteHostel_{{$block->id}}() {
             // Close the modal
             $('#deleteBlock{{ $block->id }}').modal('hide'); // Use the correct ID of your modal
             // Ensure that hostel() is called after the modal is closed
             $('#deleteBlock{{ $block->id }}').on('hidden.bs.modal', function() {
-
                 // Adjust this if you need to call a specific function or update the page
                 hostel();
             });
         }
+
         @endforeach
         @endif
     });
 </script>
+
 
 <!-- Modal HTML -->
 <div id="createmodal" class="modal fade" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">

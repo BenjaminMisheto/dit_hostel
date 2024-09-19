@@ -148,7 +148,6 @@ $expirationDate = $user->expiration_date ? Carbon::parse($user->expiration_date)
         @endif
     </div>
 </div>
-
 <script>
     $(document).ready(function () {
         $('#confirmButton').on('click', function (e) {
@@ -171,7 +170,31 @@ $expirationDate = $user->expiration_date ? Carbon::parse($user->expiration_date)
                 },
                 error: function(xhr) {
                     $('#overlay').fadeOut();
-                    showToast('error-toast', 'An error occurred while confirming your application. Please try again.');
+
+                    // Extract and display server error messages
+                    var errorMessage = 'An error occurred while confirming your application. Please try again.';
+
+                    try {
+                        // Try to parse the response JSON to get error details
+                        var response = JSON.parse(xhr.responseText);
+
+                        // Check for specific error messages
+                        if (response.message) {
+                            errorMessage = response.message;
+                        } else if (response.errors) {
+                            // Collect and format error messages
+                            var errorMessages = [];
+                            $.each(response.errors, function(key, value) {
+                                errorMessages.push(value.join('<br>'));
+                            });
+                            errorMessage = errorMessages.join('<br>');
+                        }
+                    } catch (e) {
+                        // Handle cases where response is not valid JSON
+                        console.error('Error parsing response JSON:', e);
+                    }
+
+                    showToast('error-toast', errorMessage);
                     console.error('AJAX error response:', xhr.responseText);
                 }
             });
@@ -179,7 +202,7 @@ $expirationDate = $user->expiration_date ? Carbon::parse($user->expiration_date)
 
         function showToast(toastId, message) {
             var toastElement = $('#' + toastId);
-            toastElement.find('.toast-body').text(message);
+            toastElement.find('.toast-body').html(message); // Use html() to support line breaks
             toastElement.toast({ delay: 3000 });
             toastElement.toast('show');
         }

@@ -1,6 +1,7 @@
 @php
 
 use App\Models\User;
+use App\Models\Bed;
 
 @endphp
 
@@ -23,8 +24,6 @@ use App\Models\User;
         </div>
     </div>
 </div>
-
-
 
 <script>
     $(document).ready(function() {
@@ -51,7 +50,8 @@ use App\Models\User;
                 success: function(response) {
                     $('#deleteBed .btn-outline-success').prop('disabled', false);
                     $('#overlay').fadeOut();
-                    // Assuming the server returns a message in response
+
+                    // Display success message from server
                     var successToast = $('#success-toast');
                     successToast.find('.toast-body').text(response.message || 'Bed deleted successfully.');
                     successToast.toast('show');
@@ -61,30 +61,28 @@ use App\Models\User;
                 error: function(xhr) {
                     $('#deleteBed .btn-outline-success').prop('disabled', false);
                     $('#overlay').fadeOut();
-                    closeModalAndExecuteHostel1();
+
                     var errorToast = $('#error-toast');
                     errorToast.find('.toast-body').empty(); // Clear previous messages
 
-                    var errors = xhr.responseJSON.errors;
-
-                    if (errors) {
+                    // Handle error messages from server
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        // Display server message if available
+                        errorToast.find('.toast-body').text(xhr.responseJSON.message);
+                    } else if (xhr.responseJSON && xhr.responseJSON.errors) {
                         // Collect all error messages
                         var errorMessages = [];
-
-                        if (errors.some_error_field) { // Example error field
-                            errorMessages.push(errors.some_error_field[0]);
-                        }
-
-                        // Add other error fields as needed
-                        // ...
-
-                        // Show all error messages in the toast
+                        $.each(xhr.responseJSON.errors, function(key, messages) {
+                            errorMessages.push(messages.join('<br>'));
+                        });
                         errorToast.find('.toast-body').html(errorMessages.join('<br>'));
-                        errorToast.toast('show');
                     } else {
+                        // Default error message if no specific message is found
                         errorToast.find('.toast-body').text('An error occurred. Please try again.');
-                        errorToast.toast('show');
                     }
+                    errorToast.toast('show');
+
+                    closeModalAndExecuteHostel1();
                 },
                 complete: function() {
                     // Always hide the overlay
@@ -103,19 +101,18 @@ use App\Models\User;
         function closeModalAndExecuteHostel() {
             $('#deleteBed').modal('hide'); // Use the correct ID of your modal
             $('#deleteBed').on('hidden.bs.modal', function() {
-                room({{ $bed->room->floor->block->id }});
+                room({{ $bed->room->floor->block->id }}); // Adjust as necessary
             });
         }
 
         function closeModalAndExecuteHostel1() {
             $('#deleteBed').modal('hide'); // Use the correct ID of your modal
             $('#deleteBed').on('hidden.bs.modal', function() {
-                // room({{ $bed->room->floor->block->id }});
+                // Additional actions if needed
             });
         }
     });
 </script>
-    `
 
 
 <div class="content">
@@ -155,9 +152,9 @@ use App\Models\User;
 
 
 
-                    @if($bed->user)
+                    @if($user)
                     <div class="alert alert-success" role="alert" id="statusindicator">
-                        This room is occupied by {{ $bed->user->name}}.
+                        This room is occupied by {{ $user->name}}
                     </div>
                     @else
                     <div class="alert alert-danger" id="statusindicator" role="alert">
@@ -211,12 +208,12 @@ use App\Models\User;
     <div class="col-md-12 mb-3">
         <label for="UserControlnumber">Control number</label>
         <input type="text" class="form-control" id="UserControlnumber"
-               value="{{ $bed->user->Control_Number ?? 'Not Generated' }}" disabled>
+               value="{{ $user->Control_Number ?? 'Not Generated' }}" disabled>
     </div>
     <div class="col-md-12 mb-3">
         <label for="Userpayment">Payment</label>
         <input type="text" class="form-control" id="Userpayment"
-        value="{{ $bed->user->payment_status ?? 'Not paid' }}" disabled>
+        value="{{ $user->payment_status ?? 'Not paid' }}" disabled>
 
 
 
@@ -224,7 +221,7 @@ use App\Models\User;
 
     </div>
 
-    <div class="col-md-12 mb-3 remove" style=" @if($bed->user) display: none; @endif">
+    <div class="col-md-12 mb-3 remove" style=" @if($user) display: none; @endif">
         <div class="form-group mt-2">
             <label>Bed Status</label>
             <div class="btn-group-toggle d-flex justify-content-between" data-toggle="buttons">
@@ -255,7 +252,7 @@ use App\Models\User;
 
 
                  <!-- Search Input and Add Button -->
-<div class="form-group position-relative remove" style=" @if($bed->user) display: none; @endif">
+<div class="form-group position-relative remove" style=" @if($user) display: none; @endif">
     <label for="searchStudent">Search for Eligible Students</label>
     <div class="input-group">
         <input type="text" class="form-control" id="searchStudent" placeholder="Enter student name or ID">
@@ -280,7 +277,7 @@ use App\Models\User;
                     <div class="col-xl-12 mb-3">
                         <label for="studentImage">Student Image</label>
                         <div class="text-center">
-                            <img id="image" src="{{ $bed->user->profile_photo_path ?? 'img/placeholder.jpg' }}" alt="Student Image"
+                            <img id="image" src="{{ $user->profile_photo_path ?? 'img/placeholder.jpg' }}" alt="Student Image"
                                 class="img-fluid  rounded-circle" id="studentImage" style="max-width: 30%; height: auto;">
                                 <input type="text" name="image" id="imageInput" hidden>
                         </div>
@@ -292,49 +289,49 @@ use App\Models\User;
                             <!-- Name -->
                             <div class="col-md-6 mb-3">
                                 <label for="name">Name</label>
-                                <input type="text" class="form-control" id="name" value="{{ $bed->user->name ?? '' }}" disabled>
+                                <input type="text" class="form-control" id="name" value="{{ $user->name ?? '' }}" disabled>
                             </div>
 
                             <!-- Registration Number -->
                             <div class="col-md-6 mb-3">
                                 <label for="registrationNumber">Registration Number</label>
-                                <input type="text" class="form-control" id="registrationNumber" value="{{ $bed->user->registration_number ?? '' }}" disabled>
+                                <input type="text" class="form-control" id="registrationNumber" value="{{ $user->registration_number ?? '' }}" disabled>
                             </div>
 
                             <!-- Sponsorship -->
                             <div class="col-md-6 mb-3">
                                 <label for="sponsorship">Sponsorship</label>
-                                <input type="text" class="form-control" id="sponsorship" value="{{ $bed->user->sponsorship ?? '' }}" disabled>
+                                <input type="text" class="form-control" id="sponsorship" value="{{ $user->sponsorship ?? '' }}" disabled>
                             </div>
 
                             <!-- Phone -->
                             <div class="col-md-6 mb-3">
                                 <label for="phone">Phone</label>
-                                <input type="text" class="form-control" id="phone" value="{{ $bed->user->phone ?? '' }}" disabled>
+                                <input type="text" class="form-control" id="phone" value="{{ $user->phone ?? '' }}" disabled>
                             </div>
 
                             <!-- Gender -->
                             <div class="col-md-6 mb-3">
                                 <label for="gender">Gender</label>
-                                <input type="text" class="form-control" id="gender" value="{{ $bed->user->gender ?? '' }}" disabled>
+                                <input type="text" class="form-control" id="gender" value="{{ $user->gender ?? '' }}" disabled>
                             </div>
 
                             <!-- Nationality -->
                             <div class="col-md-6 mb-3">
                                 <label for="nationality">Nationality</label>
-                                <input type="text" class="form-control" id="nationality" value="{{ $bed->user->nationality ?? '' }}" disabled>
+                                <input type="text" class="form-control" id="nationality" value="{{ $user->nationality ?? '' }}" disabled>
                             </div>
 
                             <!-- Course -->
                             <div class="col-md-6 mb-3">
                                 <label for="course">Course</label>
-                                <input type="text" class="form-control" id="course" value="{{ $bed->user->course ?? '' }}" disabled>
+                                <input type="text" class="form-control" id="course" value="{{ $user->course ?? '' }}" disabled>
                             </div>
 
 <!-- Email -->
 <div class="col-md-6 mb-3">
     <label for="email">Email</label>
-    <input type="text" class="form-control" id="email" value="{{ $bed->user->email ?? '' }}" disabled>
+    <input type="text" class="form-control" id="email" value="{{ $user->email ?? '' }}" disabled>
 </div>
 
 <div class="col-md-6 mb-3">

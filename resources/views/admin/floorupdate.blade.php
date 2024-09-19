@@ -646,7 +646,6 @@ $('#addRoom').on('click', function() {
             }
         });
     }
-
     $(document).ready(function() {
     // Function to handle the floor deletion
     window.deleteFloor = function(event, floorId) {
@@ -669,14 +668,24 @@ $('#addRoom').on('click', function() {
                 'X-CSRF-TOKEN': csrfToken // Include the CSRF token in the request headers
             },
             success: function(response) {
-                // Show success toast
-                showToast('success-toast', 'Floor and associated rooms and beds deleted successfully.');
+                // Show success toast with the message from the server
+                showToast('success-toast', response.message || 'Floor and associated rooms and beds deleted successfully.');
+
+                // Call the function to close the modal and execute related actions
                 closeModalAndExecuteHostel();
                 $('#overlay').fadeOut(); // Hide the overlay
             },
             error: function(xhr) {
-                // Show error toast
-                showToast('error-toast', 'An error occurred while deleting the floor.');
+                // Get error message from server response
+                var errorMessage = 'An error occurred while deleting the floor.';
+
+                // If the server provides a specific error message, use that
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+
+                // Show error toast with the message from the server
+                showToast('error-toast', errorMessage);
             },
             complete: function() {
                 // Always hide the overlay and re-enable the button
@@ -687,18 +696,21 @@ $('#addRoom').on('click', function() {
         });
     };
 
+    // Function to show toast notifications
     function showToast(toastId, message) {
         var toastElement = $('#' + toastId);
         toastElement.find('.toast-body').text(message);
         toastElement.toast('show');
     }
 
+    // Function to close the modal and execute any further actions
     function closeModalAndExecuteHostel() {
         // Close the modal
         $('#deletefloor').modal('hide'); // Use the correct ID of your modal
-        // Ensure that hostel() is called after the modal is closed
+
+        // Ensure that room() is called after the modal is closed
         $('#deletefloor').on('hidden.bs.modal', function() {
-            room({{ $blockId }});
+            room({{ $blockId }}); // Replace room() with the actual function you want to call
         });
     }
 });

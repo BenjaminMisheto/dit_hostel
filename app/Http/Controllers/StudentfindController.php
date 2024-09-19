@@ -58,7 +58,8 @@ class StudentfindController extends Controller
                 'room_id' => $request->room_id,
                 'bed_id' => $request->bed_id,
                 'application' => 1,
-                'status' => 'approved',
+                'status' => 'disapproved',
+                'afterpublish'=> 1,
             ]);
 
                  // Check if the bed is already occupied
@@ -95,7 +96,7 @@ if ($row) {
 
         // Set the user's expiration_date to the calculated date
         $user->expiration_date = $newExpirationDate;
-        $user->save();
+       // $user->save();
     } else {
         return response()->json(['message' => 'Publish record not found.'], 404);
     }
@@ -131,7 +132,8 @@ if ($row) {
             'bed_id' => $request->bed_id,
             'email' => $request->email,
             'application' => 1,
-            'status' => 'approved',
+            'status' => 'disapproved',
+            'afterpublish'=> 1,
             'confirmation' => 1,
             'semester_id' => session('semester_id'),
 
@@ -227,14 +229,16 @@ public function remove($bedId)
     }
 
 
-    // Check if the user has a control number and the expiration date is not in the past
-    if (!is_null($user->Control_Number) && $user->expiration_date->isFuture()) {
-        $hoursRemaining = $user->expiration_date->diffInHours(now());
-        return response()->json([
-            'success' => false,
-            'message' => "Student cannot be removed because a control number has been generated. Please wait until the expiration time expires. Hours remaining: $hoursRemaining."
-        ], 400);
-    }
+
+// Check if the user has a control number and expiration date is not null and in the future
+if (!is_null($user->Control_Number) && !is_null($user->expiration_date) && $user->expiration_date->isFuture()) {
+    $hoursRemaining = $user->expiration_date->diffInHours(now());
+    return response()->json([
+        'success' => false,
+        'message' => "Student cannot be removed because a control number has been generated. Please wait until the expiration time expires. Hours remaining: $hoursRemaining."
+    ], 400);
+}
+
 
 
 

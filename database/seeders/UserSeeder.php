@@ -73,7 +73,7 @@ class UserSeeder extends Seeder
                 'email' => $elligibleStudent->email, // Use email from eligible student
                 'password' => bcrypt('password'), // Or use a hash that you prefer
                 'profile_photo_path' => $elligibleStudent->image,
-                'expiration_date' => $faker->boolean ? $faker->dateTimeBetween('now', 'now') : $faker->dateTimeBetween('now', '+1 month'),
+                // 'expiration_date' => $faker->boolean ? $faker->dateTimeBetween('now', 'now') : $faker->dateTimeBetween('now', '+1 month'),
                 'created_at' => now(),
                 'updated_at' => now(),
                 'counter' => $faker->numberBetween(0, 10),

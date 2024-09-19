@@ -41,13 +41,23 @@ class BlockController extends Controller
 
 
 
-
-
-    public function destroy(Block $block)
+public function destroy(Block $block)
 {
     // Check if the user is authenticated
     if (!auth('admin')->check()) {
         return response()->json(['message' => 'User is not authenticated'], 401);
+    }
+
+    // Check if any bed in the block is associated with a user
+    $hasUser = $block->floors()->with('rooms.beds.user')->get()->pluck('rooms')->flatten()->pluck('beds')->flatten()->contains(function ($bed) {
+        return $bed->user !== null; // Check if the bed has a user
+    });
+
+    if ($hasUser) {
+        return response()->json([
+            'success' => false,
+            'message' => 'The block has students assigned to one or more beds. You cannot delete it.'
+        ], 400);
     }
 
     try {

@@ -44,19 +44,20 @@
 </div>
 
 <!-- Error Toast -->
-<div id="error-toast" class="toast bg-danger text-white" role="alert" aria-live="assertive" aria-atomic="true">
+
+<div id="error-toast" class="toast bg-danger text-white" role="alert" aria-live="assertive" aria-atomic="true" style=" z-index: 1055;">
     <div class="toast-body">
         <!-- Error message will be inserted here -->
     </div>
 </div>
 
-
-<div id="preloder">
+<!-- Preloader -->
+<div id="preloder" style=" z-index: 1055;">
     <div class="loader">
-        <div class="spinner-border " style="width: 3rem; height: 3rem;"></div>
-
+        <div class="spinner-border" style="width: 3rem; height: 3rem;"></div>
     </div>
 </div>
+
     <body class="has-sidebar has-fixed-sidebar-and-header">
         <!-- Header -->
         <header class="header bg-body">

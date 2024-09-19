@@ -319,18 +319,27 @@ use App\Models\User;
                                 'X-CSRF-TOKEN': csrfToken // Include the CSRF token in the request headers
                             },
                             success: function(response) {
-                                // Show success toast
-                                showToast('success-toast',
-                                    'Block and associated data deleted successfully.');
-
-
-                                closeModalAndExecuteHostel();
+                                if (response.success) {
+                                    // Show success toast with server's message
+                                    showToast('success-toast', response.message);
+                                    closeModalAndExecuteHostel();
+                                } else {
+                                    // Show error toast with server's failure message
+                                    showToast('error-toast', response.message);
+                                }
 
                                 $('#overlay').fadeOut(); // Hide the overlay
                             },
                             error: function(xhr) {
-                                // Show error toast
-                                showToast('error-toast', 'An error occurred while deleting the block.');
+                                var errorMessage = 'An error occurred while deleting the block.';
+
+                                // Check if server provided a more specific error message
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMessage = xhr.responseJSON.message;
+                                }
+
+                                // Show error toast with server's error message
+                                showToast('error-toast', errorMessage);
                             },
                             complete: function() {
                                 // Always hide the overlay and re-enable the button
@@ -341,27 +350,25 @@ use App\Models\User;
                         });
                     };
 
+                    // Function to show toast notifications
                     function showToast(toastId, message) {
                         var toastElement = $('#' + toastId);
                         toastElement.find('.toast-body').text(message);
                         toastElement.toast('show');
                     }
 
-
-                    function  closeModalAndExecuteHostel() {
-
+                    // Function to close modal and execute post-deletion logic
+                    function closeModalAndExecuteHostel() {
                         // Close the modal
                         $('#deleteBlock').modal('hide'); // Use the correct ID of your modal
                         // Ensure that hostel() is called after the modal is closed
                         $('#deleteBlock').on('hidden.bs.modal', function() {
-
-                            // Adjust this if you need to call a specific function or update the page
-                            hostel();
+                            hostel(); // Adjust this if you need to call a specific function or update the page
                         });
                     }
-
                 });
             </script>
+
 <style>
     .responsive-bg {
         background-size: contain;
@@ -748,7 +755,9 @@ use App\Models\User;
 
                                                         if ($usertime) {
                                                             $expirationDate = $usertime->expiration_date;
-                                                      } else {
+                                                      }
+
+                                                      else {
                                                         $expirationDate = null; // Initialize $expirationDate to null if no user is found
                                                             }
                                                             // Initialize status class and text
@@ -767,8 +776,7 @@ use App\Models\User;
                                                                     $statusClass = 'alert-success';
                                                                       $statusText = 'Taken';
                                                                     }
-                                                                  }
-
+                                                     }
 
 
 
@@ -1459,7 +1467,6 @@ use App\Models\User;
     });
 
 
-
     $(document).ready(function() {
     // Function to handle the floor deletion
     window.deleteFloor = function(event, floorId) {
@@ -1482,16 +1489,27 @@ use App\Models\User;
                 'X-CSRF-TOKEN': csrfToken // Include the CSRF token in the request headers
             },
             success: function(response) {
-                // Show success toast
-                showToast('success-toast', 'Floor and associated rooms and beds deleted successfully.');
+                // Show success toast with the message from the server
+                showToast('success-toast', response.message);
+
+                // Loop through each floor to close modal and perform actions
                 @foreach($block->floors as $index => $floor)
-                closeModalAndExecuteHostel_{{ $floor->id }}();
+                    closeModalAndExecuteHostel_{{ $floor->id }}();
                 @endforeach
+
                 $('#overlay').fadeOut(); // Hide the overlay
             },
             error: function(xhr) {
-                // Show error toast
-                showToast('error-toast', 'An error occurred while deleting the floor.');
+                // Get error message from server response
+                var errorMessage = 'An error occurred while deleting the floor.';
+
+                // If the server provides a specific error message, use that
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+
+                // Show error toast with the message from the server
+                showToast('error-toast', errorMessage);
             },
             complete: function() {
                 // Always hide the overlay and re-enable the button
@@ -1502,27 +1520,27 @@ use App\Models\User;
         });
     };
 
+    // Function to show toast notifications
     function showToast(toastId, message) {
         var toastElement = $('#' + toastId);
         toastElement.find('.toast-body').text(message);
         toastElement.toast('show');
     }
 
-
+    // Loop through each floor and create a unique function for closing modals
     @foreach($block->floors as $index => $floor)
-    // Create a unique function for each floor
     function closeModalAndExecuteHostel_{{ $floor->id }}() {
         // Close the specific modal for the floor
         $('#deletefloor{{ $floor->id }}').modal('hide'); // Use the correct ID of your modal
-        // Ensure that hostel() is called after the modal is closed
+
+        // Ensure that room() is called after the modal is closed
         $('#deletefloor{{ $floor->id }}').on('hidden.bs.modal', function() {
-            room({{ $block->id }});
+            room({{ $block->id }}); // Replace room() with the actual function you want to call
         });
     }
-
-@endforeach
-
+    @endforeach
 });
+
 
 
 

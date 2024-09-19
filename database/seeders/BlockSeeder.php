@@ -32,7 +32,7 @@ class BlockSeeder extends Seeder
         }
 
         // Create blocks
-        for ($b = 1; $b <= 5; $b++) { // Adjust the number of blocks as needed
+        for ($b = 1; $b <= 4; $b++) { // Adjust the number of blocks as needed
             // Check if there are enough images
             if (empty($imageNumbers)) {
                 throw new \Exception('Not enough unique images available for blocks.');

@@ -15,7 +15,7 @@ return new class extends Migration
     $table->id();
     $table->foreignId('semester_id')->nullable()->constrained('semesters')->onDelete('set null');
     $table->string('name');
-    $table->integer('registration_number')->nullable();
+    $table->bigInteger('registration_number')->nullable();
     $table->integer('counter')->default(0);
     $table->integer('checkin')->default(0);
     $table->integer('checkout')->default(0);

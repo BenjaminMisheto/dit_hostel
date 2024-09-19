@@ -20,7 +20,7 @@ class ElligableStudentSeeder extends Seeder
         ]);
 
         // Create 100 random students
-        for ($index = 1; $index <= 300; $index++) {
+        for ($index = 1; $index <= 1200; $index++) {
             $imageIndex = ($index % 24) === 0 ? 24 : ($index % 24);
 
             ElligableStudent::create([
@@ -36,5 +36,19 @@ class ElligableStudentSeeder extends Seeder
                 'image' => 'img/' . $imageIndex . '.jpg', // Reset image index after 15
             ]);
         }
+
+
+        // ElligableStudent::create([
+        //         'student_name' => 'Benjamin Misheto',
+        //         'registration_number' => '230242467801',
+        //         'payment_status' => $faker->randomElement(['pending', 'paid']),
+        //         'sponsorship' => 'private',
+        //         'phone' => '+255 712 656 887',
+        //         'gender' => 'Male',
+        //         'nationality' => 'Tanzania',
+        //         'course' => 'B2',
+        //         'email' => 'benmisheto@gmail.com',
+        //         'image' => 'img/10.jpg', // Reset image index after 15
+        //     ]);
     }
 }

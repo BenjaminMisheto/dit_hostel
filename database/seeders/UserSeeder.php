@@ -25,7 +25,7 @@ class UserSeeder extends Seeder
         // Fetch all beds and their related data (room, floor, block)
         $beds = Bed::with(['room.floor.block'])
             ->inRandomOrder()
-            ->limit(200)
+            ->limit(1000)
             ->get();
 
         // Fetch elligible students to map them to users

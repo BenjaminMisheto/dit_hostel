@@ -1,4 +1,6 @@
-<div class="content">
+
+
+<div class="content ">
     <div class="py-4 px-3 px-md-4">
         <div class="mb-3 mb-md-4 d-flex justify-content-between align-items-center">
             <h3 class="mb-0">Semester Settings</h3>
@@ -79,37 +81,39 @@
 
         let isRequestInProgress = false;
 
-        // Function to create a new semester
-        function onCreateSemesterClick() {
-            if (confirm('Are you sure you want to create a new semester? This action will reset all student accounts to their default settings, allowing eligible students to begin the process of applying for hostel accommodation for the newly created semester. Please note that once created, the semester cannot be deleted.')) {
-                if (isRequestInProgress) return; // Prevent multiple submissions
+// Function to create a new semester
+function onCreateSemesterClick() {
+    if (confirm('Are you sure you want to create a new semester? This action will reset all student accounts to their default settings, allowing eligible students to begin the process of applying for hostel accommodation for the newly created semester. Please note that once created, the semester cannot be deleted.')) {
+        if (isRequestInProgress) return; // Prevent multiple submissions
 
-                isRequestInProgress = true;
-                $('#overlay').css('display', 'flex');
+        isRequestInProgress = true;
+        $('#overlay').css('display', 'flex');
 
-                $.ajax({
-                    url: '/create-new-semester',
-                    method: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        showToast('#success-toast', response.message); // Show server message
-                        // Optionally, refresh the semester list
-                        $('#overlay').fadeOut();
-                        semester();
-                    },
-                    error: function(xhr) {
-                        $('#overlay').fadeOut();
-                        showToast('#error-toast', xhr.responseJSON?.message || 'Error creating new semester.'); // Show server message
-                    },
-                    complete: function() {
-                        $('#overlay').fadeOut();
-                        isRequestInProgress = false;
-                    }
-                });
+        $.ajax({
+            url: '/create-new-semester',
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                current_semester: '{{ session('semester') }}'  // Passing the current semester from the session
+            },
+            success: function(response) {
+                showToast('#success-toast', response.message); // Show server message
+                // Optionally, refresh the semester list
+                $('#overlay').fadeOut();
+                semester();
+            },
+            error: function(xhr) {
+                $('#overlay').fadeOut();
+                showToast('#error-toast', xhr.responseJSON?.message || 'Error creating new semester.'); // Show server message
+            },
+            complete: function() {
+                $('#overlay').fadeOut();
+                isRequestInProgress = false;
             }
-        }
+        });
+    }
+}
+
 
         // Function to generate semester options based on the selected format
         function generateSemesterOptions(format) {

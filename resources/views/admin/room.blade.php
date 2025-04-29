@@ -15,7 +15,8 @@ use App\Models\User;
             </li>
             <li class="nav-item">
                 <a class="nav-link d-flex align-items-center py-2 px-3 p-xl-4 " href="#tabs1-tab2" role="tab" aria-selected="false"
-                   data-toggle="tab">Manage General Items
+                   data-toggle="tab">
+                   Manage Requirements
                 </a>
             </li>
         </ul>
@@ -420,13 +421,13 @@ use App\Models\User;
 
                         <div class="row">
                             <!-- Image Column -->
-                            <div class="col-xl-6 mb-3">
+                            <div class="col-12 col-xl-6 mb-3">
                                 <div class="rounded-start"
                                      style="background-image: url('{{ $block->image_data }}');
                                            background-size: contain;
                                            background-repeat: no-repeat;
                                            background-position: center;
-                                           height: 500px; /* Set a default height */
+                                           height: 400px; /* Set a default height */
                                            width: 100%;">
 
                                     <!-- Additional content can go here -->
@@ -441,10 +442,10 @@ use App\Models\User;
 
 
                             <!-- Block Details Column -->
-                            <div class=" col-xl-6 mb-3">
+                            <div class="col-12 col-xl-6 mb-3">
                                 <div class="row">
                                     <!-- Block Name -->
-                                    <div class="col-12 col-lg-6 mb-3">
+                                    <div class="col-12 col-lg-12 mb-3">
                                         <div class="card p-3">
                                             <div class="d-flex justify-content-between">
                                                 <h6 class="mb-0">Block Name</h6>
@@ -454,7 +455,7 @@ use App\Models\User;
                                     </div>
 
                                     <!-- Eligible Gender -->
-                                    <div class="col-12 col-lg-6 mb-3">
+                                    <div class="col-12 col-lg-12 mb-3">
                                         <div class="card p-3">
                                             <div class="d-flex justify-content-between">
                                                 <h6 class="mb-0">Eligible Gender</h6>
@@ -464,7 +465,7 @@ use App\Models\User;
                                     </div>
 
                                     <!-- Eligible Students -->
-                                    <div class="col-12 col-lg-6 mb-3">
+                                    <div class="col-12 col-lg-12 mb-3">
                                         <div class="card p-3">
                                             <div class="d-flex justify-content-between">
                                                 <h6 class="mb-0">Eligible Students</h6>
@@ -474,7 +475,7 @@ use App\Models\User;
                                     </div>
 
                                     <!-- Price/Annual -->
-                                    <div class="col-12 col-lg-6 mb-3">
+                                    <div class="col-12 col-lg-12 mb-3">
                                         <div class="card p-3">
                                             <div class="d-flex justify-content-between">
                                                 <h6 class="mb-0">Price/Annual</h6>
@@ -484,7 +485,7 @@ use App\Models\User;
                                     </div>
 
                                     <!-- Block Manager -->
-                                    <div class="col-12 col-lg-6 mb-3">
+                                    <div class="col-12 col-lg-12 mb-3">
                                         <div class="card p-3">
                                             <div class="d-flex justify-content-between">
                                                 <h6 class="mb-0">Block Manager</h6>
@@ -494,7 +495,7 @@ use App\Models\User;
                                     </div>
 
                                     <!-- Location -->
-                                    <div class="col-12 col-lg-6 mb-3">
+                                    <div class="col-12 col-lg-12 mb-3">
                                         <div class="card p-3">
                                             <div class="d-flex justify-content-between">
                                                 <h6 class="mb-0">Location</h6>
@@ -503,47 +504,51 @@ use App\Models\User;
                                         </div>
                                     </div>
 
-                                    <!-- Total Beds -->
-                                    <div class="col-12 mb-3">
-                                        <div class="card flex-row align-items-center p-3">
-                                            <div class="icon icon-lg bg-soft-warning rounded-circle mr-3">
-                                                <i class="gd-key text-warning"></i>
-                                            </div>
-                                            <div>
-                                                <h4 class="lh-1 mb-1">{{ $totalBeds }}</h4>
-                                                <h6 class="mb-0">Total Beds</h6>
-                                            </div>
-                                        </div>
-                                    </div>
 
-                                    <!-- Total Open Beds -->
-                                    <div class="col-12 mb-3">
-                                        <div class="card flex-row align-items-center p-3">
-                                            <div class="icon icon-lg bg-soft-dark rounded-circle mr-3">
-                                                <i class="gd-key text-dark"></i>
-                                            </div>
-                                            <div>
-                                                <h4 class="lh-1 mb-1">{{ $totalOpenBeds }}</h4>
-                                                <h6 class="mb-0">Total Open Beds</h6>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Total Remaining Beds -->
-                                    <div class="col-12 mb-3">
-                                        <div class="card flex-row align-items-center p-3">
-                                            <div class="icon icon-lg bg-soft-info rounded-circle mr-3">
-                                                <i class="gd-key text-info"></i>
-                                            </div>
-                                            <div>
-                                                <h4 class="lh-1 mb-1">{{ $totalBeds - $totalOccupiedBeds }}</h4>
-                                                <h6 class="mb-0">Total Remaining Beds</h6>
-                                            </div>
-                                        </div>
-                                    </div>
 
                                 </div>
                             </div>
+
+
+
+                              {{-- <!-- Total Beds -->
+                              <div class="col-12 col-md-6 col-lg-4 mb-3">
+                                <div class="card flex-row align-items-center p-3">
+                                    <div class="icon icon-lg bg-soft-warning rounded-circle mr-3">
+                                        <i class="gd-key text-warning"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="lh-1 mb-1">{{ $totalBeds }}</h4>
+                                        <h6 class="mb-0">Total Beds</h6>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Total Open Beds -->
+                            <div class="col-12 col-md-6 col-lg-4 mb-3">
+                                <div class="card flex-row align-items-center p-3">
+                                    <div class="icon icon-lg bg-soft-dark rounded-circle mr-3">
+                                        <i class="gd-key text-dark"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="lh-1 mb-1">{{ $totalOpenBeds }}</h4>
+                                        <h6 class="mb-0">Total Open Beds</h6>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Total Remaining Beds -->
+                            <div class="col-12 col-md-6 col-lg-4 mb-3">
+                                <div class="card flex-row align-items-center p-3">
+                                    <div class="icon icon-lg bg-soft-info rounded-circle mr-3">
+                                        <i class="gd-key text-info"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="lh-1 mb-1">{{ $totalBeds - $totalOccupiedBeds-$totalReservedBeds- $totalUnderMaintenanceBeds }}</h4>
+                                        <h6 class="mb-0">Total Remaining Beds</h6>
+                                    </div>
+                                </div>
+                            </div> --}}
 
                             <!-- Additional Stats -->
                             <div class="col-12 col-md-6 col-lg-4 mb-3">
@@ -553,7 +558,7 @@ use App\Models\User;
                                     </div>
                                     <div>
                                         <h4 class="lh-1 mb-1">{{ $totalOccupiedBeds }}/{{$totalBeds}}</h4>
-                                        <h6 class="mb-0">Total Occupied Beds</h6>
+                                        <h6 class="mb-0">Occupied Beds</h6>
                                     </div>
                                 </div>
                             </div>
@@ -565,7 +570,7 @@ use App\Models\User;
                                     </div>
                                     <div>
                                         <h4 class="lh-1 mb-1">{{ $totalReservedBeds }}/{{$totalBeds}}</h4>
-                                        <h6 class="mb-0">Total Reserved Beds</h6>
+                                        <h6 class="mb-0">Reserved Beds</h6>
                                     </div>
                                 </div>
                             </div>
@@ -577,7 +582,7 @@ use App\Models\User;
                                     </div>
                                     <div>
                                         <h4 class="lh-1 mb-1">{{ $totalUnderMaintenanceBeds }}/{{$totalBeds}}</h4>
-                                        <h6 class="mb-0">Total Maintenance Beds</h6>
+                                        <h6 class="mb-0">Maintenance Beds</h6>
                                     </div>
                                 </div>
                             </div>

@@ -141,6 +141,7 @@
     <div class="container">
         <h1 class="mb-4">Maintenance Report for {{ $block ?? 'Not Available' }}</h1>
 
+
         <!-- AdminCheckouts Section -->
         <div id="admin-checkouts" class="table-container">
             <table class="table table-bordered table-striped">
@@ -223,6 +224,7 @@
     <div class="footer">
         <p>Report generated on {{ now()->format('Y-m-d H:i:s') }}</p>
         <p>© {{ now()->format('Y') }} {{ $block ?? 'Not Available' }}</p>
+        <p><strong>Printed by :</strong> {{ auth('admin')->user()->name }}</p>
     </div>
 </body>
 </html>

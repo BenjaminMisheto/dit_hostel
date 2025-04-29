@@ -66,8 +66,6 @@ class BedController extends Controller
 
 
 
-
-
 public function updateBed(Request $request, $id) {
     $request->validate([
         'bed_number' => 'required|string|max:255',
@@ -77,40 +75,36 @@ public function updateBed(Request $request, $id) {
     // Find the bed by ID
     $bed = Bed::find($id);
 
-    if ($bed) {
-        // Update the bed attributes
-        $bed->bed_number = $request->bed_number;
-        $bed->status = $request->bed_status;
-        $bed->save();
-
-
-        if ($request->bed_status =='under_maintenance' or  $request->bed_status =='reserve') {
-          // Update SliderData status
-          SliderData::where('bed_id', $id)->update(['status' => '0']);
-        }
-        else {
-            SliderData::where('bed_id', $id)->update(['status' => '1']);
-        }
-
-
-
-
-
-        // Prepare a message based on the bed status
-        $statusMessages = [
-            'under_maintenance' => 'Bed is now under maintenance.',
-            'reserve' => 'Bed reserved successfully.',
-            'activate' => 'Bed is now available to the student.'
-        ];
-
-        $message = $statusMessages[$request->bed_status] ?? 'Bed updated successfully!';
-
-        return response()->json(['success' => true, 'message' => $message]);
-    } else {
+    if (!$bed) {
         return response()->json(['success' => false, 'message' => 'Bed not found.'], 404);
     }
-}
 
+    // Update the bed attributes
+    $bed->bed_number = $request->bed_number;
+    $bed->status = $request->bed_status;
+    $bed->save();
+
+    // Update SliderData status based on bed status
+    $sliderStatus = ($request->bed_status == 'under_maintenance' || $request->bed_status == 'reserve') ? '0' : '1';
+    SliderData::where('bed_id', $id)->update(['status' => $sliderStatus]);
+
+    // Prepare a message based on the bed status
+    $statusMessages = [
+        'under_maintenance' => 'Bed is now under maintenance.',
+        'reserve' => 'Bed reserved successfully.',
+        'activate' => 'Bed is now available to the student.'
+    ];
+    $message = $statusMessages[$request->bed_status] ?? 'Bed updated successfully!';
+
+    // Check if the bed is occupied by a user
+    $user = $bed->user; // Assuming you have a relationship in the Bed model
+
+    return response()->json([
+        'success' => true,
+        'message' => $message,
+        'user' => $user ? ['name' => $user->name] : null // Only return user if occupied
+    ]);
+}
 
 
 

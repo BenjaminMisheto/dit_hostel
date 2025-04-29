@@ -29,6 +29,9 @@
             <p>{{ auth()->user()->semester->name ?? 'No semester found' }}</p>
 
         </div>
+
+
+
         @if ($user->application == 1)
         <div class="">
 
@@ -495,13 +498,10 @@
     </div>
 
 </div>
-
+@endif
     </div>
 
 </div>
-
-
-@endif
 
 
 

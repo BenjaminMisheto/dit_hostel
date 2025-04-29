@@ -281,7 +281,7 @@ public function searchCheckout(Request $request)
 
     // Generate HTML for the search results
     if ($students->isEmpty()) {
-        $html = '<p>No students found.</p>';
+        $html = '<p class="text-center alert alert-danger">No students found.</p>';
     } else {
         $html = '<div class="table-responsive">';
         $html .= '<table class="table table-striped">';
@@ -337,6 +337,8 @@ public function searchCheckout(Request $request)
 
     return response()->make($html, 200, ['Content-Type' => 'text/html']);
 }
+
+
 public function out($bedId)
 {
     // Fetch the bed and associated user details
@@ -347,30 +349,36 @@ public function out($bedId)
 
     // Fetch check-out items related to this user, if any
     $adminCheckouts = AdminCheckout::where('user_id', $user->id)
-    ->where('semester_id',$user->semester_id)
-    ->get();
+        ->where('semester_id', $user->semester_id)
+        ->get();
 
     // Determine the confirmation items to use
     if ($adminCheckouts->isNotEmpty()) {
-        // Map admin check-outs to the confirmationItems format
+        // Map admin check-outs to the confirmationItems format, including payment_price
         $confirmationItems = $adminCheckouts->map(function ($checkout) {
             return [
                 'name' => $checkout->name,
                 'condition' => $checkout->condition,
+                'payment_price' => $checkout->payment_price, // Ensure payment price is included
             ];
         });
     } else {
         // If no admin check-outs, fetch from RequirementItemConfirmation
         $confirmation = RequirementItemConfirmation::where('user_id', $user->id)
-        ->where('semester_id',$user->semester_id)->first();
+            ->where('semester_id', $user->semester_id)
+            ->first();
+
+        // Decode JSON data or set an empty array if no data exists
         $confirmationItems = $confirmation ? json_decode($confirmation->checkout_items_names, true) : [];
+
+        // Ensure each item has a default 'payment_price' value
+        $confirmationItems = array_map(function ($item) {
+            return array_merge($item, ['payment_price' => null]); // Add payment_price with null as default
+        }, $confirmationItems);
     }
-
-
 
     // Pass the data to the view
     return view('admin.out', [
-
         'bed' => $bed,
         'user' => $user,
         'confirmationItems' => $confirmationItems,
@@ -382,10 +390,11 @@ public function studentout(Request $request)
 {
     // Validate the input data
     $request->validate([
-        'user_id' => 'required|exists:users,id', // Validate user_id
+        'user_id' => 'required|exists:users,id',
         'items' => 'required|array',
         'items.*.name' => 'required|string',
-        'items.*.condition' => 'required|string|in:Good,Bad,None', // Allow 'None' as a valid condition
+        'items.*.condition' => 'required|string|in:Good,Bad,None',
+        'items.*.payment_price' => 'nullable|numeric|min:0', // Validate payment price per item
     ]);
 
     try {
@@ -395,23 +404,34 @@ public function studentout(Request $request)
         // Set the user's checkout column to 1
         $user->update(['checkout' => 1]);
 
+        // Log incoming request data for debugging
+        Log::info('Received check-out request:', $request->all());
+
         // Loop through each item in the request
         foreach ($request->input('items') as $item) {
-            // Use updateOrCreate to either update an existing record or create a new one
+            // Log each item's data, including payment price
+            Log::info('Processing item:', [
+                'name' => $item['name'],
+                'condition' => $item['condition'],
+                'payment_price' => $item['payment_price'] ?? null
+            ]);
+
+            // Save each item and its individual price
             AdminCheckout::updateOrCreate(
                 [
                     'user_id' => $user->id,
                     'semester_id' => $user->semester_id,
-                     'block_name' => $user->block ? $user->block->name : 'N/A',
-                     'floor_name' => $user->floor ? $user->floor->floor_number : 'N/A',
-                     'room_name' => $user->room ? $user->room->room_number : 'N/A',
-                     'bed_name' => $user->bed ? $user->bed->bed_number : 'N/A',
-                     'course_name' => $user->course,
-                     'gender' => $user->gender,
+                    'block_name' => $user->block ? $user->block->name : 'N/A',
+                    'floor_name' => $user->floor ? $user->floor->floor_number : 'N/A',
+                    'room_name' => $user->room ? $user->room->room_number : 'N/A',
+                    'bed_name' => $user->bed ? $user->bed->bed_number : 'N/A',
+                    'course_name' => $user->course,
+                    'gender' => $user->gender,
                     'name' => $item['name'], // Find by item name
                 ],
                 [
                     'condition' => $item['condition'], // Update the condition
+                    'payment_price' => $item['payment_price'] ?? null
                 ]
             );
         }
@@ -421,6 +441,101 @@ public function studentout(Request $request)
     } catch (\Exception $e) {
         // Log the error message for debugging
         Log::error('Error storing check-out items: ' . $e->getMessage());
+
+        // Return error response
+        return response()->json([
+            'success' => false,
+            'message' => 'An error occurred. Please try again later.'
+        ], 500);
+    }
+
+
+}
+
+
+public function payCheckout(Request $request)
+{
+    // Log the incoming request data to check if fields are being passed correctly
+    Log::info('Incoming Payment Data:', [
+        'control_number' => $request->input('control_number'),
+        'user_id' => $request->input('user_id'),
+        'semester_id' => $request->input('semester_id'),
+    ]);
+
+    // Validate incoming data
+    $request->validate([
+        'control_number' => 'required|string',
+        'user_id' => 'required|exists:users,id',
+        'semester_id' => 'required|exists:semesters,id',
+    ]);
+
+    // Find the checkouts that match the user_id, semester_id, and control_number
+    $checkouts = AdminCheckout::where('user_id', $request->user_id)
+        ->where('control_number', $request->control_number)
+        ->where('semester_id', $request->semester_id)
+        ->where('paid', false) // Only select unpaid records
+        ->get();
+
+    // If no matching records are found, return an error message
+    if ($checkouts->isEmpty()) {
+       // return response()->json(['success' => false, 'message' => 'No unpaid checkout records found.']);
+    }
+
+    // Loop through the checkouts and update the paid status to true and payment_date
+    foreach ($checkouts as $checkout) {
+        $checkout->paid = true;
+        $checkout->payment_date = now(); // Set the payment date to the current timestamp
+        $checkout->save();
+    }
+
+    // Optionally, you can send a notification or perform other actions here
+
+    // Return a success response
+    return response()->json(['success' => true, 'message' => 'Payments processed successfully.']);
+}
+
+
+public function saveControlNumber(Request $request)
+{
+    // Validate the input data
+    $validated = $request->validate([
+        'control_number' => 'required|string|unique:admin_checkouts,control_number', // Ensure control number is unique
+        'semester_id' => 'required|integer|exists:semesters,id', // Validate that semester exists
+        'user_id' => 'required|integer|exists:users,id', // Validate that user exists
+    ]);
+
+    try {
+        // Get all checkouts for the specified semester and user
+        $checkouts = AdminCheckout::where('semester_id', $validated['semester_id'])
+                                  ->where('user_id', $validated['user_id'])
+                                  ->get();
+
+        // If no checkouts are found, return an error message
+        if ($checkouts->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No items found for the specified semester and user.'
+            ]);
+        }
+
+        // Loop through each checkout item and update the control number
+        foreach ($checkouts as $checkout) {
+            // Check if the control number is not already set for this checkout
+            if ($checkout->control_number !== $validated['control_number']) {
+                $checkout->control_number = $validated['control_number']; // Set the control number
+                $checkout->save(); // Save the changes
+            }
+        }
+
+        // Return a success response
+        return response()->json([
+            'success' => true,
+            'message' => count($checkouts) . ' items successfully updated with the control number: ' . $validated['control_number']
+        ]);
+
+    } catch (\Exception $e) {
+        // Log the error message for debugging
+        Log::error('Error saving control number: ' . $e->getMessage());
 
         // Return error response
         return response()->json([

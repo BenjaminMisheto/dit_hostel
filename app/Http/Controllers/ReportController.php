@@ -76,6 +76,8 @@ class ReportController extends Controller
 
 
 
+
+
 public function exportPDF(Request $request)
 {
     $hostelId = $request->query('hostel_id');
@@ -466,6 +468,14 @@ public function exportPDFPrintcheck(Request $request)
         return $pdf->stream($fileName);
     }
 }
+
+
+
+
+
+
+
+
 public function exportExcelnew(Request $request)
 {
     $hostelId = $request->query('hostel_id');
@@ -649,6 +659,9 @@ public function exportPDFPrintnewmaintanaceprint(Request $request)
         return response()->json(['error' => 'Failed to generate PDF.'], 500);
     }
 }
+
+
+
 
 
 

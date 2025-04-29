@@ -66,10 +66,6 @@
 
                         </div>
 
-
-
-
-
                     </a>
                     <!-- End Logo For Desktop View -->
                 </div>
@@ -194,7 +190,22 @@
                     <!-- End Title -->
 
                     <!-- Dashboard -->
-                    <li class="side-nav-menu-item active " id="nav_profile">
+                    {{-- <li class="side-nav-menu-item  " id="nav_verify">
+                        <a class="side-nav-menu-link media align-items-center" href="#" onclick="verify()">
+                            <span class="side-nav-menu-icon d-flex mr-3">
+                                @if(auth()->user()->verify == true)
+                                <i class="gd-check text-success small"  id="gd-close"></i>
+                                @else
+                                <i class="gd-close text-danger small" id="gd-close"></i>
+                                @endif
+
+                            </span>
+                            <span class="side-nav-fadeout-on-closed media-body text-dark">Verify</span>
+                        </a>
+                    </li> --}}
+
+
+                    <li class="side-nav-menu-item  active" id="nav_profile">
                         <a class="side-nav-menu-link media align-items-center" href="#" onclick="profile()">
                             <span class="side-nav-menu-icon d-flex mr-3">
                                 @if(auth()->user()->confirmation === 1)
@@ -398,6 +409,7 @@
         "#nav_result",
         "#nav_setting",
         "#nav_history",
+        "#nav_verify",
     ];
 
     selectors.forEach(function(selector) {
@@ -434,6 +446,7 @@ function setting() {
         "#nav_result",
         "#nav_profile",
         "#nav_history",
+        "#nav_verify",
     ];
 
     selectors.forEach(function(selector) {
@@ -470,6 +483,7 @@ function setting() {
         "#nav_result",
         "#nav_profile",
         "#nav_setting",
+        "#nav_verify",
 
     ];
 
@@ -499,15 +513,6 @@ function setting() {
 
 
 
-
-
-
-
-
-
-
-
-
             function profile() {
                 const selectors = [
         "#nav_hostel",
@@ -516,6 +521,7 @@ function setting() {
         "#nav_result",
         "#nav_setting",
         "#nav_history",
+        "#nav_verify",
     ];
 
     selectors.forEach(function(selector) {
@@ -545,6 +551,50 @@ function setting() {
 
 
 
+
+
+
+
+
+            function verify() {
+                const selectors = [
+        "#nav_hostel",
+        "#nav_room",
+        "#nav_finish",
+        "#nav_result",
+        "#nav_setting",
+        "#nav_history",
+        "#nav_profile",
+        "#nav_verify",
+    ];
+
+    selectors.forEach(function(selector) {
+        $(selector).removeClass("active");
+    });
+    $("#nav_verify").addClass("active");
+                $("#dash").html(
+                    '<div class="spinner-container">' +
+                    '<div class="black show d-flex align-items-center justify-content-center">' +
+                    '<div class="spinner-border lik" style="width: 3rem; height: 3rem;" role="status">' +
+                    '<span class="sr-only">Loading...</span>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>'
+                );
+
+                $("#dash").load("{{ route('verify') }}", (response, status, xhr) => {
+                    if (status === "error") {
+                        const msg = `Sorry, but there was an error: ${xhr.status} ${xhr.statusText}`;
+                        $("#error").html(msg);
+                    }
+                });
+            }
+
+
+
+
+
+
 function hostel() {
     const selectors = [
         "#nav_profile",
@@ -553,6 +603,7 @@ function hostel() {
         "#nav_result",
         "#nav_setting",
         "#nav_history",
+        "#nav_verify",
     ];
 
     selectors.forEach(function(selector) {
@@ -593,6 +644,7 @@ function hostel() {
         "#nav_result",
         "#nav_setting",
         "#nav_history",
+        "#nav_verify",
     ];
 
     selectors.forEach(function(selector) {
@@ -626,6 +678,7 @@ function hostel() {
         "#nav_finish",
         "#nav_setting",
         "#nav_history",
+        "#nav_verify",
     ];
 
     selectors.forEach(function(selector) {

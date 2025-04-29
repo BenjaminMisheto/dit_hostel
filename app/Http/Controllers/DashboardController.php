@@ -86,14 +86,20 @@ $totalOpenBeds = Bed::whereHas('user', function($query) {
 })->where('status', 'activate')->count();
 
 // Get total number of beds under maintenance for the current semester
-$totalunder_maintenanceBeds= Bed::whereHas('user', function($query) {
-    $query->where('semester_id', session('semester_id'));
-})->where('status', 'under_maintenance')->count();
+// $totalunder_maintenanceBeds= Bed::whereHas('user', function($query) {
+//     $query->where('semester_id', session('semester_id'));
+// })->where('status', 'under_maintenance')->count();
+
+$totalunder_maintenanceBeds=Bed::where('status','under_maintenance')->count();
+
 
 // Get total number of reserved beds for the current semester
-$totalReserveBeds = Bed::whereHas('user', function($query) {
-    $query->where('semester_id', session('semester_id'));
-})->where('status', 'reserve')->count();
+// $totalReserveBeds = Bed::whereHas('user', function($query) {
+//     $query->where('semester_id', session('semester_id'));
+// })->where('status', 'reserve')->count();
+
+$totalReserveBeds=Bed::where('status','reserve')->count();
+
 
 // Calculate male and female student counts for the current semester
 $maleStudents = User::where('semester_id', session('semester_id'))
@@ -235,15 +241,22 @@ $totalOpenBeds = Bed::whereHas('user', function($query) {
     $query->where('semester_id', session('semester_id'));
 })->where('status', 'activate')->count();
 
+
+
 // Get total number of beds under maintenance for the current semester
-$totalunder_maintenanceBeds= Bed::whereHas('user', function($query) {
-    $query->where('semester_id', session('semester_id'));
-})->where('status', 'under_maintenance')->count();
+// $totalunder_maintenanceBeds= Bed::whereHas('user', function($query) {
+//     $query->where('semester_id', session('semester_id'));
+// })->where('status', 'under_maintenance')->count();
+
+$totalunder_maintenanceBeds=Bed::where('status','under_maintenance')->count();
+
 
 // Get total number of reserved beds for the current semester
-$totalReserveBeds = Bed::whereHas('user', function($query) {
-    $query->where('semester_id', session('semester_id'));
-})->where('status', 'reserve')->count();
+// $totalReserveBeds = Bed::whereHas('user', function($query) {
+//     $query->where('semester_id', session('semester_id'));
+// })->where('status', 'reserve')->count();
+
+$totalReserveBeds=Bed::where('status','reserve')->count();
 
 // Calculate male and female student counts for the current semester
 $maleStudents = User::where('semester_id', session('semester_id'))

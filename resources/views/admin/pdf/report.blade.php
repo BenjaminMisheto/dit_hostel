@@ -113,7 +113,9 @@
                 <li><p><strong>Block Manager:</strong> {{ $block->manager ?? 'Not Available' }}</p></li>
                 <li><p><strong>Block Location:</strong> {{ $block->location ?? 'Not Available' }}</p></li>
                 <li><p><strong>Block Price:</strong> {{ number_format($block->price ?? 0, 0, '.', ',') }}</p></li>
-                <li><p><strong>Date:</strong> {{ $date }}</p></li>
+
+
+
             </ul>
         </div>
 
@@ -160,6 +162,7 @@
     <div class="footer">
         <p>Report generated on {{ now()->format('Y-m-d H:i:s') }}</p>
         <p>© {{ now()->format('Y') }} {{ $block->name ?? 'Not Available' }}</p>
+        <p><strong>Printed by :</strong> {{ auth('admin')->user()->name }}</p>
     </div>
 </body>
 </html>

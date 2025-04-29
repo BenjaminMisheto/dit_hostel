@@ -51,33 +51,34 @@ use App\Models\User;
                     @else
                         <div class="row">
                             @foreach($room->users as $student)
-                                <div class="col-md-4 mb-4">
-                                    <div class="profile-card p-4 border rounded">
-                                        <div class="text-center mb-2">
-                                            <img class="profile-image img-fluid rounded-circle border "
-                                                src="{{ $student->profile_photo_path ?? 'img/placeholder.jpg' }}"
-                                                alt="Profile Image" style="max-width: 120px;">
-                                        </div>
-                                        <div class="text-center">
-                                            <label class="fw-bold">Reg No {{ $student->registration_number}}</label>
-
-                                            <input type="text" class="form-control" disabled value="Name: {{ $student->name }}">
-
-                                            <input type="text" class="form-control" disabled value="Bed: {{ $student->bed->bed_number }}">
-                                            <input type="text"
-                                            class="form-control {{ $student->checkin == 2 ? 'text-success' : 'text-danger' }}"
-                                            disabled
-                                            value="{{ $student->checkin == 2 ? 'Official Student' : 'Not Official' }}">
-
-                                            <button class="btn btn-sm shadow-sm mt-3"
-                                            onclick="floorAction('bed', {{ $student->bed->id }})">
-                                            <i class="gd-arrow-top-right"></i>
-                                        </button>
-
-
-                                        </div>
+                            <div class="col-md-4 mb-4">
+                                <div class="profile-card p-4 border rounded  text-center">
+                                    <!-- Profile Image -->
+                                    <div class="mb-3">
+                                        <img class="profile-image img-fluid rounded-circle border border-3 shadow-sm"
+                                            src="{{ $student->profile_photo_path ?? 'img/placeholder.jpg' }}"
+                                            alt="Profile Image"
+                                            style="max-width: 100px; border-color: #007bff;">
                                     </div>
+
+                                    <!-- Student Info -->
+                                    <h5 class="fw-bold text-primary">Reg No: {{ $student->registration_number }}</h5>
+                                    <p class="text-muted mb-1">Name: <strong>{{ $student->name }}</strong></p>
+                                    <p class="text-muted mb-1">Gender: <strong>{{ $student->gender }}</strong></p>
+                                    <p class="text-muted mb-1">Bed: <strong>{{ $student->bed->bed_number }}</strong></p>
+
+                                    <!-- Check-in Status -->
+                                    <p class="fw-bold {{ $student->checkin == 2 ? 'text-success' : 'text-danger' }}">
+                                        {{ $student->checkin == 2 ? '✔ Completed' : '✖ Not Completed' }}
+                                    </p>
+
+                                    <!-- Action Button -->
+                                    <button class="btn btn-default btn-sm px-3 rounded-pill shadow-sm mt-2" onclick="floorAction('bed', {{ $student->bed->id }})">
+                                        <i class="gd-arrow-top-right"></i>
+                                    </button>
                                 </div>
+                            </div>
+
                             @endforeach
                         </div>
                     @endif

@@ -117,8 +117,6 @@ use App\Models\Bed;
 
 <div class="content">
     <div class="py-4 px-3 px-md-4">
-
-
         <form id="bedForm" action="" method="POST">
             <div class="d-flex justify-content-between mb-4">
 
@@ -131,36 +129,50 @@ use App\Models\Bed;
                     data-toggle="modal" data-target="#deleteBed">
                     <i class="gd-trash"></i>
                 </a>
-
                 <button id="update_button" type="submit" class="btn shadow-sm"> <i class="gd-upload"></i></button>
-
             </div>
                    <!-- Status Indicator -->
                    <div class="row">
                     <div class="col-md-12">
-
                         {{-- @if($status == 1)      5966
-
-
                     @else
                     <div class="alert alert-danger" role="alert">
                         This application has expired. The student will need to reapply if they wish to continue.
                     </div>
-
                     @endif --}}
+                    <div >
+                        @if ($user)
+                        <div  id="statusindicator">
+                            <div class="alert alert-success" role="alert" >
+                                This room is occupied by {{ $user->name }}
+                            </div>
+                        </div>
+                        @else
+                            @switch($bed->status)
+                                @case('activate')
+                                <div  id="statusindicator">
+                                    <div class="alert alert-success" role="alert">
+                                        This Bed is available
+                                    </div>
+                                </div>
 
-
-
-
-                    @if($user)
-                    <div class="alert alert-success" role="alert" id="statusindicator">
-                        This room is occupied by {{ $user->name}}
+                                    @break
+                                @case('under_maintenance')
+                                <div  id="statusindicator">
+                                    <div class=" alert alert-danger" role="alert" >
+                                        This Bed is under maintenance
+                                    </div>
+                                </div>
+                                    @break
+                                @default
+                                <div  id="statusindicator">
+                                    <div class=" alert alert-warning" role="alert" >
+                                        This Bed is reserved
+                                    </div>
+                                </div>
+                            @endswitch
+                        @endif
                     </div>
-                    @else
-                    <div class="alert alert-danger" id="statusindicator" role="alert">
-                        This room is open.
-                    </div>
-                    @endif
 
 
 
@@ -178,12 +190,15 @@ use App\Models\Bed;
         <input type="text" class="form-control" id="bedNumber" name="bed_number" value="{{ $bed->bed_number }}">
     </div>
 
-    <!-- Room Number -->
-    <div class="col-md-12 mb-3">
-        <label for="roomNumber">Room Number</label>
-        <input type="text" class="form-control" id="roomNumber" value="{{ $bed->room->room_number }}"
-            disabled>
+<!-- Room Number -->
+<div class="col-md-12 mb-3">
+    <label for="roomNumber">Room Number</label>
+    <div class="input-group">
+        <input type="text" class="form-control" id="roomNumber" value="{{ $bed->room->room_number }}" disabled>
+        <button class="btn btn-default" type="button" style="cursor: pointer" onclick=" roomitem({{$bed->room->id}})"><i class="gd-arrow-top-right"></i></button>
     </div>
+</div>
+
 
          <!-- Room Gender -->
          <div class="col-md-12 mb-3">
@@ -667,8 +682,10 @@ $(document).ready(function() {
                     $('#removeStudentButton').show();
                     $('.remove').hide();
 
-                    $('#statusindicator').removeClass('alert-danger').addClass('alert-success');
-                    $('#statusindicator').text('This room is occupied by ' + response.user.name);
+                    //$('#statusindicator').removeClass('alert-danger').addClass('alert-success','alert');
+                   // $('#statusindicator').text();
+                    $('#statusindicator').html('<div class="alert alert-success role="alert">' + 'This room is occupied by ' + response.user.name + '</div>');
+
                 } else {
                     errorToast.find('.toast-body').text('Addition failed: ' + response.message);
                     errorToast.toast('show');
@@ -752,8 +769,9 @@ $(document).ready(function() {
                     // Restore the button to "Add Student"
                     $('#removeStudentButton').hide();
                     $('#addStudentButton').show();
-                    $('#statusindicator').removeClass('alert-success').addClass('alert-danger');
-                    $('#statusindicator').text('No student assigned to this room.');
+                    $('#statusindicator').html('<div class="alert alert-danger role="alert">No student assigned to this room.</div>');
+
+
 
                 } else {
                     // Display the error message returned by the server
@@ -768,7 +786,7 @@ $(document).ready(function() {
                 var errorToast = $('#error-toast');
                 // Handle different error responses if needed
                 if (xhr.status === 400 || xhr.status === 404) {
-                    errorToast.find('.toast-body').text('Error: ' + xhr.responseJSON.message);
+                    errorToast.find('.toast-body').text(xhr.responseJSON.message);
                 } else {
                     errorToast.find('.toast-body').text('An unexpected error occurred. Please try again.');
                 }
@@ -855,6 +873,44 @@ $(document).ready(function() {
                         var successToast = $('#success-toast');
                         successToast.find('.toast-body').text(response.message);
                         successToast.toast('show');
+
+                        // Update the #statusindicator content based on the bed status
+                        var statusMessage = '';
+                        var statusClass = '';
+
+
+                        // If the bed is occupied by a user, show their name
+                        if (response.user) {
+                            statusMessage = 'This room is occupied by ' + response.user.name;
+                            statusClass = 'alert-success';
+                        } else {
+
+                            // Check the bed's status and show corresponding messages
+                            switch (response.message) {
+                                case 'Bed is now available to the student.':
+                                    statusMessage = 'This Bed is available';
+                                    statusClass = 'alert-success';
+                                    break;
+                                case 'Bed is now under maintenance.':
+                                    statusMessage = 'This Bed is under maintenance';
+                                    statusClass = 'alert-danger';
+                                    break;
+                                case 'Bed reserved successfully.':
+                                    statusMessage = 'This Bed is reserved';
+                                    statusClass = 'alert-warning';
+                                    break;
+                                default:
+                                    statusMessage = 'Bed status updated';
+                                    statusClass = 'alert-info';
+                                    break;
+                            }
+                        }
+
+                        // Update the status indicator with the appropriate message and class
+
+                        $('#statusindicator').html('<div class="alert ' + statusClass + '" role="alert">' + statusMessage + '</div>');
+
+
                     } else {
                         var errorToast = $('#error-toast');
                         errorToast.find('.toast-body').text('Update failed: ' + response.message);

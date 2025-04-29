@@ -9,6 +9,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use App\Models\CheckOutItem;
 use App\Models\Requirement;
+use App\Models\AdminCheckout;
 
 use App\Models\RequirementItemConfirmation;
 use Illuminate\Support\Facades\Validator;
@@ -257,8 +258,6 @@ public function saveCheckOutItemsroom(Request $request)
 
 
 
-
-
 public function confirmapplication(Request $request)
 {
     // Validate the request
@@ -267,17 +266,31 @@ public function confirmapplication(Request $request)
         'block_id' => 'required|exists:blocks,id',
     ]);
 
-    // Retrieve the user and update check-in status
+    // Retrieve the user and semester ID
     $user = User::find($validated['user_id']);
+    $semesterId = $user->semester_id;
+
+    $hasDebt = AdminCheckout::where('user_id', $user->id)
+    ->where('paid', false) // Ensure payment is not completed
+    ->whereNotNull('payment_price') // Ensure control number exists
+    ->exists();
+
+
+
+    if ($hasDebt) {
+    return response()->json(['message' => 'You have outstanding payments. Please settle your payment before confirming the application.'], 403);
+}
+
+
+
+
+    // Proceed with confirmation since there's no debt
     $user->checkin = 1;
     $user->save();
 
     // Retrieve requirements and check-out items for the given block
     $requirements = Requirement::where('block_id', $validated['block_id'])->get();
     $checkOutItems = CheckOutItem::where('room_id', $user->room_id)->get();
-
-    // Retrieve the semester_id from the user
-    $semesterId = $user->semester_id;
 
     // Check if a confirmation record already exists for the user and semester
     $confirmation = RequirementItemConfirmation::where('user_id', $validated['user_id'])

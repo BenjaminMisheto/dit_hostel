@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\ElligableStudent;
 use App\Models\User;
 use App\Models\Bed;
+use App\Models\Room;
 use App\Models\SliderData;
 use App\Models\Publish;
 use Carbon\Carbon;
@@ -33,78 +34,60 @@ class StudentfindController extends Controller
             'name' => 'required|string',
             'image' => 'nullable|string',
             'email' => 'required|email',
-            'registration_number' => 'required|integer',
+            'registration_number' => 'required|string',
             'sponsorship' => 'required|string',
             'phone' => 'nullable|string',
-            'gender' => 'nullable|string',
+            'gender' => 'required|string', // Student gender must be required
             'nationality' => 'nullable|string',
             'course' => 'nullable|string',
             'block_id' => 'required|integer',
             'floor_id' => 'required|integer',
-            'room_id' => 'required|integer',
+            'room_id' => 'required|integer|exists:rooms,id', // Ensure the room exists
             'bed_id' => 'required|integer|exists:beds,id',
         ]);
 
-        // Check if the user already exists by registration number
+        // Fetch the room based on the room_id
+        $room = Room::find($request->room_id);
+
+        // Check if the student's gender matches the room's gender
+        if ($room && strtolower($request->gender) !== strtolower($room->gender)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'The student\'s gender does not match the room\'s gender. Only ' . strtolower($room->gender) . ' students can be assigned to this room.',
+            ], 422);
+        }
+
+        // Check if the user already exists by registration number or email
         $user = User::where('email', $request->email)->first();
 
-
-
+        // If user exists, update the user information and check if they already have a bed assigned
         if ($user) {
-            // Update existing user's bed information
+            // Check if the user is already assigned to another bed
+            $existingBed = Bed::where('user_id', $user->id)->first();
+
+            if ($existingBed) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "This student is already assigned to Bed {$existingBed->bed_number} in Room {$existingBed->room->room_number}.",
+                ], 400);
+            }
+
+            // Update the existing user's bed information
             $user->update([
                 'block_id' => $request->block_id,
                 'floor_id' => $request->floor_id,
                 'room_id' => $request->room_id,
                 'bed_id' => $request->bed_id,
                 'application' => 1,
+                'confirmation' => 1,
                 'status' => 'disapproved',
-                'afterpublish'=> 1,
+                'afterpublish' => 1,
             ]);
 
-                 // Check if the bed is already occupied
-        $bed = Bed::find($request->bed_id);
-        $bed->user_id = $user->id;
-        $bed->save();
-
-// Retrieve the user course
-$userCourse = $user->course;
-
-Log::error($userCourse);
-
-// Perform the update if a row with the given criteria is found
-$row = SliderData::where('criteria', $userCourse)
-    ->where('status', '!=', 0)
-    ->where('floor_id', request()->floor_id)
-    ->where('block_id', request()->block_id)
-    ->first();
-
-if ($row) {
-    // Update the status of the row
-    $row->update(['status' => 0]);
-}
-
-
-    // Fetch the expiration days from the publishes table
-    $publish = Publish::first(); // Adjust if needed to fetch the specific record
-    if ($publish) {
-        // Convert the stored expiration_date to an integer representing the number of days
-        $daysToAdd = (int) $publish->expiration_date;
-
-        // Calculate the new expiration date by adding the days to the current time
-        $newExpirationDate = Carbon::now()->addDays($daysToAdd);
-
-        // Set the user's expiration_date to the calculated date
-        $user->expiration_date = $newExpirationDate;
-       // $user->save();
-    } else {
-        return response()->json(['message' => 'Publish record not found.'], 404);
-    }
-
-
-
-
-
+            // Assign the user to the bed
+            $bed = Bed::find($request->bed_id);
+            $bed->user_id = $user->id;
+            $bed->save();
 
             return response()->json([
                 'success' => true,
@@ -113,8 +96,16 @@ if ($row) {
             ]);
         }
 
-        // Check if the bed is already occupied
+        // If the user does not exist, create a new user and check if the bed is already occupied
         $bed = Bed::find($request->bed_id);
+
+        // Check if the bed is already assigned to someone
+        if ($bed->user_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This bed is already occupied. Please select another bed.',
+            ], 400);
+        }
 
         // Create a new user record
         $user = User::create([
@@ -133,55 +124,20 @@ if ($row) {
             'email' => $request->email,
             'application' => 1,
             'status' => 'disapproved',
-            'afterpublish'=> 1,
+            'afterpublish' => 1,
             'confirmation' => 1,
             'semester_id' => session('semester_id'),
-
         ]);
 
         // Assign the user to the bed
         $bed->user_id = $user->id;
         $bed->save();
 
-
-// Retrieve the user course
-$userCourse = $user->course;
-
-// Perform the update if a row with the given criteria is found
-$row = SliderData::where('criteria', $userCourse)
-    ->where('status', '!=', 0)
-    ->where('floor_id', request()->floor_id)
-    ->where('block_id', request()->block_id)
-    ->first();
-
-if ($row) {
-    // Update the status of the row
-    $row->update(['status' => 0]);
-}
-
-    // Fetch the expiration days from the publishes table
-    $publish = Publish::first(); // Adjust if needed to fetch the specific record
-    if ($publish) {
-        // Convert the stored expiration_date to an integer representing the number of days
-        $daysToAdd = (int) $publish->expiration_date;
-
-        // Calculate the new expiration date by adding the days to the current time
-        $newExpirationDate = Carbon::now()->addDays($daysToAdd);
-
-        // Set the user's expiration_date to the calculated date
-        $user->expiration_date = $newExpirationDate;
-        $user->save();
-    } else {
-        return response()->json(['message' => 'Publish record not found.'], 404);
-    }
-
-
         return response()->json([
             'success' => true,
             'message' => 'Student added successfully!',
             'user' => ['name' => $user->name],
         ]);
-
     } catch (\Illuminate\Validation\ValidationException $e) {
         return response()->json([
             'success' => false,
@@ -195,7 +151,6 @@ if ($row) {
         ], 500);
     }
 }
-
 
 
 

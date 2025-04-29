@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Bed;
+use App\Models\Block;
 use App\Models\Publish;
 use App\Models\Semester;
 use App\Models\SliderData;
@@ -30,27 +31,23 @@ class ApplicationController extends Controller
     // Define the number of items per page
     $perPage = max(1, $end - $start + 1);
 
+    // Fetch users with related bed, room, floor, and block details
+    $users = User::with('bed.room.floor.block')
+        ->where('application', 1)
+        ->whereHas('bed.room.floor.block', function($query) {
+            $query->where('semester_id', session('semester_id'));
+        })
+        ->orderBy('id', 'desc')
+        ->skip($skip)
+        ->take($perPage)
+        ->get();
 
-// Fetch users with related bed, room, floor, and block details
-$users = User::with('bed.room.floor.block')
-    ->where('application', 1)
-    ->whereHas('bed.room.floor.block', function($query) {
-        $query->where('semester_id', session('semester_id'));
-    })
-    ->orderBy('id', 'desc')
-    ->skip($skip)
-    ->take($perPage)
-    ->get();
-
-
-
-// Count the total records with the given conditions
-$totalRecords = User::where('application', 1)
-    ->whereHas('bed.room.floor.block', function($query) {
-        $query->where('semester_id', session('semester_id'));
-    })
-    ->count();
-
+    // Count the total records with the given conditions
+    $totalRecords = User::where('application', 1)
+        ->whereHas('bed.room.floor.block', function($query) {
+            $query->where('semester_id', session('semester_id'));
+        })
+        ->count();
 
     // Calculate the current page based on the start value
     $currentPage = (int) ceil($start / $perPage);
@@ -63,41 +60,33 @@ $totalRecords = User::where('application', 1)
         $currentPage,
         ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
     );
+    $allBlocks = Block::whereHas('floors.rooms.beds.user') // Ensure a bed has a related user
+    ->get()
+    ->keyBy('id');
+
 
     // Fetch total user count for each block
     $blockUserCounts = User::with('bed.room.floor.block')
-    ->where('application', 1)
-    ->whereHas('bed.room.floor.block', function($query) {
-        $query->where('semester_id', session('semester_id'));
-    })
-    ->get()
-    ->groupBy('bed.room.floor.block.id')
-    ->map(function($group) {
-        return $group->count(); // Count of users in each block
-    });
+        ->where('application', 1)
+        ->whereHas('bed.room.floor.block', function($query) {
+            $query->where('semester_id', session('semester_id'));
+        })
+        ->get()
+        ->groupBy('bed.room.floor.block.id')
+        ->map(fn($group) => $group->count());
 
-
-    // Group users by block, filter out users with incomplete relationships, and count users per block
-    $blocks = $users->filter(function($user) {
-        return $user->bed && $user->bed->room && $user->bed->room->floor && $user->bed->room->floor->block;
-    })->groupBy(function($user) {
-        return $user->bed->room->floor->block->id; // Group by block ID
-    })->map(function($group) use ($blockUserCounts) {
-        $blockId = $group->first()->bed->room->floor->block->id;
+    // Ensure all blocks appear in the view, even if they have no users
+    $blocks = $allBlocks->map(function ($block) use ($blockUserCounts) {
         return [
-            'name' => $group->first()->bed->room->floor->block->name, // Block name
-            'user_count' => $blockUserCounts[$blockId] ?? 0, // Total count of users in this block
-            'users' => $group
+            'name' => $block->name,
+            'user_count' => $blockUserCounts[$block->id] ?? 0, // Default to 0 if no users
         ];
-    })->sortBy('name'); // Sort blocks by name
+    });
 
     // Fetch the latest publish status
     $publishStatus = Publish::latest()->value('status') ?? false;
 
-
-
     return view('admin.application', [
-
         'blocks' => $blocks,
         'publishStatus' => $publishStatus,
         'paginatedStudents' => $paginatedStudents,
@@ -105,78 +94,103 @@ $totalRecords = User::where('application', 1)
 }
 
 
+public function getUsersByBlock(Request $request)
+{
+    $blockId = $request->input('block_id');
+    $perPage = $request->input('per_page', 10);
+    $currentPage = max(1, $request->input('page', 1));
 
+    // Calculate offset: ensures page 2 starts from 11, page 3 from 21, etc.
+    $offset = ($currentPage - 1) * $perPage + 1;
 
+    // Fetch users with related bed, room, floor, and block details
+    $usersQuery = User::with('bed.room.floor.block')
+        ->where('application', 1)
+        ->whereHas('bed.room.floor.block', function ($query) use ($blockId) {
+            $query->where('semester_id', session('semester_id'))
+                  ->where('id', $blockId);
+        })
+        ->orderBy('id', 'desc');
 
+    // Get total user count
+    $totalUsers = $usersQuery->count();
 
+    // Fetch users manually with offset
+    $users = $usersQuery->skip($offset - 1)->take($perPage)->get();
 
+    // Create a paginator instance manually
+    $paginatedUsers = new \Illuminate\Pagination\LengthAwarePaginator(
+        $users,
+        $totalUsers,
+        $perPage,
+        $currentPage,
+        ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
+    );
 
+    // Render HTML for table body and pagination
+    $tableHtml = view('admin.application_ajax', ['users' => $paginatedUsers])->render();
+    $paginationHtml = $paginatedUsers->onEachSide(1)->links('pagination::bootstrap-4')->toHtml();
 
-
-
-
-
-
-
+    return response()->json([
+        'html' => $tableHtml,
+        'pagination' => $paginationHtml
+    ]);
+}
 
 
 public function search(Request $request)
 {
     $query = $request->input('query', '');
 
-// Fetch users matching the search query with related details
-$users = User::with('bed.room.floor.block')
-    ->where('application', 1)
-    ->whereHas('bed.room.floor.block', function($query) {
-        $query->where('semester_id', session('semester_id'));
-    })
-    ->where(function($q) use ($query) {
-        $q->where('name', 'like', "%{$query}%")
-          ->orWhere('registration_number', 'like', "%{$query}%");
-    })
-    ->orderBy('id', 'desc')
-    ->get();
-
+    // Fetch users matching the search query with related details
+    $users = User::with('bed.room.floor.block')
+        ->where('application', 1)
+        ->whereHas('bed.room.floor.block', function ($query) {
+            $query->where('semester_id', session('semester_id'));
+        })
+        ->where(function ($q) use ($query) {
+            $q->where('name', 'like', "%{$query}%")
+                ->orWhere('registration_number', 'like', "%{$query}%")
+                ->orWhere('email', 'like', "%{$query}%");
+        })
+        ->orderBy('id', 'desc')
+        ->get();
 
     if ($users->isEmpty()) {
         // Return a "No applications found" message with an action button
-        $html = '<p class="text-danger">No applications found.</p>';
-        $html .= '<button class="btn btn-sm btn-toggle btn-lightgray" onclick="handleNoResultsAction()">
-                    No Results Action
-                  </button>'; // Adjust the button text and action as needed
+        $html = '<p class="text-danger alert alert-danger">No applications found.</p>';
         return response()->make($html, 200, ['Content-Type' => 'text/html']);
     }
 
     // Group users by block
-    $groupedUsers = $users->groupBy(function($user) {
-        return $user->bed->room->floor->block->id; // Group by block ID
-    });
+    $groupedUsers = $users->groupBy(fn($user) => $user->bed->room->floor->block->id);
 
     // Generate HTML for the search results
     $html = '';
     foreach ($groupedUsers as $blockId => $group) {
         $blockName = $group->first()->bed->room->floor->block->name;
         $html .= '<h5>' . $blockName . '</h5>';
-        $html .= '<div class="table-responsive">';
-        $html .= '<table class="table table-striped table-fixed">';
-        $html .= '<thead>
-                    <tr>
-                        <th scope="col">#</th> <!-- Index column -->
-                        <th scope="col">Img</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Reg No</th>
-                             <th scope="col">Course</th>
-                        <th scope="col">Floor</th>
-                        <th scope="col">Room</th>
-                        <th scope="col">Bed</th>
-                        <th scope="col">Payment</th>
+        $html .= '<div class="table-responsive">
+                    <table class="table table-striped table-fixed">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Img</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Reg No</th>
+                                <th scope="col">Course</th>
+                                <th scope="col">Floor</th>
+                                <th scope="col">Room</th>
+                                <th scope="col">Bed</th>
+                                <th scope="col">Payment</th>
+                                <th scope="col">Time left</th>
+                                <th scope="col">View</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>';
 
-                        <th scope="col">View</th>
-                      <th scope="col">Actions</th>
-                    </tr>
-                  </thead>';
-        $html .= '<tbody>';
-        $index = 1; // Initialize index for each block
+        $index = 1;
         foreach ($group as $user) {
             $avatar = $user->profile_photo_path;
             $name = $user->name;
@@ -184,23 +198,51 @@ $users = User::with('bed.room.floor.block')
             $course = $user->course;
             $floor = optional($user->bed->floor)->floor_number ?? 'N/A';
             $room = optional($user->bed->room)->room_number ?? 'N/A';
-            $bed = $user->bed->bed_number ?? 'N/A';
+            $bed = optional($user->bed)->bed_number ?? 'N/A';
 
-            // Check if the user's payment status or expiration date affects the display
-            if (Carbon::now()->greaterThan($user->expiration_date) && empty($user->payment_status)) {
-                $paymentStatus = 'Expired';
+            $now = Carbon::now();
+            $expirationDate = $user->expiration_date ? Carbon::parse($user->expiration_date) : null;
+            $isExpired = $expirationDate && $now->greaterThan($expirationDate);
+            $remainingTime = !$isExpired && $expirationDate ? $now->diff($expirationDate) : null;
+
+            // Determine payment status
+            if ($isExpired && empty($user->payment_status)) {
+                $paymentStatus = 'Not Paid';
                 $paymentClass = 'text-danger';
             } else {
                 $paymentStatus = $user->payment_status ? 'Paid' : 'Not Paid';
                 $paymentClass = $user->payment_status ? 'text-success' : 'text-warning';
             }
 
-            $bedId = $user->bed->id;
+            // Determine remaining time display
+            if ($user->payment_status) {
+                $remainingTimeText = '-';
+            } elseif ($isExpired) {
+                $remainingTimeText = 'Expired';
+            } else {
+                $remainingTimeText = '';
+                if ($remainingTime) { // Ensure remainingTime is not null
+                    if ($remainingTime->d > 0) {
+                        $remainingTimeText .= "{$remainingTime->d}d ";
+                    }
+                    if ($remainingTime->h > 0) {
+                        $remainingTimeText .= "{$remainingTime->h}h ";
+                    }
+                    if ($remainingTime->i > 0 || $remainingTimeText === '') {
+                        // Show minutes only if available or if there are no days/hours
+                        $remainingTimeText .= "{$remainingTime->i}m";
+                    }
+                } else {
+                    $remainingTimeText = 'N/A';
+                }
+            }
+
+            $bedId = optional($user->bed)->id;
             $userId = $user->id;
             $status = $user->status;
 
             $html .= '<tr>
-                        <td>' . $index++ . '</td> <!-- Index column -->
+                        <td>' . $index++ . '</td>
                         <td><img class="avatar rounded-circle" src="' . $avatar . '" alt="Image Description"></td>
                         <td>' . $name . '</td>
                         <td>' . $regNo . '</td>
@@ -208,28 +250,29 @@ $users = User::with('bed.room.floor.block')
                         <td>' . $floor . '</td>
                         <td>' . $room . '</td>
                         <td>' . $bed . '</td>
-                        <td class="' . $paymentClass . '">
-                            ' . $paymentStatus . '
-                        </td>
+                        <td class="' . $paymentClass . '">' . $paymentStatus . '</td>
+                        <td>' . $remainingTimeText . '</td>
                         <td>
                             <button class="btn btn-sm shadow-sm" onclick="floorAction(\'bed\', ' . $bedId . ')">
                                 <i class="gd-arrow-top-right"></i>
                             </button>
                         </td>
                         <td>
-                            <button class="btn btn-sm btn-toggle ' . ($status === 'approved' ? 'btn-lightgreen' : 'btn-lightred') . '" data-user-id="' . $userId . '" data-status="' . $status . '" onclick="toggleStatus(this)">
+                            <button class="btn btn-sm btn-toggle ' . ($status === 'approved' ? 'btn-lightgreen' : 'btn-lightred') . '"
+                                    data-user-id="' . $userId . '"
+                                    data-status="' . $status . '"
+                                    onclick="toggleStatus(this)">
                                 ' . ($status === 'approved' ? 'Yes' : 'No') . '
                             </button>
                         </td>
                       </tr>';
         }
+
         $html .= '</tbody></table></div>';
     }
 
     return response()->make($html, 200, ['Content-Type' => 'text/html']);
 }
-
-
 
 
 
@@ -457,24 +500,51 @@ public function closeSemester($id)
         return response()->json(['message' => 'Semester not found.'], 404);
     }
 
+    // Count students who have not checked out
+    $studentsNotCheckedOut = User::where('semester_id', $id)
+         ->where('checkin', 2)
+        ->where('checkout', 0)
+        ->count();
+
+// Count students who have checkin set to 0 and payment_status is not null
+$studentsNotCheckedIn = User::where('semester_id', $id)
+    ->where('checkin', '!=', 2) // Corrected condition
+    ->whereNotNull('payment_status')
+    ->count();
+
+
+
+    // If there are students who haven't checked in or checked out, prevent closing
+    if ($studentsNotCheckedOut > 0  || $studentsNotCheckedIn > 0 ) {
+return response()->json([
+    'message' => "Cannot close the semester. $studentsNotCheckedOut students have not checked out, and $studentsNotCheckedIn students have not checked in.",
+    'students_not_checked_out' => $studentsNotCheckedOut,
+    'students_not_checked_in' => $studentsNotCheckedIn,
+    'warning' => true
+], 400);
+
+    }
+
+
+
     // Mark the semester as closed
     $semester->is_closed = true;
     $semester->save();
 
-
-    session()->forget(['semester_id', 'semester']);
-
+    // Remove semester data from the session
+   // session()->forget(['semester_id', 'semester']);
 
     return response()->json(['message' => 'Semester closed successfully.']);
 }
 
 
-public function createNewSemester()
+
+public function createNewSemester(Request $request)
 {
-    Log::info('Starting createNewSemester method');
+    Log::info($request);
 
     try {
-        DB::transaction(function () {
+        DB::transaction(function () use ($request) {
             Log::info('Transaction started');
 
             // Fetch the latest closed semester
@@ -488,12 +558,17 @@ public function createNewSemester()
 
             Log::info('Generated next semester name', ['name' => $nextSemesterName]);
 
+            // Determine if the current semester is Semester 1 or Semester 2
+            $currentSemester = $request->input('current_semester'); // Get current semester from request
+            $isFirstSemester = str_contains($currentSemester, 'Semester 1'); // Check if it is Semester 1
+
             // Create and save the new semester
             $semester = Semester::create([
                 'name' => $nextSemesterName,
                 'is_closed' => false,
             ]);
-            Log::info('New semester created', ['semester' => $semester]);
+            Log::info('Resultiiiiiiing'.$isFirstSemester);
+
 
             // Store the newly created semester in the session
             session([
@@ -502,51 +577,61 @@ public function createNewSemester()
             ]);
             Log::info('Semester stored in session', ['semester' => $semester]);
 
-            // Clear necessary fields for all users in the current semester
-            User::query()->update([
-                'semester_id' => $semester->id,
-                'counter' => 0,
-                'checkin' => 0,
-                'checkout' => 0,
-                'confirmation' => 0,
-                'afterpublish' => 0,
-                'application' => 0,
-                'status' => 'disapproved',
-                'payment_status' => null,
-                'Control_Number' => null,
-                'block_id' => null,
-                'room_id' => null,
-                'floor_id' => null,
-                'bed_id' => null,
-                'expiration_date' => null,
-            ]);
-            Log::info('User data updated for new semester');
+            // If the current semester is Semester 1, only reset checkin & checkout
+            if ($isFirstSemester) {
+                User::query()->update([
+                    'checkin' => 0,
+                    'checkout' => 0,
+                    'semester_id' => $semester->id,
 
-            // Reset user_id in the Bed table
-            Bed::query()->update([
+                ]);
+                Log::info('Only checkin and checkout reset for new semester');
+            } else {
+                // Reset all fields if the current semester is Semester 2
+                User::query()->update([
+                    'semester_id' => $semester->id,
+                    'counter' => 0,
+                    'checkin' => 0,
+                    'checkout' => 0,
+                    'confirmation' => 0,
+                    'afterpublish' => 0,
+                    'application' => 0,
+                    'status' => 'disapproved',
+                    'payment_status' => null,
+                    'Control_Number' => null,
+                    'block_id' => null,
+                    'room_id' => null,
+                    'floor_id' => null,
+                    'bed_id' => null,
+                    'expiration_date' => null,
+                ]);
+
+          // Reset user_id in the Bed table
+          Bed::query()->update([
                 'user_id' => null,
             ]);
-            Log::info('User ID reset in Bed table');
+
 
             // Truncate Sliderdata
             Sliderdata::truncate();
-            Log::info('Sliderdata truncated');
 
-            // Update Publish data
-            Publish::query()->update([
+                 // Update Publish data
+                 Publish::query()->update([
                 'status' => 0,
                 'algorithm' => 0,
-                'reserved_bed' => 0,
-                'maintenance_bed' => 0,
-                'expiration_date' => 1,
-                'open_date' => null,
-                'report_date' => null,
-                'deadline' => null,
+                // 'reserved_bed' => 0,
+                // 'maintenance_bed' => 0,
+                // 'expiration_date' => 1,
+                // 'open_date' => null,
+                // 'report_date' => null,
+                // 'deadline' => null,
             ]);
-            Log::info('Publish data updated');
+
+
+         }
+
         });
 
-        Log::info('Transaction committed successfully');
 
         // Return success response
         return response()->json(['success' => true, 'message' => 'New semester created and user data reset successfully.']);
@@ -554,10 +639,9 @@ public function createNewSemester()
         Log::error('Transaction error', ['exception' => $e]);
 
         // Return error response
-        return response()->json(['success' => true, 'message' => 'New semester created and user data reset successfully.']);
+        return response()->json(['success' => false, 'message' => 'Error occurred while creating a new semester.']);
     }
 }
-
 
 
 
@@ -613,3 +697,20 @@ public function updateSemesterFormat(Request $request)
     return response()->json(['message' => 'Semester format updated successfully.']);
 }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

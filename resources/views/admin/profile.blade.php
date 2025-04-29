@@ -249,7 +249,6 @@
                         <h4 class="lh-1 mb-1">{{$total_under_maintenance_beds}}/{{ $total_beds }}</h4>
                         <h6 class="mb-0">Total Maintanance Bed</h6>
                     </div>
-
                 </div>
                 <!-- End Widget -->
             </div>

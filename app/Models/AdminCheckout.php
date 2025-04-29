@@ -20,6 +20,9 @@ class AdminCheckout extends Model
         'bed_name',
         'course_name',
         'gender',
+        'payment_price',
+        'control_number',
+        'paid',
     ];
 
     public function user()

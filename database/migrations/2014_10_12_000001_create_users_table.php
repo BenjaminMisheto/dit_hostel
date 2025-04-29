@@ -43,6 +43,7 @@ return new class extends Migration
     $table->string('profile_photo_path', 2048)->nullable();
     $table->timestamp('expiration_date')->nullable();
     $table->timestamps();
+    $table->boolean('verify')->default(false); // Add the "paid" column to track payment status
 });
 
     }

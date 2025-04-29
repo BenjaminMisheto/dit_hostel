@@ -416,7 +416,7 @@
             </aside>
 
 
-            <div id="dash">
+            <div id="dash" class="">
                 @yield('content')
             </div>
 

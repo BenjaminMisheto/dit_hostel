@@ -55,12 +55,14 @@ class UserSeeder extends Seeder
 
                 'confirmation' => 1,
                 'application' => 1,
-                'status' => 'approved',
-                'payment_status' => $faker->optional()->randomElement([
-                    $block->price ?? $faker->numerify('#########'), // Use block price if available, otherwise generate a 9-digit number
-                    null,
-                ]),
-                'Control_Number' => $faker->unique()->numerify('#########'), // Generates a 9-digit number
+                'status' => 'disapproved',
+                 'payment_status' => null,
+                // 'payment_status' => $faker->optional()->randomElement([
+                //     $block->price ?? $faker->numerify('#########'), // Use block price if available, otherwise generate a 9-digit number
+                //     null,
+                // ]),
+                'Control_Number' => null,// Generates a 9-digit number
+             //   'Control_Number' => $faker->unique()->numerify('#########'), // Generates a 9-digit number
                 'block_id' => $block->id,
                 'room_id' => $room->id,
                 'floor_id' => $floor->id,
@@ -71,7 +73,7 @@ class UserSeeder extends Seeder
                 'nationality' => $elligibleStudent->nationality, // Use nationality from eligible student
                 'course' => $elligibleStudent->course, // Use course from eligible student
                 'email' => $elligibleStudent->email, // Use email from eligible student
-                'password' => bcrypt('password'), // Or use a hash that you prefer
+                'password' => bcrypt('Ben15831213$'), // Or use a hash that you prefer
                 'profile_photo_path' => $elligibleStudent->image,
                 // 'expiration_date' => $faker->boolean ? $faker->dateTimeBetween('now', 'now') : $faker->dateTimeBetween('now', '+1 month'),
                 'created_at' => now(),

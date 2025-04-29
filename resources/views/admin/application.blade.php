@@ -87,6 +87,9 @@ th.desc::after {
     content: "▼"; /* Down arrow for descending order */
 }
 
+th[data-sort] {
+    cursor: pointer;
+}
 
 </style>
 
@@ -144,31 +147,27 @@ th.desc::after {
 
 
 <!-- Container for Search Input and Buttons -->
-<div class="d-flex justify-content-between mb-3">
+<div class="d-flex justify-content-between align-items-center mb-3 container-fluid">
 
-<!-- Search Input with Icon and Spinner -->
-
-<div class="form-group position-relative">
-
-    <div class="input-group">
-        <input type="text" id="searchInput" class="form-control " placeholder="Search">
-        <div class="input-group-append">
-            <div id="spinner" class="spinner-border spinner-border-sm text-primary ms-2" role="status" style="display: none;">
-
+    <!-- Search Input with Icon and Spinner -->
+    <div class="flex-grow-1 me-3">
+        <div class="input-group">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search">
+            <div class="input-group-append">
+                <div id="spinner" class="spinner-border spinner-border-sm text-primary ms-2" role="status" style="display: none;"></div>
             </div>
         </div>
     </div>
 
-
-</div>
-
     <!-- Buttons and Switch on the Right -->
-    <div class="d-flex align-items-center">
-        <button id="apply-yes" class="btn btn-toggle btn-lightgreen ml-2">Yes</button>
-        <button id="apply-no" class="btn btn-toggle btn-lightred ml-2">No</button>
-
+    <div class="d-flex">
+        <button id="apply-yes" class="btn btn-toggle btn-lightgreen me-2">Yes</button>
+        <button id="apply-no" class="btn btn-toggle btn-lightred">No</button>
     </div>
+
 </div>
+
+
 
 <div id="searchResults" class="mt-2 " >
     <!-- Results will be populated here -->
@@ -179,100 +178,140 @@ th.desc::after {
 <ul class="nav nav-tabs d-flex justify-content-between" id="myTab" role="tablist">
     @foreach($blocks as $blockId => $block)
         <li class="nav-item flex-fill" role="presentation">
-            <a class="nav-link text-dark {{ $loop->first ? 'active' : '' }}" id="tab-{{ $blockId }}-tab" data-toggle="tab" href="#tab-{{ $blockId }}" role="tab" aria-controls="tab-{{ $blockId }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}">
+            <a class="nav-link text-dark {{ $loop->first ? 'active' : '' }}" id="tab-{{ $blockId }}-tab"
+               data-toggle="tab" href="#" data-block-id="{{ $blockId }}" role="tab">
                 {{ $block['name'] }}<br> ({{ $block['user_count'] }})
             </a>
         </li>
     @endforeach
 </ul>
-
-<!-- Tab Content -->
-<div class="tab-content" id="myTabContent">
-    @foreach($blocks as $blockId => $block)
-        <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="tab-{{ $blockId }}" role="tabpanel" aria-labelledby="tab-{{ $blockId }}-tab">
-            <div class="table-responsive">
-                <table class="table table-striped table-fixed">
-                    <thead>
-                        <tr>
-                            <th scope="col"><input type="checkbox" id="select-all-{{ $blockId }}" class="select-all"></th>
-                            <th scope="col" style="cursor: pointer">#</th> <!-- Added Index Column -->
-                            <th scope="col" style="cursor: pointer">Img</th>
-                            <th scope="col" data-sort="name" style="cursor: pointer">Name</th>
-                            <th scope="col" data-sort="number" style="cursor: pointer">Reg No</th>
-                            <th scope="col" data-sort="course" style="cursor: pointer">course</th>
-                            <th scope="col" data-sort="floor" style="cursor: pointer">Floor</th>
-                            <th scope="col" data-sort="room" style="cursor: pointer">Room</th>
-                            <th scope="col" data-sort="bed" style="cursor: pointer">Bed</th>
-                            <th scope="col" data-sort="pay" style="cursor: pointer">Payment</th>
-                            <th scope="col" style="cursor: pointer">View</th>
-                            <th scope="col" style="cursor: pointer">Actions </th>
-                        </tr>
-                    </thead>
-                    <tbody class="user-table-body">
-                        @foreach($block['users'] as $index => $user)
-                            <tr class="user-row">
-                                <td><input type="checkbox" class="user-checkbox" data-user-id="{{ $user->id }}"></td>
-                                <td>{{ $loop->parent->index + $index + 1 }}</td> <!-- Display Index Number -->
-                                <td><img class="avatar rounded-circle" src="{{ $user->profile_photo_path }}" alt="Image Description"></td>
-                                <td>{{ $user->name }}</td>
-                                <td>{{ $user->registration_number }}</td>
-                                <td>{{ $user->course}}</td>
-                                <td>{{ optional($user->bed->floor)->floor_number ?? 'N/A' }}</td>
-                                <td>{{ optional($user->bed->room)->room_number ?? 'N/A' }}</td>
-                                <td>{{ $user->bed->bed_number ?? 'N/A' }}</td>
-                                @php
-                                $isExpired = empty($user->payment_status) && Carbon\Carbon::now()->greaterThan($user->expiration_date);
-                                $paymentClass = $user->payment_status ? 'text-success' : ($isExpired ? 'text-danger' : 'text-warning');
-                                $paymentText = $user->payment_status ? 'Paid' : ($isExpired ? 'Expired' : 'Not Paid');
-                            @endphp
-
-                            <td class="{{ $paymentClass }}">
-                                {{ $paymentText }}
-                            </td>
+<div class="table-responsive">
+    <table class="table table-striped table-fixed">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="select-all" class="select-all"></th>
+                <th data-sort>#</th>
+                <th>Img</th>
+                <th data-sort>Name</th>
+                <th data-sort>Reg No</th>
+                <th data-sort>Course</th>
+                <th data-sort>Floor</th>
+                <th data-sort>Room</th>
+                <th data-sort>Bed</th>
+                <th data-sort>Payment</th>
+                <th data-sort>Time left</th>
+                <th>View</th>
+                <th data-sort>Actions</th>
+            </tr>
+        </thead>
 
 
-                           @php
-                            $showButton =  Carbon\Carbon::now()->lessThan($user->expiration_date) || !empty($user->payment_status);
-                        @endphp
+        <tbody id="user-table-body">
 
-
-
-                            @if($showButton)
-                            <td>
-                                <button class="btn btn-sm shadow-sm"
-                                    onclick="floorAction('bed', {{ $user->bed->id }}, {{ $showButton ? 1 : 0 }})">
-                                    <i class="gd-arrow-top-right"></i>
-                                </button>
-                            </td>
-
-                            @else
-                            <td>
-                                <button class="btn btn-sm shadow-sm"
-                                    onclick="floorAction('bed', {{ $user->bed->id }}, {{ $showButton ? 1 : 0 }})">
-                                    <i class="gd-arrow-top-right"></i>
-                                </button>
-                            </td>
-                            @endif
-                                <td>
-                                    <button class="btn btn-sm btn-toggle {{ $user->status === 'approved' ? 'btn-lightgreen' : 'btn-lightred' }}" data-user-id="{{ $user->id }}" data-status="{{ $user->status }}" onclick="toggleStatus(this)">
-                                        {{ $user->status === 'approved' ? 'Yes' : 'No' }}
-                                    </button>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    @endforeach
+            @include('admin.application_ajax', ['users' => $paginatedStudents])
+        </tbody>
+    </table>
 </div>
 
+
 <!-- Pagination Controls -->
-<div class="d-flex justify-content-center mt-4">
+<div class="d-flex justify-content-center mt-4" id="pagination-links">
     {{ $paginatedStudents->onEachSide(1)->links('pagination::bootstrap-4') }}
 </div>
 
 
+<script>$(document).ready(function () {
+    // Select/Deselect all checkboxes on the current page
+    $('#select-all').on('change', function () {
+        let isChecked = $(this).prop('checked');
+        // Select all checkboxes for the current page
+        $('.user-checkbox').prop('checked', isChecked);
+    });
+
+    // Handle the tab click and load users for the clicked block
+    $('.nav-link').on('click', function (e) {
+        e.preventDefault();
+        let blockId = $(this).data('block-id');
+        if (!blockId) return;
+        loadUsers(blockId, 1);
+    });
+
+    // Load users based on the selected block and page
+    function loadUsers(blockId, page = 1) {
+        $.ajax({
+            url: "{{ route('admin.getUsersByBlock') }}",
+            method: "GET",
+            data: { block_id: blockId, per_page: 10, page: page },
+            beforeSend: function () {
+                $('#user-table-body').html('<tr><td colspan="12" class="text-center">Loading...</td></tr>');
+            },
+            success: function (response) {
+                // Update table body and pagination controls
+                $('#user-table-body').html(response.html);
+                $('#pagination-links').html(response.pagination);
+
+                // Attach event listener to pagination links
+                $('#pagination-links a').on('click', function (e) {
+                    e.preventDefault();
+                    let url = new URL($(this).attr('href'));
+                    let page = url.searchParams.get("page");
+                    loadUsers(blockId, page);
+                });
+
+                // Reapply the sort functionality after the table is updated
+                applySorting();
+
+                // Reinitialize "Select All" checkbox for the current page
+                $('#select-all').prop('checked', false); // Uncheck Select All when new page is loaded
+            },
+            error: function () {
+                alert('Error fetching data.');
+            }
+        });
+    }
+
+    // Apply sorting to table columns
+    function applySorting() {
+        $('th[data-sort]').on('click', function() {
+            var table = $(this).closest('table');
+            var tbody = table.find('tbody');
+            var rows = tbody.find('tr').toArray();
+            var index = $(this).index();  // Index of clicked header
+            var order = $(this).hasClass('asc') ? 'desc' : 'asc'; // Toggle order
+
+            // Remove 'asc', 'desc', and 'sorted' classes from all headers
+            table.find('th').removeClass('asc desc sorted');
+
+            // Add the current order class and the 'sorted' class to the clicked header
+            $(this).addClass(order + ' sorted');
+
+            // Sort rows based on the column index
+            rows.sort(function(a, b) {
+                var aValue = $(a).find('td').eq(index).text().toLowerCase();
+                var bValue = $(b).find('td').eq(index).text().toLowerCase();
+
+                // Handle sorting for numeric and string values
+                if ($.isNumeric(aValue) && $.isNumeric(bValue)) {
+                    return order === 'asc' ? aValue - bValue : bValue - aValue;
+                }
+
+                // For string comparison
+                return order === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+            });
+
+            // Append sorted rows back to the tbody
+            tbody.append(rows);
+        });
+    }
+
+    // Load initial data for the first block only if the page has elements
+    let firstBlockId = $('.nav-link.active').data('block-id');
+    if (firstBlockId) {
+        loadUsers(firstBlockId, 1);
+    }
+});
+
+</script>
 
 
         <!-- No Results Found Message -->
@@ -533,38 +572,4 @@ th.desc::after {
     });
 
     /// good code
-</script>
-
-<script>
-    $(document).ready(function() {
-    $('th[data-sort]').on('click', function() {
-        var table = $(this).closest('table');
-        var tbody = table.find('tbody');
-        var rows = tbody.find('tr').toArray();
-        var index = $(this).index();
-        var order = $(this).hasClass('asc') ? 'desc' : 'asc';
-
-        // Remove 'asc', 'desc', and 'sorted' classes from all headers
-        table.find('th').removeClass('asc desc sorted');
-
-        // Add the current order class and the 'sorted' class to the clicked header
-        $(this).addClass(order + ' sorted');
-
-        // Sort rows based on the column index
-        rows.sort(function(a, b) {
-            var aValue = $(a).find('td').eq(index).text().toLowerCase();
-            var bValue = $(b).find('td').eq(index).text().toLowerCase();
-
-            if ($.isNumeric(aValue) && $.isNumeric(bValue)) {
-                return order === 'asc' ? aValue - bValue : bValue - aValue;
-            }
-
-            return order === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-        });
-
-        // Append sorted rows back to the tbody
-        tbody.append(rows);
-    });
-});
-
 </script>

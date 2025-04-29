@@ -19,10 +19,12 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\ControlController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\HistoryController;
-
-
-
 use App\Models\Block;
+
+
+
+
+use App\Http\Controllers\OtpVerificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,6 +36,16 @@ use App\Models\Block;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+
+
+
+
+
+Route::get('otp-verification.form', [OtpVerificationController::class, 'showVerificationForm'])->name('otp-verification.form');
+Route::post('otp-verification', [OtpVerificationController::class, 'verifyOtp'])->name('otp-verification.verify');
+
+
 Route::get('/', function () {
     $currentMonth = strtolower(Carbon::now()->format('F'));
 
@@ -93,8 +105,13 @@ Route::get('expire', function () {
 
 
 
-
 Route::middleware(['custom.auth'])->group(function () {
+
+
+
+
+
+
 
     route::post('update.payment.status', [AjaxController::class, 'updatePaymentStatus'])->name('update.payment.status');
     Route::post('update.control.number', [AjaxController::class, 'updateControlNumber'])->name('update.control.number');
@@ -102,9 +119,22 @@ Route::middleware(['custom.auth'])->group(function () {
 
 Route::get('/profile', [AjaxController::class, 'getProfile'])->name('profile');
 
+Route::get('/verify', [AjaxController::class, 'verify'])->name('verify');
+
 Route::get('hostel', [AjaxController::class, 'gethostel'])->name('hostel');
 
 Route::post('/update-user-bed-selection', [AjaxController::class, 'updateBedSelection']);
+
+
+
+
+
+
+
+
+
+Route::post('/save-control-number', [ElligableStudentController::class, 'saveControlNumber'])->name('saveControlNumber');
+Route::post('/pay-checkout', [ElligableStudentController::class, 'payCheckout'])->name('payCheckout');
 
 
     Route::get('userroom/{blockId}', [AjaxController::class, 'loadRoom'])->name('userroom');
@@ -176,7 +206,6 @@ Route::middleware(['admin'])->group(function () {
     Route::post('/admin/checkout', [ElligableStudentController::class, 'studentout'])->name('admin.checkout.student');
 
 
-
     route::post('update-dates', [AjaxController::class, 'updateDates'])->name('update-dates');
 // web.php
 Route::post('admin.updateExpirationDate', [AjaxController::class, 'updateExpirationDate'])->name('admin.updateExpirationDate');
@@ -192,7 +221,10 @@ Route::post('admin.updateExpirationDate', [AjaxController::class, 'updateExpirat
 
     // Route to handle displaying the view with data from the controller
     Route::get('/admin.hostel', [BlockController::class, 'index'])->name('admin.hostel');
-    Route::get('/admin.application', [ApplicationController::class, 'index'])->name('admin.application');
+    Route::get('/admin.application', action: [ApplicationController::class, 'index'])->name('admin.application');
+    Route::get('/admin/get-users-by-block', [ApplicationController::class, 'getUsersByBlock'])->name('admin.getUsersByBlock');
+
+
     // For web routes in routes/web.php
     Route::post('/update-status/{userId}', [ApplicationController::class, 'updateStatus'])->name('user.updateStatus');
 

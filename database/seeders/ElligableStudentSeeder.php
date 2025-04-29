@@ -20,7 +20,7 @@ class ElligableStudentSeeder extends Seeder
         ]);
 
         // Create 100 random students
-        for ($index = 1; $index <= 1200; $index++) {
+        for ($index = 1; $index <= 1000; $index++) {
             $imageIndex = ($index % 24) === 0 ? 24 : ($index % 24);
 
             ElligableStudent::create([

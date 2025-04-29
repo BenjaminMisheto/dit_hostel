@@ -18,7 +18,7 @@ class CreateBedsTable extends Migration
             $table->unsignedBigInteger('room_id');
             $table->string('bed_number');
             $table->string('status')->default('activate'); // Adding the status field
-            $table->unsignedBigInteger('user_id')->nullable(); // Adding the user_id column
+            $table->unsignedBigInteger('user_id')->nullable()->unique(); // Adding the user_id column
             $table->timestamps();
 
             $table->foreign('room_id')->references('id')->on('rooms')->onDelete('cascade');

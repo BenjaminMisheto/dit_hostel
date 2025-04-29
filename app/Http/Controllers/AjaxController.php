@@ -338,7 +338,7 @@ public function updatePublishStatus(Request $request)
 
         // Update the expiration_date for users where expiration_date is null
     // Update expiration_date for users where expiration_date is NULL
-     User::whereNull('expiration_date')
+     User::where('expiration_date')
     ->whereHas('bed.room.floor.block', function($query) {
         $query->where('semester_id', session('semester_id'));
     })
@@ -369,6 +369,24 @@ public function updatePublishStatus(Request $request)
         // If user is not found, you can redirect or show an error
         return redirect()->route('home')->with('error', 'User not found.');
     }
+
+    public function verify()
+    {
+
+
+        // Assuming you want to get the logged-in user's profile
+        $user = Auth::user();
+
+        // Check if the user exists
+        if ($user) {
+            // Pass the user data to the view
+            return view('user.verify', ['user' => $user]);
+        }
+
+        // If user is not found, you can redirect or show an error
+        return redirect()->route('home')->with('error', 'User not found.');
+    }
+
 
 
     public function getdash()
@@ -771,23 +789,47 @@ public function updateBedSelection(Request $request)
         // Get the user currently assigned to the bed
         $bedUser = $bed->user;
 
+        if ($bedUser && $bedUser->name === auth()->user()->name) {
+
+
+
+
+
+
+}
+else{
+
         // Check if the bed is occupied or under maintenance
-        if ($bed->status === 'under_maintenance' || $bed->status === 'reserve' || ($bedUser && Carbon::now()->lessThan($bedUser->expiration_date))) {
-            return response()->json(['error' => 'Selected bed is not available.'], 400);
+    if ($bed->status === 'under_maintenance' || $bed->status === 'reserve' || ($bedUser && Carbon::now()->lessThan(date: $bedUser->expiration_date))) {
+            return response()->json(['error' => 'Selected bed is not available'], 400);
         }
+}
+
+
+
+
+
 
         // Validate that the room, floor, and block are associated correctly
         if ($room->floor_id !== $floor->id || $floor->block_id !== $block->id) {
             return response()->json(['error' => 'Selection does not match the room, floor, and block association.'], 400);
         }
 
-        // Update the user with the selected bed details
-        $user->update([
-            'bed_id' => $validatedData['bed_id'],
-            'room_id' => $validatedData['room_id'],
-            'floor_id' => $validatedData['floor_id'],
-            'block_id' => $validatedData['block_id'],
-        ]);
+// Check if expiration_date is null or already expired
+if (!$user->expiration_date || \Carbon\Carbon::parse($user->expiration_date)->isPast()) {
+    $user->expiration_date = now()->addMinutes(10);
+}
+
+
+// Update the user with the selected bed details
+$user->update([
+    'bed_id' => $validatedData['bed_id'],
+    'room_id' => $validatedData['room_id'],
+    'floor_id' => $validatedData['floor_id'],
+    'block_id' => $validatedData['block_id'],
+    'expiration_date' => $user->expiration_date, // Only updates if null or expired
+]);
+
 
         return response()->json(['message' => 'Bed selection updated successfully.']);
     } catch (\Exception $e) {
@@ -925,7 +967,7 @@ $newCounter = $currentCounter + 1;
     $row = SliderData::where('criteria', $userCourse)
         ->where('floor_id', $floorId)
         ->where('block_id', $blockId)
-        ->where('status', '!=', 1)
+        ->where('status', '!=', 10)
         ->first();
 
     if ($row) {
@@ -969,11 +1011,33 @@ public function confirmApplication(Request $request)
         if ($bed) {
             // Check if the bed already has a user associated with it
             if ($bed->user_id) {
+                $existingUser = User::find($bed->user_id);
+                if ($existingUser) {
+                     // Check if the previous user's expiration date has passed
+                if ($existingUser->expiration_date && now()->lessThan($existingUser->expiration_date)) {
+
                 // Return a message if the bed is already occupied
                 return response()->json([
-                    'message' => 'Sorry, the selected bed is already occupied by another student. Please choose another bed.'
+                    'message' => 'Sorry, the selected bed is already occupied by another student. Please choose another bed.cccccc'
                 ], 400);
+                }
+                }
+
+
+
+
+
+
+
+
             }
+
+            if ($user->expiration_date && now()->greaterThan($user->expiration_date)) {
+    return response()->json([
+        'message' => 'Sorry, your application has expired. Please return to the hostel page to apply again.'
+    ], 400);
+}
+
 
             // If bed is not occupied, proceed to update the bed with the user's user_id
             $bed->update(['user_id' => $user->id]);
@@ -1043,6 +1107,8 @@ public function confirmApplication(Request $request)
 
     return response()->json(['message' => 'Application confirmed successfully.']);
 }
+
+
 
 
 
@@ -1225,7 +1291,7 @@ public function updateControlNumber(Request $request)
     $AdminCheckout = AdminCheckout::select('block_name')->distinct()->groupBy('block_name')->get();
 
 
-
+    $allSemesters = Semester::all();
 
     $RequirementItemConfirmation = RequirementItemConfirmation::all();
 
@@ -1235,7 +1301,7 @@ public function updateControlNumber(Request $request)
 
 
     // Return the view and pass the blocks data
-    return view('admin.report', compact('blocks','semesters','AdminCheckout','RequirementItemConfirmation','semestersAdminCheckout'));
+    return view('admin.report', compact('blocks','semesters','AdminCheckout','RequirementItemConfirmation','semestersAdminCheckout','allSemesters'));
 }
 
 
@@ -1403,8 +1469,6 @@ public function getBlocks($semesterId)
             'genders' => $genders
         ]);
     }
-
-
 
 
 

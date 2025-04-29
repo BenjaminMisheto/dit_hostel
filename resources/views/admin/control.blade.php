@@ -127,7 +127,7 @@
                                                        readonly>
                                                 <!-- Display distributed bed IDs -->
                                                   <div class="bed-id-container"></div>
-                                                  {{-- <p class="distributed-bed-ids"></p> --}}
+                                             {{-- <p class="distributed-bed-ids"></p> --}}
                                             </div>
                                         </div>
                                     @endforeach

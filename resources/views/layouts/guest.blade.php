@@ -23,11 +23,26 @@
     <link rel="stylesheet" href="{{ asset('css/mycss.css') }}">
 
     <!-- Scripts -->
-    <script src="{{ asset('js/app.js') }}" defer></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 
   <body class="">
+    <!-- Success Toast -->
+<div id="success-toast" class="toast bg-success text-white" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-body">
+        <!-- Success message will be inserted here -->
+    </div>
+</div>
+
+<!-- Error Toast -->
+
+<div id="error-toast" class="toast bg-danger text-white" role="alert" aria-live="assertive" aria-atomic="true" style=" z-index: 1055;">
+    <div class="toast-body">
+        <!-- Error message will be inserted here -->
+    </div>
+</div>
+
     <div id="preloder">
         <div class="loader">
             <div class="spinner-border " style="width: 3rem; height: 3rem;"></div>

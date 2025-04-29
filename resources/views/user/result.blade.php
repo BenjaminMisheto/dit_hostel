@@ -36,7 +36,7 @@
             ' gd-close text-danger');
         </script>
 
-        <button class="btn btn-danger mt-3" data-toggle="modal" data-target="#reapplyModal">Re-apply</button>
+
 
         <div class="container full-height d-flex align-items-center justify-content-center" style="height: 70vh;">
             <div class="" style="width: 18rem;">
@@ -108,8 +108,9 @@
                     <hr>
                     <span><small>We regret to inform you that your application was not approved. If you wish to reapply,
                             please click the button below.</small></span><br>
-                    <button class="btn btn-danger mt-3" data-toggle="modal"
-                        data-target="#reapplyModal">Re-apply</button>
+
+
+                    <button class="btn btn-danger mt-3" id="reapplyButton">Re-apply</button>
 
                 </div>
             </div>
@@ -118,7 +119,22 @@
         @endif
 
         @else
+        @if ($user->payment_status == '')
 
+        <div class="alert alert-info">
+            <strong>Congratulations, {{$user->name}}!</strong><br>
+            <span>
+                We are pleased to inform you that your application has been approved. Please review the
+                details below. Kindly generate a control number and complete the payment before
+                {{ $formattedExpirationDate }}. Failure to do so may result in your bed being
+                reallocated to another student, and you will need to reapply.
+            </span>
+
+        </div>
+
+
+
+        @endif
         <div class="row">
             <div class="col-md-12">
                 <!-- Card -->
@@ -132,22 +148,7 @@
 
                     <div class="card-body pt-3">
 
-                        @if ($user->payment_status == '')
 
-                        <div class="alert alert-success ">
-                            <strong>Congratulations, {{$user->name}}!</strong><br>
-                            <span>
-                                We are pleased to inform you that your application has been approved. Please review the
-                                details below. Kindly generate a control number and complete the payment before
-                                {{ $formattedExpirationDate }}. Failure to do so may result in your bed being
-                                reallocated to another student, and you will need to reapply.
-                            </span>
-
-                        </div>
-
-                        @else
-
-                        @endif
                         <div class="row ">
 
                             <div class="col-md-4 text-center mb-4">
@@ -207,7 +208,7 @@
 
                                 <div class="row mb-4">
                                     <div class="col font-weight-bold ">
-                                        Time left:
+                                                           Time left:
                                     </div>
                                     <div class="col">
                                         <p id="countdown" class="text-danger">Loading countdown...</p>
@@ -215,8 +216,11 @@
                                     </div>
                                 </div>
 
+
+
                                 <script>
                                     var countdownInterval; // Declare the interval variable in the outer scope
+                                    var countdownExpired = false; // Track if the countdown has expired
 
                                     // Function to update the countdown
                                     function updateCountdown(expirationDateString) {
@@ -226,14 +230,18 @@
                                             var now = new Date().getTime();
                                             var timeDifference = targetDate - now;
 
-                                            // Handle expiration
+                                            // Stop countdown when expired
                                             if (timeDifference <= 0) {
-                                                $('#countdown').text('Expired');
-                                                $('#paymentContainer').html(
-                                                    '<button class="btn btn-danger mt-3" data-toggle="modal" data-target="#reapplyModal">Re-apply</button>'
-                                                );
-                                                clearInterval(countdownInterval); // Stop the countdown
-                                                return;
+                                                if (!countdownExpired) { // Ensure result() is only called once
+                                                    $('#countdown').text('Expired');
+
+                                                    clearInterval(countdownInterval); // Stop countdown
+                                                    countdownInterval = null;
+                                                    countdownExpired = true; // Mark countdown as expired
+
+                                                  //  result(); // Call result **only once**
+                                                }
+                                                return; // Exit function
                                             }
 
                                             // Calculate time components
@@ -246,52 +254,44 @@
                                             $('#countdown').text(`${days}d ${hours}h ${minutes}m ${seconds}s`);
                                         }
 
-                                        // Clear any existing countdown interval
+                                        // Clear existing countdown
                                         if (countdownInterval) {
                                             clearInterval(countdownInterval);
+                                            countdownInterval = null;
                                         }
 
-                                        // Start the countdown
+                                        countdownExpired = false; // Reset expiration flag on new countdown
                                         countdownInterval = setInterval(countdown, 1000);
-                                        countdown(); // Initial call to display the countdown immediately
-                                    }
-
-                                    // Function to fetch expiration date via AJAX and update countdown
-                                    function fetchExpirationDate() {
-                                        $.ajax({
-                                            url: '{{ route('get.expiration.date') }}',
-                                            method: 'GET',
-                                            success: function(response) {
-                                                var expirationDateString = response.expirationDate;
-                                                updateCountdown(expirationDateString); // Update the countdown with fetched date
-                                            },
-                                            error: function(xhr, status, error) {
-                                                console.error('Failed to fetch expiration date:', error);
-                                            }
-                                        });
+                                        countdown(); // Initial update
                                     }
 
                                     // Document ready handler
                                     $(document).ready(function() {
-                                        // Fetch expiration date on page load
-                                        fetchExpirationDate();
+                                        // Use the expiration date passed from Laravel
+                                        var expirationDateString = '{{ $user->expiration_date }}';
+                                        updateCountdown(expirationDateString); // Fetch and update the countdown with expiration date
 
-                                        // MutationObserver to watch for changes in the target container
+                                        // Observe changes in the target container
                                         var targetNode = document.getElementById('paymentContainer');
                                         var observerOptions = { childList: true, subtree: true };
 
                                         var observer = new MutationObserver(function(mutations) {
                                             mutations.forEach(function(mutation) {
-                                                fetchExpirationDate(); // Fetch the expiration date on any change
+                                                // Re-fetch and update countdown on changes in payment container
+                                                updateCountdown(expirationDateString);
                                             });
                                         });
 
                                         observer.observe(targetNode, observerOptions);
 
-                                        // Optionally fetch expiration date periodically every minute
-                                        setInterval(fetchExpirationDate, 60000);
+                                        // Periodic fetch every minute (Optional if expiration date is dynamic)
+                                        setInterval(function() {
+                                            updateCountdown(expirationDateString);
+                                        }, 60000);
                                     });
                                 </script>
+
+
 
 
                                 @endif
@@ -426,7 +426,7 @@
 
                                     <!-- Check-Out Items Section -->
                                     <div class="col-md-6">
-                                        <h5 class="mb-3">Given Items:</h5>
+                                        <h5 class="mb-3">Provided Items:</h5>
                                         @if($confirmation)
                                         @if($confirmation->checkout_items_names)
                                         @php
@@ -497,7 +497,7 @@
                                 @if($confirmation)
                                 @if($user->checkin == 2)
 
-                                @if($user->checkout == 1)
+                    @if($user->checkout == 1)
 
                                 <h5 class="mb-3">Returned Items:</h5>
 
@@ -509,46 +509,73 @@
                                     $needsToPay = false;
                                     $allGood = true; // Assume all items are good initially
                                     @endphp
+@foreach($checkOutItemsadmin as $item)
+@if(($item->condition === 'Bad' || $item->condition === 'None') && !$item->paid)
+    @php
+        $needsToPay = true;
+        $allGood = false; // At least one item is not good
+    @endphp
+@endif
 
-                                    @foreach($checkOutItemsadmin as $item)
-                                    @if($item->condition === 'Bad' || $item->condition === 'None')
-                                    @php
-                                    $needsToPay = true;
-                                    $allGood = false; // At least one item is not good
-                                    @endphp
-                                    @endif
+<div class="col-md-4 mb-3">
+    <div class="card p-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h6 class="card-title mb-1">{{ $item->name }}</h6>
+                <p class="mb-0">
+                    Condition:
+                    <span class="fw-bold
+                        @if($item->condition === 'Good') text-success
+                        @elseif($item->condition === 'Bad') text-danger
+                        @elseif($item->condition === 'None') text-warning
+                        @endif">
+                        {{ $item->condition }}
+                    </span>
+                </p>
 
-                                    <div class="col-md-4 mb-3">
-                                        <div class="card p-3">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <h6 class="card-title mb-1">{{ $item->name }}</h6>
-                                                    <p class="mb-0">Condition: <span
-                                                            class="fw-bold @if($item->condition === 'Good') text-success @elseif($item->condition === 'Bad') text-danger @elseif($item->condition === 'None') text-warning @endif">{{ $item->condition }}</span>
-                                                    </p>
-                                                    <input type="hidden" name="item_ids[]" value="{{ $item->id }}">
-                                                </div>
-                                                @if($item->condition === 'Bad')
-                                                <span class="badge bg-danger text-white">Requires Payment</span>
-                                                @elseif($item->condition === 'None')
-                                                <span class="badge bg-warning text-dark">Not Returned - Payment
-                                                    Required</span>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-                                    @endforeach
+                @if(($item->condition === 'Bad' || $item->condition === 'None') && !$item->paid)
+                    <p class="mb-0 text-danger fw-bold">
+                        Payment Required: TZS {{ number_format($item->payment_price, 2) }}
+                    </p>
+                @elseif($item->paid)
+                    <p class="mb-0 text-success fw-bold">
+                        Payment Status: Paid
+                    </p>
+                @endif
+
+                <input type="hidden" name="item_ids[]" value="{{ $item->id }}">
+            </div>
+
+            @if(($item->condition === 'Bad' || $item->condition === 'None') && !$item->paid)
+                <span class="badge bg-danger text-white">Requires Payment</span>
+            @elseif($item->condition === 'None' && !$item->paid)
+                <span class="badge bg-warning text-dark">Not Returned - Payment Required</span>
+            @elseif($item->paid)
+                <span class="badge bg-success text-white">Paid</span>
+            @endif
+        </div>
+    </div>
+</div>
+@endforeach
+
+
                                 </div>
 
                                 @if($needsToPay)
-                                <div class="alert alert-warning mt-3">
+                                <div class="alert alert-danger mt-3">
                                     <i class="bi bi-exclamation-triangle me-2"></i>
                                     Attention: You are required to make payment for any items marked as "Bad" or not
                                     returned. The cost for these items will be assessed by the institute. Failure to
                                     settle these charges may result in further actions, including potential legal
                                     consequences for damage to institute property. Please ensure all outstanding
                                     payments are resolved to complete your checkout process.
+
+                                    <!-- Button to go to History -->
+                                    <div class="mt-3 text-center">
+                                        <button  class="btn btn-danger" onclick=" historyFunction()">Go to History</button>
+                                    </div>
                                 </div>
+
 
                                 @elseif($allGood)
                                 <div class="alert alert-success mt-3">
@@ -571,19 +598,20 @@
                                 @else
                                 <div class="text-center mt-4">
                                     <div class="alert alert-warning">
-                                        <strong>Note:</strong> You have already confirmed your items. Please await
-                                        confirmation from the admin to complete your check-in process.
+                                        <strong>Notice:</strong> You have already confirmed the provided details. Please await confirmation from the admin to complete your check-in process.
                                     </div>
+
                                 </div>
                                 @endif
 
 
                         @else
 
+
                                 <div class="text-center mt-4">
-                                    <button type="button" class="btn btn-outline-primary" data-toggle="modal"
+                                    <button type="button" class="btn btn-outline-success" data-toggle="modal"
                                         data-target="#confirmItemModal">
-                                        Confirm Given Item
+                                        Confirm Provided items
                                     </button>
 
                                 </div>
@@ -840,6 +868,7 @@
 
                     // Show toast and update UI based on response
                     if (response.success) {
+
                         // Update result UI classes
                         $('#gd-hostel, #gd-finish, #gd-result')
                             .removeClass('gd-check text-success')
@@ -848,7 +877,8 @@
                         showToast('#successToast', response.message); // Show success toast
 
                         // Hide modal after successful reapply
-                        hidemodalreappy();
+                        //hidemodalreappy();
+                        hostel();
                     } else {
                         console.log(response.message);
                         showToast('#errorToast', response.message); // Show error toast if not successful
@@ -883,11 +913,8 @@
             <div class="modal-body text-center">
                 <div class="text-center rounded">
                     <i class="gd-alert icon-text icon-text-xxl d-block text-danger mb-3 mb-md-4"></i>
-                    <div class="h5 font-weight-semi-bold mb-2">Confirm Item Return</div>
-                    <p class="mb-3 mb-md-4">Once you <strong>confirm the received items</strong>, no further
-                        modifications will be allowed. Please ensure that each item is returned in the
-                        <strong>agreed-upon condition</strong>. <strong>Any damage or failure to return the items will
-                            result in a fine</strong>.</p>
+                    <div class="h5 font-weight-semi-bold mb-2">Confirm the Items Provided</div>
+                    <p class="mb-3 mb-md-4">Once you <strong>confirm the items provided</strong>, no further modifications will be permitted. Kindly ensure that each item is returned in the <strong>condition previously agreed upon</strong>. <strong>Any damages or failure to return the items as agreed will incur a penalty.</strong></p>
 
                     <div class="d-flex justify-content-between mb-4">
                         <a class="btn btn-outline-success" href="#" id="confirm">Yes, Confirm</a>
@@ -898,6 +925,7 @@
         </div>
     </div>
 </div>
+
 
 <div id="reapplyModal" class="modal fade" role="dialog" aria-labelledby="Re-applyModalLabel" aria-hidden="true">
     <div class="modal-dialog rounded" role="document">

@@ -257,6 +257,7 @@
     <div class="footer">
         <p>Report generated on {{ now()->format('Y-m-d H:i:s') }}</p>
         <p>© {{ now()->format('Y') }} {{ $block->name ?? 'Not Available' }}</p>
+        <p><strong>Printed by :</strong> {{ auth('admin')->user()->name }}</p>
     </div>
 </body>
 

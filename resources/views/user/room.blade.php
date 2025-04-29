@@ -18,6 +18,18 @@ use App\Models\User;
     <div class="alert alert-info alert-dismissible fade show" role="alert">
         <strong>Info:</strong> Please select a bed and then click below to proceed to the next stage.
     </div>
+    @if (isset($user->block_id) && $user->block->status == 1)
+    <!-- User has selected a block and the block is active -->
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <strong>Notice:</strong> You have already selected <strong>{{ $user->block->name }}, Room {{ $user->room->room_number }}, Bed {{ $user->bed->bed_number }}</strong>. Please proceed to confirm your application on the final page, or choose another bed if you wish to make a change.
+    </div>
+@elseif (isset($user->block_id))
+    <!-- User has selected a block, but the block is offline -->
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <strong>Notice:</strong> The block you selected <strong>{{ $user->block->name ?? '' }}</strong> previously has unfortunately been taken offline. Please select another available option.
+    </div>
+@endif
+
 
     <!-- Floor Details -->
     <div class="row">
@@ -146,17 +158,29 @@ use App\Models\User;
                                                 $disabled = true;
                                                 break;
                                         }
+
+
                                     }
+
+
 
                                     // Check if the user has already selected this bed
                                     $userSelectedBed = $user->bed_id == $bed->id;
+                                      if ($userSelectedBed) {
+                                            $statusText = 'Selected';
+
+                                        }
                                     @endphp
 
-                                    <div class="input-container" style="cursor: pointer;">
+
+
+
+
+                                    <div class="input-container  @if($userSelectedBed) bg-secondary @endif" style="cursor: pointer;" ch>
                                         <input id="bed_{{ $bed->id }}" class="radio-button" type="radio" name="bed"
                                             value="{{ $bed->id }}" data-room-id="{{ $room->id }}"
                                             data-floor-id="{{ $floor->id }}" data-block-id="{{ $block->id }}"
-                                            {{ $disabled ? 'disabled' : '' }} {{ $userSelectedBed ? ' disabled' : '' }}>
+                                            {{ $disabled ? 'disabled' : '' }} {{ $userSelectedBed ? 'checked' : '' }}>
 
                                         <div class="radio-tile {{ $statusClass }}" >
                                             <label for="bed_{{ $bed->id }}"
@@ -164,7 +188,7 @@ use App\Models\User;
                                                 {{ $bed->bed_number }}</label>
                                             <label for="bed_{{ $bed->id }}"
                                                 class="radio-tile-label  {{ $statusClass }}">{{ $statusText }}
-                                                @if($userSelectedBed)selected @endif
+
 
                                             </label>
                                         </div>
@@ -192,7 +216,7 @@ use App\Models\User;
 
     @if(!$filteredFloors->isEmpty())
     <div class="text-center mt-4">
-        <button id="confirmButton" class="btn btn-outline-secondary px-4 py-2">Choose, Next Stage</button>
+        <button id="confirmButton" class="btn btn-outline-secondary px-4 py-2">Next Stage</button>
     </div>
     @endif
 </div>
@@ -205,7 +229,7 @@ use App\Models\User;
         });
         // Handle "Next stage" button click
         $('#confirmButton').on('mousedown', function(e) {
-            if (!$('input[name="bed"]:checked').length) {
+            if (!$('input[name="bed"]:checked').length ) {
                 e.preventDefault(); // Prevents the button action
                 showToast('error-toast', 'Please select a bed before proceeding.');
             } else {

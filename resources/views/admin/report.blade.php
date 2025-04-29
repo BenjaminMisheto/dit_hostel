@@ -39,6 +39,7 @@
     </li>
 </ul>
 
+
 <div id="tabsContent1" class="card-body tab-content p-0">
     <div class="tab-pane fade show active" id="tabs1-tab1" role="tabpanel">
 
@@ -46,7 +47,7 @@
             <div class="row">
                 <div class="col-md-2 mb-3">
                     <div class="form-floating">
-                        <label for="hostelSelect">Block Filter</label>
+                        <label for="hostelSelect">Block Filter </label>
                         <select id="hostelSelect" class="form-select wide" aria-label="Select Hostel">
                             <option value="" selected>Select a hostel</option>
                             @foreach($blocks as $block)
@@ -403,14 +404,6 @@ function restoreButtonText(buttonId, originalText) {
             $('#genderSelect').html('<option value="">Select Gender</option>').prop('disabled', true);
             $('#paymentSelect').html('<option value="">Select Payment</option>').prop('disabled', true);
             $('#courseSelect').html('<option value="">Select Course</option>').prop('disabled', true);
-
-
-
-
-
-
-
-
 
             if (hostelId) {
                 console.log("Fetching floors for hostel ID: ", hostelId);
@@ -787,13 +780,6 @@ $('#paymentSelect').on('change', function () {
                 restoreButtonText('exportExcel', 'Export as Excel');
             });
         }
-
-
-
-
-
-
-
 
     });
 </script>

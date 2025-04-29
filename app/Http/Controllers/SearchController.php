@@ -56,11 +56,12 @@ public function search_elligable(Request $request)
 
     $students = ElligableStudent::where('student_name', 'like', "%{$query}%")
                         ->orWhere('registration_number', 'like', "%{$query}%")
+                        ->orWhere('email', 'like', "%{$query}%")
                         ->get();
 
     // Generate HTML for the search results
     if ($students->isEmpty()) {
-        $html = '<p>No eligible students found.</p>';
+        $html = '<p class="text-center alert alert-danger">No eligible students found.</p>';
     } else {
         $html = '<div class="table-responsive">';
         $html .= '<table class="table table-striped">';
@@ -108,7 +109,7 @@ public function updateProfile(Request $request)
     $validated = $request->validate([
         'name' => 'required|string|max:255',
         'profile_photo_path' => 'nullable|string|max:255',
-        'registration_number' => 'required|integer',
+        'registration_number' => 'required|string',
         'sponsorship' => 'required|string',
         'phone' => 'required|string',
         'gender' => 'required|string',

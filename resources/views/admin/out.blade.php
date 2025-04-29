@@ -66,60 +66,70 @@
                 </div>
             </div>
 
+
 <!-- Check-Out Items Section -->
 <div class="col-12 col-md-6">
     <div class="card p-3 p-md-4">
-        <h5 class="card-title mb-3">Check-Out Items {{session('semester')}}</h5>
-        <input type="hidden" id="user_id" value="{{ $user->id }}">
-
-        <p class="mb-4">Please verify that the student has returned the following items</p>
-
-
-<!-- Checklist for returning items -->
-<div class="row">
-    @foreach ($confirmationItems as $index => $item)
-        <div class="col-12 col-sm-6 mb-3">
-            <input class="form-check-input item-checkbox" type="checkbox" id="checkbox-{{ $index }}" {{ $item['condition'] ? 'checked' : '' }} hidden disabled>
-            <label class="btn btn-outline-default d-flex align-items-center w-100" for="checkbox-{{ $index }}">
-                <i class="bi bi-check-circle me-2"></i> {{ $item['name'] }}
-            </label>
-
-            <!-- Condition radio buttons -->
-            <div class="condition-radio mt-2" id="condition-{{ $index }}" style="display: {{ $item['condition'] ? 'block' : 'none' }};">
-                <p class="fw-bold">Condition of {{ $item['name'] }}:</p>
-                <div class="d-flex flex-wrap justify-content-between">
-                    <div class="d-flex align-items-center me-2">
-                        <input class="form-check-input me-1" type="radio" name="condition-{{ $index }}" value="Good" id="good-{{ $index }}" {{ $item['condition'] === 'Good' ? 'checked' : '' }} @if ($checkoutCount > 0) disabled @endif hidden >
-                        <label class="btn btn-outline-success cursor-pointer" for="good-{{ $index }}" @if ($checkoutCount > 0) style="pointer-events: none!important;" @endif>Good</label>
-                    </div>
-                    <div class="d-flex align-items-center me-2">
-                        <input class="form-check-input me-1" type="radio" name="condition-{{ $index }}" value="None" id="none-{{ $index }}" {{ $item['condition'] === 'None' ? 'checked' : '' }} hidden @if ($checkoutCount > 0) disabled @endif>
-                        <label class="btn btn-outline-warning cursor-pointer" for="none-{{ $index }}" @if ($checkoutCount > 0) style="pointer-events: none; " @endif>None</label>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <input class="form-check-input me-1" type="radio" name="condition-{{ $index }}" value="Bad" id="bad-{{ $index }}" {{ $item['condition'] === 'Bad' ? 'checked' : '' }} hidden @if ($checkoutCount > 0) disabled @endif>
-                        <label class="btn btn-outline-danger cursor-pointer" for="bad-{{ $index }}" @if ($checkoutCount > 0) style="pointer-events: none;" @endif>Bad</label>
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endforeach
-</div>
-
-
         <!-- Conditional warning message and buttons -->
         @if ($checkoutCount === 0)
             <div id="warningMessage" class="alert alert-danger mb-3">
-                <i class="bi bi-exclamation-triangle me-2"></i> Please review the condition of all items above carefully. Once submitted, this action is irreversible and changes cannot be made.
-            </div>
-
-            <!-- Submit button -->
-            <div class="d-grid text-center">
-                <button id="submitButton" class="btn btn-outline-secondary" data-toggle="modal" data-target="#Checkout_Confirmation">Submit Check-Out</button>
+                <i class="bi bi-exclamation-triangle me-2"></i> Please review the condition of all items below carefully. Once submitted, this action is irreversible and changes cannot be made.
             </div>
         @else
             <div id="warningMessage" class="alert alert-success mb-3">
                 <i class="bi bi-check-circle me-2"></i> The student has successfully completed the check-out process. You can generate a detailed report on the report page for further information.
+            </div>
+        @endif
+        <h5 class="card-title mb-3">Check-Out Items {{ session('semester') }}</h5>
+        <input type="hidden" id="user_id" value="{{ $user->id }}">
+
+        <!-- Checklist for returning items -->
+        <div class="row">
+            @foreach ($confirmationItems as $index => $item)
+                <div class="col-12 col-sm-6 mb-3">
+                    <input class="form-check-input item-checkbox" type="checkbox" id="checkbox-{{ $index }}" {{ $item['condition'] ? 'checked' : '' }} hidden disabled>
+                    <label class="btn btn-outline-default d-flex align-items-center w-100" for="checkbox-{{ $index }}">
+                        <i class="bi bi-check-circle me-2"></i> {{ $item['name'] }}
+                    </label>
+
+                    <!-- Condition radio buttons -->
+                    <div class="condition-radio mt-2" id="condition-{{ $index }}" style="display: {{ $item['condition'] ? 'block' : 'none' }};">
+                        <p class="fw-bold">Condition of {{ $item['name'] }}:</p>
+                        <div class="d-flex flex-wrap justify-content-between">
+                            <div class="d-flex align-items-center me-2">
+                                <input class="form-check-input me-1" type="radio" name="condition-{{ $index }}" value="Good" id="good-{{ $index }}" {{ $item['condition'] === 'Good' ? 'checked' : '' }} @if ($checkoutCount > 0) disabled @endif hidden >
+                                <label class="btn btn-outline-success cursor-pointer" for="good-{{ $index }}" @if ($checkoutCount > 0) style="pointer-events: none!important;" @endif>Good</label>
+                            </div>
+                            <div class="d-flex align-items-center me-2">
+                                <input class="form-check-input me-1" type="radio" name="condition-{{ $index }}" value="None" id="none-{{ $index }}" {{ $item['condition'] === 'None' ? 'checked' : '' }} hidden @if ($checkoutCount > 0) disabled @endif>
+                                <label class="btn btn-outline-warning cursor-pointer" for="none-{{ $index }}" @if ($checkoutCount > 0) style="pointer-events: none; " @endif>None</label>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <input class="form-check-input me-1" type="radio" name="condition-{{ $index }}" value="Bad" id="bad-{{ $index }}" {{ $item['condition'] === 'Bad' ? 'checked' : '' }} hidden @if ($checkoutCount > 0) disabled @endif>
+                                <label class="btn btn-outline-danger cursor-pointer" for="bad-{{ $index }}" @if ($checkoutCount > 0) style="pointer-events: none;" @endif>Bad</label>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Price Input - Only shown for "None" or "Bad" condition -->
+                    <div class="price-input mt-2" id="price-input-{{ $index }}"
+                         style="display: {{ ($item['condition'] === 'None' || $item['condition'] === 'Bad') ? 'block' : 'none' }};">
+                        <label for="price-{{ $index }}" class="fw-bold">Price of {{ $item['name'] }}:</label>
+                        <input type="number" class="form-control" id="price-{{ $index }}"
+                               name="price-{{ $index }}" placeholder="Enter price"
+                               min="0"
+                               value="{{ $item['payment_price'] ?? '' }}"
+                               {{ isset($item['payment_price']) ? 'disabled' : '' }}>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        <!-- Conditional warning message and buttons -->
+        @if ($checkoutCount === 0)
+            <div class="d-grid text-center">
+                <button id="submitButton" class="btn btn-outline-success" data-toggle="modal" data-target="#Checkout_Confirmation">Submit</button>
             </div>
         @endif
     </div>
@@ -145,6 +155,15 @@
                     if (selectedCondition.length === 0) {
                         valid = false;
                     }
+
+                    // Show price input for "None" or "Bad" condition
+                    const selectedConditionValue = selectedCondition.val();
+                    const priceInput = $('#price-input-' + index);
+                    if (selectedConditionValue === 'None' || selectedConditionValue === 'Bad') {
+                        priceInput.show();
+                    } else {
+                        priceInput.hide();
+                    }
                 }
             });
 
@@ -157,93 +176,104 @@
             }
         }
 
-        // Function to handle form submission via AJAX
-        window.submitCheckout = function() {
-            const items = [];
-            let validationPassed = true;
+        // Call the function to check the initial state
+        toggleSubmitButton();
 
-            // Collect selected items and their conditions
-            $('.item-checkbox:checked').each(function() {
-                const checkboxId = $(this).attr('id');
-                const index = checkboxId.split('-')[1];
-                const conditionDiv = $('#condition-' + index);
-                const condition = conditionDiv.find('input[type="radio"]:checked').val() || 'None'; // Default to 'None' if no condition selected
+        // Attach change event to condition radio buttons to handle price input visibility
+        $('input[type="radio"]').on('change', function() {
+            toggleSubmitButton();
+        });
 
-                if (!condition) {
-                    validationPassed = false;
-                }
 
-                items.push({
-                    name: $(this).siblings('label').text().trim(),
-                    condition: condition
+window.submitCheckout = function() {
+    const items = [];
+    let validationPassed = true;
+    let controlNumber = $('#control_number').val(); // Get control number
+
+    // Collect selected items, their conditions, and the prices if applicable
+    $('.item-checkbox:checked').each(function() {
+        const checkboxId = $(this).attr('id');
+        const index = checkboxId.split('-')[1];
+        const conditionDiv = $('#condition-' + index);
+        const condition = conditionDiv.find('input[type="radio"]:checked').val() || 'None'; // Default to 'None' if no condition selected
+
+        let price = null;
+        if (condition === 'None' || condition === 'Bad') {
+            price = $('#price-' + index).val();
+            if (!price || price <= 0) {
+                validationPassed = false;
+            }
+        }
+
+        items.push({
+            name: $(this).siblings('label').text().trim(),
+            condition: condition,
+            payment_price: price // Send price individually per item
+        });
+    });
+
+    // Validate if all checked items have a condition selected and price for "None" or "Bad" items
+    if (!validationPassed) {
+        showToast('#error-toast', 'Please ensure all checked items with "None" or "Bad" conditions have a valid price.');
+        return;
+    }
+
+    // Check if at least one checkbox is checked
+    const anyChecked = $('.item-checkbox:checked').length > 0;
+    if (!anyChecked) {
+        showToast('#error-toast', 'Please select at least one item and its condition.');
+        return;
+    }
+
+    // Hide warning message and show overlay
+    $('#warningMessage').hide();
+    $('#overlay').css('display', 'flex');
+
+    $.ajax({
+        url: '{{ route('admin.checkout.student') }}',
+        method: 'POST',
+        data: {
+            user_id: $('#user_id').val(),
+            items: items, // Send items separately
+            control_number: controlNumber, // Send control number
+            _token: '{{ csrf_token() }}'
+        },
+        success: function(response) {
+            $('#overlay').fadeOut();
+            console.log('AJAX success response:', response);
+
+            if (response.success) {
+                hidemodal();
+                showToast('#success-toast', 'Check-out successfully submitted!');
+            } else {
+                console.log('Error message from server:', response.message);
+                showToast('#error-toast', response.message || 'An error occurred.');
+            }
+        },
+        error: function(xhr) {
+            $('#overlay').fadeOut();
+            console.log('AJAX error response:', xhr);
+
+            if (xhr.status === 422) {
+                const errors = xhr.responseJSON.errors;
+                let errorMessages = '';
+
+                $.each(errors, function(key, value) {
+                    errorMessages += value + '<br>';
+                    console.log(`Validation error on ${key}: ${value}`);
                 });
-            });
 
-            // Validate if all checked items have a condition selected
-            if (!validationPassed) {
-                showToast('#error-toast', 'Please select a condition for all checked items.');
-                return;
+                showToast('#error-toast', errorMessages);
+            } else {
+                console.log('Unexpected error:', xhr.responseJSON);
+                showToast('#error-toast', 'An error occurred: ' + xhr.responseJSON.message);
             }
+        }
+    });
+};
 
-            // Check if at least one checkbox is checked
-            const anyChecked = $('.item-checkbox:checked').length > 0;
-
-            if (!anyChecked) {
-                showToast('#error-toast', 'Please select at least one item and its condition.');
-                return;
-            }
-
-            // Hide warning message and show overlay
-            warningMessage.hide();
-            $('#overlay').css('display', 'flex');
-
-            $.ajax({
-                url: '{{ route('admin.checkout.student') }}',
-                method: 'POST',
-                data: {
-                    user_id: $('#user_id').val(),
-
-                    items: items,
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function(response) {
-
-
-                    $('#overlay').fadeOut();
-                    console.log('AJAX success response:', response); // Log the entire response
-
-                    if (response.success) {
-                        hidemodal()
-                        showToast('#success-toast', 'Check-out successfully submitted!');
-                    } else {
-                        console.log('Error message from server:', response.message); // Log error message
-                        showToast('#error-toast', response.message || 'An error occurred.');
-                    }
-
-                },
-                error: function(xhr) {
-                    $('#overlay').fadeOut();
-                    console.log('AJAX error response:', xhr); // Log the entire error response
-
-                    if (xhr.status === 422) {
-                        const errors = xhr.responseJSON.errors;
-                        let errorMessages = '';
-
-                        $.each(errors, function(key, value) {
-                            errorMessages += value + '<br>';
-                            console.log(`Validation error on ${key}: ${value}`); // Log each validation error
-                        });
-
-                        showToast('#error-toast', errorMessages);
-                    } else {
-                        console.log('Unexpected error:', xhr.responseJSON); // Log unexpected error details
-                        showToast('#error-toast', 'An error occurred: ' + xhr.responseJSON.message);
-                    }
-                }
-            });
-
-                // Function to close the modal and call the hostel() function
-        function hidemodal() {
+              // Function to close the modal and call the hostel() function
+              function hidemodal() {
             $('#Checkout_Confirmation').modal('hide'); // Close the modal
 
             // Ensure hostel() is called after modal is closed
@@ -251,7 +281,8 @@
                 checkoutAction({{ $user->bed->id }})
             });
         }
-        }
+
+
 
         // Function to display toast messages
         function showToast(toastId, message) {
@@ -262,6 +293,7 @@
         }
     });
 </script>
+
 
 <script>
     function checkoutAction(bedId) {
@@ -329,3 +361,5 @@
         </div>
     </div>
 </div>
+
+
